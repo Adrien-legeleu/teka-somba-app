@@ -1,8 +1,8 @@
 // app/api/admin/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/email';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   const { userId, action } = await req.json();

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email';
 import { put } from '@vercel/blob'; // Pour l'upload cloud
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -22,12 +22,12 @@ export async function POST(req: NextRequest) {
 
   const hash = await bcrypt.hash(password, 12);
 
-  // Utilisation Vercel Blob : upload direct, renvoie une URL publique
   const upload = await put(
     `identity-cards/${Date.now()}-${identityFile.name}`,
     identityFile,
     { access: 'public' }
   );
+
   const identityCardUrl = upload.url;
 
   await prisma.user.create({

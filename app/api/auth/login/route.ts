@@ -13,10 +13,6 @@ export async function POST(req: NextRequest) {
       { status: 401 }
     );
 
-  if (!user.isVerified) {
-    return NextResponse.json({ error: 'Compte non validé' }, { status: 403 });
-  }
-
   const match = await bcrypt.compare(password, user.password);
   if (!match)
     return NextResponse.json(
