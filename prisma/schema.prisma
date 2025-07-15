@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id          String      @id @default(uuid())
+  email       String      @unique
+  password    String
+  name        String?
+  phone       String
+  avatar      String? 
+  city        String
+  isAdmin     Boolean     @default(false)
+  notifications Notification[]
+  favorites   Favorite[]
+  ads         Ad[]
+  paymentsAsBuyer Payment[] @relation("PaymentsAsBuyer")
+  messagesSent     Message[] @relation("MessagesSent")
+  messagesReceived Message[] @relation("MessagesReceived")
+  identityCardUrl   String?      // URL/photo de la carte d'identité
+  isVerified        Boolean  @default(false)   // Validé par l'admin ?
+  isRejected        Boolean  @default(false)
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Ad {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  images      String[]   
+  status      AdStatus    @default(ACTIVE)
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  city        String
+  location    String?    
+  latitude    Float?
+  longitude   Float?
+  views       Int         @default(0)
+  favorites   Favorite[]
+  messages    Message[]
+  payments    Payment[] 
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+
+enum AdStatus {
+  ACTIVE
+  PAUSED
+  SOLD
+  DELETED
+}
+
+
+model Category {
+  id          String      @id @default(uuid())
+  name        String
+  parent      Category?   @relation("CategoryParent", fields: [parentId], references: [id])
+  parentId    String?
+  children    Category[]  @relation("CategoryParent")
+  ads         Ad[]
+}
+
+
+model Favorite {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  ad        Ad       @relation(fields: [adId], references: [id])
+  adId      String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, adId])
+}
+
+
+model Message {
+  id        String   @id @default(uuid())
+  ad        Ad?      @relation(fields: [adId], references: [id])
+  adId      String?
+  sender    User     @relation("MessagesSent", fields: [senderId], references: [id])
+  senderId  String
+  receiver  User     @relation("MessagesReceived", fields: [receiverId], references: [id])
+  receiverId String
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  content   String
+  link      String?  
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+
+model Payment {
+  id          String   @id @default(uuid())
+  buyer       User     @relation("PaymentsAsBuyer", fields: [buyerId], references: [id])
+  buyerId     String
+  ad          Ad       @relation(fields: [adId], references: [id])
+  adId        String
+  amount      Float
+  status      PaymentStatus @default(PENDING)
+  paymentIntentId String? 
+  createdAt   DateTime  @default(now())
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
