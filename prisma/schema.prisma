@@ -39,7 +39,7 @@ model Ad {
   price       Float
   images      String[]   
   status      AdStatus    @default(ACTIVE)
-  user        User        @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   category    Category    @relation(fields: [categoryId], references: [id])
   categoryId  String

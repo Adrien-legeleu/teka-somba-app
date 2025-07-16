@@ -1,67 +1,22 @@
-'use client';
-import { useEffect, useState } from 'react';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { redirect } from 'next/navigation';
+import AdminClientSide from '../components/admin/AdminClientSite';
 
-export default function AdminPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [msg, setMsg] = useState<string | null>(null);
+export default async function AdminPage() {
+  const cookieStore = await cookies(); // ⚠️ IMPORTANT : await ici
+  const token = cookieStore.get('token')?.value;
+  if (!token) redirect('/login');
 
-  useEffect(() => {
-    fetch('/api/admin/users')
-      .then((res) => res.json())
-      .then(setUsers);
-  }, []);
-
-  async function handleAction(id: string, action: string) {
-    const res = await fetch('/api/admin/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: id, action }),
-    });
-    if (res.ok) {
-      setUsers(users.filter((u) => u.id !== id));
-      setMsg(action === 'approve' ? 'Validé !' : 'Refusé !');
-    }
+  let isAdmin = false;
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!);
+    isAdmin = !!(payload as any).isAdmin;
+  } catch {
+    redirect('/login');
   }
 
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl mb-4">Interface Admin</h1>
-      {users.length === 0 ? (
-        <p>Aucun compte à valider.</p>
-      ) : (
-        <ul>
-          {users.map((u) => (
-            <li key={u.id} className="mb-3 flex items-center gap-4">
-              <span>
-                {u.name} ({u.email})
-              </span>
-              {u.identityCardUrl && (
-                <a
-                  href={u.identityCardUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  Carte d'identité
-                </a>
-              )}
-              <button
-                onClick={() => handleAction(u.id, 'approve')}
-                className="bg-green-500 text-white px-3 py-1 rounded"
-              >
-                Valider
-              </button>
-              <button
-                onClick={() => handleAction(u.id, 'reject')}
-                className="bg-red-500 text-white px-3 py-1 rounded"
-              >
-                Refuser
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {msg && <div className="mt-4">{msg}</div>}
-    </div>
-  );
+  if (!isAdmin) redirect('/');
+
+  return <AdminClientSide />;
 }
