@@ -1,5 +1,15 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+  CommandEmpty,
+} from '@/components/ui/command';
 
 type LocationPickerProps = {
   location: string;
@@ -27,41 +37,54 @@ export default function LocationPicker({
 
   async function handleSearch(q: string) {
     setSearch(q);
-    if (!q) return setSuggestions([]);
-    const res = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&autocomplete=true&language=fr`
-    );
-    const data = await res.json();
-    setSuggestions(data.features || []);
+    if (!q.trim()) return setSuggestions([]);
+    try {
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          q
+        )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&autocomplete=true&language=fr`
+      );
+      const data = await res.json();
+      setSuggestions(data.features || []);
+    } catch (error) {
+      console.error('Erreur de géocodage:', error);
+      setSuggestions([]);
+    }
   }
 
   return (
-    <div>
-      <label>Localisation</label>
-      <input
-        className="input-class"
-        placeholder="Adresse, ville…"
+    <div className="space-y-2">
+      <Label htmlFor="location">Localisation</Label>
+      <Input
+        id="location"
+        placeholder="Adresse, ville, quartier…"
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
+        className="rounded-2xl"
       />
       {suggestions.length > 0 && (
-        <ul className="border bg-white max-h-48 overflow-auto">
-          {suggestions.map((place) => (
-            <li
-              key={place.id}
-              className="cursor-pointer px-2 py-1 hover:bg-gray-100"
-              onClick={() => {
-                setLocation(place.place_name);
-                setLat(place.center[1]);
-                setLng(place.center[0]);
-                setSearch(place.place_name);
-                setSuggestions([]);
-              }}
-            >
-              {place.place_name}
-            </li>
-          ))}
-        </ul>
+        <Command className="rounded-xl border shadow-md max-h-60 overflow-auto bg-white mt-1 animate-in fade-in slide-in-from-top-2">
+          <CommandList>
+            <CommandEmpty>Aucun résultat trouvé</CommandEmpty>
+            <CommandGroup heading="Suggestions">
+              {suggestions.map((place) => (
+                <CommandItem
+                  key={place.id}
+                  className="cursor-pointer text-sm px-2 py-1"
+                  onSelect={() => {
+                    setLocation(place.place_name);
+                    setLat(place.center[1]);
+                    setLng(place.center[0]);
+                    setSearch(place.place_name);
+                    setSuggestions([]);
+                  }}
+                >
+                  {place.place_name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
       )}
     </div>
   );

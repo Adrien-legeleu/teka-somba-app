@@ -1,4 +1,5 @@
 'use client';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -149,8 +150,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   };
 
   // Pour preview
+  // Pour preview et logique bouton
   const watched = watch();
-
+  const isFormValid =
+    watched.title.trim().length > 0 && categoryId !== null && images.length > 0;
   return (
     <FormProvider {...methods}>
       <form
@@ -158,7 +161,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         className="grid md:grid-cols-3 gap-8"
       >
         <div className="md:col-span-2 flex flex-col gap-6">
-          {/* 1. Catégorie */}
+          {/* 1. Étape Catégorie + Titre */}
           <CategoryPicker
             categories={categories}
             onSelect={(id) => {
@@ -167,51 +170,62 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
             }}
           />
 
-          {/* 2. Champs communs */}
           <Input
             {...methods.register('title')}
             placeholder="Titre de l'annonce"
           />
-          <Textarea
-            {...methods.register('description')}
-            placeholder="Description détaillée"
-            rows={5}
-          />
-          <Input
-            {...methods.register('price', { valueAsNumber: true })}
-            type="number"
-            placeholder="Prix (FCFA)"
-            min={0}
-          />
 
-          {/* 3. Champs dynamiques */}
-          {dynamicFields.length > 0 && (
-            <DynamicFieldsSection fields={dynamicFields} />
-          )}
-
-          {/* 4. Localisation */}
-          <LocationPicker
-            location={location}
-            setLocation={setLocation}
-            lat={lat}
-            setLat={setLat}
-            lng={lng}
-            setLng={setLng}
-          />
-
-          {/* 5. Upload images */}
-          <ImageUploader
-            onChange={(urls) => {
-              setImages(urls);
-              setValue('images', urls, { shouldValidate: true }); // <--- ici ! (update RHF + validation)
-            }}
-          />
-
-          <button type="submit" className="mt-4 w-full">
-            Créer l'annonce
-          </button>
+          <AnimatePresence>
+            {categoryId && (
+              <motion.div
+                key="rest-of-form"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="flex flex-col gap-6"
+              >
+                <Textarea
+                  {...methods.register('description')}
+                  placeholder="Description détaillée"
+                  rows={5}
+                />
+                <Input
+                  {...methods.register('price', { valueAsNumber: true })}
+                  type="number"
+                  placeholder="Prix (FCFA)"
+                  min={0}
+                />
+                {dynamicFields.length > 0 && (
+                  <DynamicFieldsSection fields={dynamicFields} />
+                )}
+                <LocationPicker
+                  location={location}
+                  setLocation={setLocation}
+                  lat={lat}
+                  setLat={setLat}
+                  lng={lng}
+                  setLng={setLng}
+                />
+                <ImageUploader
+                  onChange={(urls) => {
+                    setImages(urls);
+                    setValue('images', urls, { shouldValidate: true });
+                  }}
+                />
+                <Button
+                  type="submit"
+                  className="mt-4 w-full"
+                  disabled={!isFormValid}
+                >
+                  Créer l'annonce
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        {/* 6. Aperçu live */}
+
+        {/* Aperçu : toujours visible (si tu veux le cacher au début aussi, ajoute categoryId ici) */}
         <div className="md:col-span-1">
           <AdPreview
             ad={{
