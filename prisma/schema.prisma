@@ -3,10 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
-
 
 model User {
   id          String      @id @default(uuid())
@@ -16,6 +15,7 @@ model User {
   phone       String
   avatar      String? 
   city        String
+  age         Int? 
   isAdmin     Boolean     @default(false)
   notifications Notification[]
   favorites   Favorite[]
@@ -33,28 +33,33 @@ model User {
 }
 
 model Ad {
-  id          String      @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String
-  price       Float
-  images      String[]   
-  status      AdStatus    @default(ACTIVE)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  price       Int                                       // prix en centimes (si devise unique) ou Decimal pour plus de précision
+  location    String?                                   // Adresse ou ville (texte saisi ou fourni par Mapbox)
+  lat         Float?                                    // Latitude GPS
+  lng         Float?                                    // Longitude GPS
+  images      Json?                                     // Tableau JSON d'URLs des images (upload Vercel Blob)
+  createdAt   DateTime  @default(now())
   userId      String
-  category    Category    @relation(fields: [categoryId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
   categoryId  String
-  city        String
-  location    String?    
-  latitude    Float?
-  longitude   Float?
-  views       Int         @default(0)
-  favorites   Favorite[]
-  messages    Message[]
-  payments    Payment[] 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  category    Category  @relation("AdCategory", fields: [categoryId], references: [id])
+  fields      AdField[] 
+  favorites   Favorite[]            // <--- AJOUT
+  messages    Message[]             // <--- AJOUT
+  payments    Payment[]             // <--- AJOUT
 }
 
+model AdField {
+  id               String   @id @default(uuid())
+  adId             String
+  ad               Ad       @relation(fields: [adId], references: [id])
+  categoryFieldId  String
+  categoryField    CategoryField @relation(fields: [categoryFieldId], references: [id])
+  value            Json
+}
 
 enum AdStatus {
   ACTIVE
@@ -63,16 +68,26 @@ enum AdStatus {
   DELETED
 }
 
-
 model Category {
-  id          String      @id @default(uuid())
-  name        String
-  parent      Category?   @relation("CategoryParent", fields: [parentId], references: [id])
-  parentId    String?
-  children    Category[]  @relation("CategoryParent")
-  ads         Ad[]
+  id        String      @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    Category?   @relation("CategoryParent", fields: [parentId], references: [id])
+  children  Category[]  @relation("CategoryParent")
+  fields    CategoryField[]
+  ads       Ad[]        @relation("AdCategory")
 }
 
+model CategoryField {
+  id          String    @id @default(uuid())
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  name        String
+  type        String
+  required    Boolean   @default(false)
+  options     Json?
+  adFields    AdField[]          // <--- AJOUT : Relation inverse
+}
 
 model Favorite {
   id        String   @id @default(uuid())
@@ -84,7 +99,6 @@ model Favorite {
 
   @@unique([userId, adId])
 }
-
 
 model Message {
   id        String   @id @default(uuid())
@@ -99,7 +113,6 @@ model Message {
   createdAt DateTime @default(now())
 }
 
-
 model Notification {
   id        String   @id @default(uuid())
   user      User     @relation(fields: [userId], references: [id])
@@ -109,7 +122,6 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
-
 
 model Payment {
   id          String   @id @default(uuid())
@@ -129,4 +141,3 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
-
