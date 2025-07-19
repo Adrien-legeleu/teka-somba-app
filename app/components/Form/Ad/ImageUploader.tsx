@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -8,12 +8,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ImageUploader({
   onChange,
+  defaultImages = [],
 }: {
   onChange: (urls: string[]) => void;
+  defaultImages?: string[];
 }) {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>(defaultImages);
   const [loadingIndexes, setLoadingIndexes] = useState<number[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    setImages(defaultImages || []);
+  }, [defaultImages]);
 
   async function uploadFiles(files: FileList | File[]) {
     const newImages: string[] = [];

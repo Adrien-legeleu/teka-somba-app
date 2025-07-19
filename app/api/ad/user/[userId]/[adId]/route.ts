@@ -1,9 +1,6 @@
+import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-// GET : Voir UNE annonce (private pour owner)
 export async function GET(
   request: Request,
   { params }: { params: { userId: string; adId: string } }

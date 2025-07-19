@@ -15,15 +15,23 @@ type Category = {
 
 export default function CategoryPicker({
   categories,
+  categoryId,
+  setCategoryId,
   onSelect,
 }: {
   categories: Category[];
+  categoryId?: string;
+  setCategoryId?: (id: string) => void;
   onSelect: (id: string) => void;
 }) {
   // Racines
   const rootCats = categories.filter((cat) => !cat.parentId);
   const [parent, setParent] = useState<string | null>(null);
   const [sub, setSub] = useState<string | null>(null);
+  function handleChange(id: string) {
+    onSelect(id);
+    setCategoryId?.(id); // optionnel
+  }
 
   // Sous-catégories du parent sélectionné
   const subCats = parent

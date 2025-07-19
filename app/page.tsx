@@ -3,29 +3,36 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select';
 import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
+import { CityPicker } from './components/Filter/cityPicker';
+import { CategoryPicker } from './components/Filter/Categorypicker';
+import { SearchBar } from './components/Filter/SearchBar';
 
 export default function Home() {
   const router = useRouter();
   const [ads, setAds] = useState<any[]>([]);
-  const [categoryId, setCategoryId] = useState('');
-  const [city, setCity] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [categoryId, setCategoryId] = useState('');
+  const [subCategoryId, setSubCategoryId] = useState('');
+  const [city, setCity] = useState('');
+  const [search, setSearch] = useState('');
 
+  // Charge les catégories une seule fois au début
   useEffect(() => {
     fetchCategories();
-    fetchAds();
   }, []);
+  useEffect(() => {
+    const timeout = setTimeout(fetchAds, 300); // debounce
+    return () => clearTimeout(timeout);
+  }, [search, categoryId, subCategoryId, city]);
+
+  // Rafraîchis les annonces à chaque changement de filtre
+  useEffect(() => {
+    fetchAds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId, subCategoryId, city]);
 
   async function fetchCategories() {
     const res = await fetch('/api/categories');
@@ -36,8 +43,11 @@ export default function Home() {
   async function fetchAds() {
     setLoading(true);
     const params = new URLSearchParams();
-    if (categoryId) params.append('categoryId', categoryId);
+    if (subCategoryId)
+      params.append('categoryId', subCategoryId); // priorité sous-cat
+    else if (categoryId) params.append('categoryId', categoryId);
     if (city) params.append('city', city);
+    if (search) params.append('q', search);
     const res = await fetch('/api/ad?' + params.toString());
     const data = await res.json();
     setAds(data);
@@ -60,28 +70,15 @@ export default function Home() {
 
       {/* Filtres */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Input
-          placeholder="Ville (ex: Paris)"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
+        <CityPicker city={city} setCity={setCity} />
+        <CategoryPicker
+          categories={categories}
+          categoryId={categoryId}
+          setCategoryId={setCategoryId}
+          subCategoryId={subCategoryId}
+          setSubCategoryId={setSubCategoryId}
         />
-
-        <Select value={categoryId} onValueChange={(val) => setCategoryId(val)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Catégorie" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Button onClick={fetchAds} className="w-full">
-          Filtrer
-        </Button>
+        <SearchBar search={search} setSearch={setSearch} />
       </div>
 
       {/* Résultats */}

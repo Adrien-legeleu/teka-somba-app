@@ -4,6 +4,7 @@ import { buildDynamicSchema } from '@/lib/zodDynamic';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import Fuse from 'fuse.js';
 
 export async function GET(request: Request) {
   try {
@@ -11,11 +12,24 @@ export async function GET(request: Request) {
     const categoryId = searchParams.get('categoryId');
     const city = searchParams.get('city');
     const userId = searchParams.get('userId');
+    const query = searchParams.get('q')?.trim().toLowerCase();
+
+    let categoryIds: string[] = [];
+    if (categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId },
+        include: { children: true },
+      });
+      categoryIds = [
+        categoryId,
+        ...(category?.children.map((c) => c.id) || []),
+      ];
+    }
 
     const where: any = {};
-    if (categoryId) where.categoryId = categoryId;
-    if (city) where.city = city;
+    if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
     if (userId) where.userId = userId;
+    if (city) where.location = { contains: city, mode: 'insensitive' };
 
     const ads = await prisma.ad.findMany({
       where,
@@ -25,6 +39,20 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     });
+    if (query) {
+      const fuse = new Fuse(ads, {
+        keys: [
+          'title',
+          'description',
+          'location',
+          'category.name',
+          'user.name',
+        ],
+        threshold: 0.4, // tolérance à l’imprécision
+      });
+      const result = fuse.search(query).map((r: any) => r.item);
+      return NextResponse.json(result);
+    }
     return NextResponse.json(ads);
   } catch (error) {
     return NextResponse.json(
