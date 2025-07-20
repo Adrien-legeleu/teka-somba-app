@@ -9,11 +9,20 @@ export async function POST(req: NextRequest) {
   const email = formData.get('email')?.toString();
   const password = formData.get('password')?.toString();
   const name = formData.get('name')?.toString();
+  const prenom = formData.get('prenom')?.toString();
   const phone = formData.get('phone')?.toString();
   const city = formData.get('city')?.toString();
   const identityFile = formData.get('identityCard') as File;
 
-  if (!email || !password || !identityFile || !phone || !city) {
+  if (
+    !email ||
+    !password ||
+    !identityFile ||
+    !phone ||
+    !city ||
+    !prenom ||
+    !name
+  ) {
     return NextResponse.json(
       { error: 'Champs requis manquants.' },
       { status: 400 }
@@ -35,6 +44,7 @@ export async function POST(req: NextRequest) {
       email,
       password: hash,
       name,
+      prenom,
       phone,
       city,
       identityCardUrl,

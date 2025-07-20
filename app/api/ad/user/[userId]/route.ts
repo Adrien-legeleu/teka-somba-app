@@ -10,6 +10,7 @@ export async function GET(
     const q = searchParams.get('q');
     const categoryId = searchParams.get('categoryId');
     const city = searchParams.get('city');
+    const isDon = searchParams.get('isDon') === 'true';
 
     // Construction dynamique du filtre
     const filters: any = { userId: params.userId };
@@ -23,6 +24,9 @@ export async function GET(
         { location: { contains: q, mode: 'insensitive' } },
         // Tu peux ajouter d'autres champs ici
       ];
+      if (isDon) {
+        filters.isDon = true; // Filtre pour les dons
+      }
     }
 
     const ads = await prisma.ad.findMany({

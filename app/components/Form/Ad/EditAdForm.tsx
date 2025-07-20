@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import CategoryPicker from './CategoryPicker';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 type Category = {
   id: string;
@@ -78,6 +80,7 @@ export default function EditAdForm({
     lng: z.number().nullable(),
     categoryId: z.string(),
     dynamicFields: z.object({}).catchall(z.unknown()),
+    isDon: z.boolean().optional(),
   });
 
   const methods = useForm({
@@ -90,12 +93,20 @@ export default function EditAdForm({
       location: ad.location || '',
       lat: ad.lat || null,
       lng: ad.lng || null,
+      isDon: ad.isDon || false,
       categoryId: ad.category?.id || '',
       dynamicFields: ad.dynamicFields || {},
     },
   });
 
   const { handleSubmit, setValue, watch, formState } = methods;
+  // Synchronise dès que l'annonce est chargée et que les catégories sont dispo
+  useEffect(() => {
+    if (ad.category?.id && categories.length > 0) {
+      setValue('categoryId', ad.category.id); // RHF
+      setCategoryId(ad.category.id); // local
+    }
+  }, [ad.category?.id, categories, setValue]);
 
   // Submit PATCH
   const onSubmit = async (data: any) => {
@@ -120,6 +131,7 @@ export default function EditAdForm({
           ...data,
           images,
           location,
+
           lat,
           lng,
           categoryId,
@@ -129,7 +141,7 @@ export default function EditAdForm({
 
       if (res.ok) {
         toast.success('Annonce modifiée !');
-        window.location.href = '/dashboard/mes-annonces';
+        window.location.href = '/dashboard/annonces';
       } else {
         const error = await res.json();
         toast.error(error.error || 'Erreur lors de la modification');
@@ -140,6 +152,15 @@ export default function EditAdForm({
   };
 
   const watched = watch();
+  useEffect(() => {
+    if (methods.watch('isDon')) {
+      methods.setValue('price', 0, { shouldValidate: true });
+    } else if (methods.watch('price') === 0) {
+      methods.setValue('price', NaN, { shouldValidate: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [methods.watch('isDon')]);
+
   const isFormValid =
     watched.title?.trim().length > 0 &&
     categoryId !== null &&
@@ -166,6 +187,10 @@ export default function EditAdForm({
             {...methods.register('title')}
             placeholder="Titre de l'annonce"
           />
+          <div className="flex items-center space-x-2">
+            <Switch id="don" {...methods.register('isDon')} />
+            <Label htmlFor="don">Mettre en don (gratuit)</Label>
+          </div>
 
           <AnimatePresence>
             {categoryId && (
@@ -187,6 +212,7 @@ export default function EditAdForm({
                   type="number"
                   placeholder="Prix (FCFA)"
                   min={0}
+                  disabled={methods.watch('isDon')}
                 />
                 {dynamicFields.length > 0 && (
                   <DynamicFieldsSection fields={dynamicFields} />

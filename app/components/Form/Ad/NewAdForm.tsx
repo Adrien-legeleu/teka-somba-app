@@ -5,6 +5,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
+import { Switch } from '@/components/ui/switch';
 
 import CategoryPicker from './CategoryPicker';
 import DynamicFieldsSection from './DynamicFieldsSection';
@@ -16,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { Label } from '@/components/ui/label';
 
 type Category = {
   id: string;
@@ -80,6 +82,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     location: z.string(),
     lat: z.number().nullable(),
     lng: z.number().nullable(),
+    isDon: z.boolean().optional(),
     categoryId: z.string(),
     dynamicFields: z.object({}).catchall(z.unknown()),
   });
@@ -88,6 +91,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     resolver: zodResolver(zodBase),
     defaultValues: {
       title: '',
+      isDon: false,
       description: '',
       price: undefined,
       images: [],
@@ -134,7 +138,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
           dynamicFields: filteredDynamicFields, // <= ici la correction !
         }),
       });
-      // ... reste du code
 
       if (res.ok) {
         const { adId } = await res.json();
@@ -152,6 +155,17 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   // Pour preview
   // Pour preview et logique bouton
   const watched = watch();
+  const isDon = watched.isDon;
+
+  // À chaque changement de "isDon", force le champ price à 0 si don
+  useEffect(() => {
+    if (isDon) {
+      setValue('price', 0, { shouldValidate: true });
+    } else if (watched.price === 0) {
+      setValue('price', NaN, { shouldValidate: false }); // on laisse vide si décoché
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDon]);
   const isFormValid =
     watched.title.trim().length > 0 && categoryId !== null && images.length > 0;
   return (
@@ -174,6 +188,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
             {...methods.register('title')}
             placeholder="Titre de l'annonce"
           />
+          <div className="flex items-center space-x-2">
+            <Switch id="don" {...methods.register('isDon')} />
+            <Label htmlFor="don">Mettre en don (gratuit)</Label>
+          </div>
 
           <AnimatePresence>
             {categoryId && (
@@ -195,7 +213,9 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   type="number"
                   placeholder="Prix (FCFA)"
                   min={0}
+                  disabled={isDon}
                 />
+
                 {dynamicFields.length > 0 && (
                   <DynamicFieldsSection fields={dynamicFields} />
                 )}

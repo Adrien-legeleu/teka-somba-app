@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Select,
   SelectTrigger,
@@ -26,12 +26,55 @@ export default function CategoryPicker({
 }) {
   // Racines
   const rootCats = categories.filter((cat) => !cat.parentId);
-  const [parent, setParent] = useState<string | null>(null);
-  const [sub, setSub] = useState<string | null>(null);
-  function handleChange(id: string) {
-    onSelect(id);
-    setCategoryId?.(id); // optionnel
+
+  function findParentAndSub(categoryId: string | undefined): {
+    parent: string;
+    sub: string;
+  } {
+    if (!categoryId) return { parent: '', sub: '' };
+
+    let parent = '';
+    let sub = '';
+
+    function search(categories: Category[]) {
+      for (const cat of categories) {
+        if (cat.id === categoryId) {
+          if (cat.parentId) {
+            parent = cat.parentId;
+            sub = cat.id;
+          } else {
+            parent = cat.id;
+            sub = '';
+          }
+          return true;
+        }
+
+        if (cat.children.length > 0) {
+          if (search(cat.children)) return true;
+        }
+      }
+      return false;
+    }
+
+    search(categories);
+    return { parent, sub };
   }
+
+  const { parent: initialParent, sub: initialSub } =
+    findParentAndSub(categoryId);
+
+  const [parent, setParent] = useState<string>(initialParent);
+  const [sub, setSub] = useState<string>(initialSub);
+
+  // Pour suivre les changements venant du parent (utile pour édition/préremplissage)
+  useEffect(() => {
+    console.log(categoryId);
+    const { parent: newParent, sub: newSub } = findParentAndSub(categoryId);
+    console.log(newParent, newSub);
+
+    setParent(newParent);
+    setSub(newSub);
+  }, [categoryId, categories]);
 
   // Sous-catégories du parent sélectionné
   const subCats = parent
@@ -44,10 +87,10 @@ export default function CategoryPicker({
       <Select
         onValueChange={(id) => {
           setParent(id);
-          setSub(null);
-          onSelect(''); // Reset la sélection, car la feuille n'est pas encore choisie
+          setSub('');
+          onSelect(''); // Reset, rien n'est sélectionné tant que pas de sous-catégorie
         }}
-        value={parent ?? ''}
+        value={parent || ''}
       >
         <SelectTrigger className="w-[180px]">
           {parent ? categories.find((c) => c.id === parent)?.name : 'Catégorie'}
@@ -65,9 +108,10 @@ export default function CategoryPicker({
         <Select
           onValueChange={(id) => {
             setSub(id);
-            onSelect(id); // Là, c'est la vraie catégorie sélectionnée !
+            onSelect(id);
+            setCategoryId?.(id);
           }}
-          value={sub ?? ''}
+          value={sub || ''}
         >
           <SelectTrigger className="w-[180px]">
             {sub ? subCats.find((c) => c.id === sub)?.name : 'Sous-catégorie'}

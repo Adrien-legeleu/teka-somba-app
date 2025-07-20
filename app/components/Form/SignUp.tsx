@@ -87,6 +87,10 @@ export default function SignUp() {
                 setMsg('Inscription envoyée ! Vérification admin requise.');
                 formRef.current?.reset();
                 setBirthdate('');
+                setTimeout(() => {
+                  window.location.href = '/login';
+                }, 2000);
+                return;
               } else {
                 const json = await res.json();
                 setMsg(json.error || 'Erreur lors de l’inscription.');
@@ -95,35 +99,42 @@ export default function SignUp() {
           >
             <div className="grid grid-cols-2 gap-4">
               <Input
+                name="prenom"
+                placeholder="Prénom"
+                required
+                disabled={loading}
+              />
+              <Input
                 name="name"
                 placeholder="Nom"
                 required
                 disabled={loading}
               />
-              <Input
-                name="email"
-                type="email"
-                placeholder="Email"
-                required
-                disabled={loading}
-              />
-              <Input
-                name="password"
-                type="password"
-                placeholder="Mot de passe"
-                required
-                disabled={loading}
-              />
+
               <Input
                 name="phone"
                 placeholder="Téléphone"
                 required
                 disabled={loading}
               />
+              <Input
+                name="city"
+                placeholder="Ville"
+                required
+                disabled={loading}
+              />
             </div>
             <Input
-              name="city"
-              placeholder="Ville"
+              name="email"
+              type="email"
+              placeholder="Email"
+              required
+              disabled={loading}
+            />
+            <Input
+              name="password"
+              type="password"
+              placeholder="Mot de passe"
               required
               disabled={loading}
             />

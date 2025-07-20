@@ -37,6 +37,7 @@ export default async function DashboardPage() {
       name: true,
       email: true,
       city: true,
+      prenom: true,
       avatar: true,
       age: true,
       isAdmin: true,
@@ -63,7 +64,9 @@ export default async function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-xl">{user.name}</span>
+                <span className="font-semibold text-xl">
+                  {user.prenom} {user.name}
+                </span>
                 {user.isAdmin && (
                   <Link
                     href={'/admin'}

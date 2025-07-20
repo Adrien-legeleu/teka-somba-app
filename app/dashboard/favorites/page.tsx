@@ -1,13 +1,10 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
-import EditAdFormClient from '@/app/components/Form/Ad/EditAdFormClient';
+import UserAdsDashboard from '@/app/components/Dashboard/UserAdsDashboard';
+import FavoriteDashboard from '@/app/components/Favorite/FavoriteDashboard';
 
-export default async function EditAdPage({
-  params,
-}: {
-  params: { adId: string };
-}) {
+export default async function MesFavoritesPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
   if (!token) redirect('/login');
@@ -22,5 +19,5 @@ export default async function EditAdPage({
   const userId = (payload as any).userId;
   if (!userId) redirect('/login');
 
-  return <EditAdFormClient userId={userId} adId={params.adId} />;
+  return <FavoriteDashboard userId={userId} />;
 }

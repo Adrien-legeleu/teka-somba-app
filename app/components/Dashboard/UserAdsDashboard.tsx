@@ -9,6 +9,7 @@ import { Edit, Trash2, PlusCircle } from 'lucide-react';
 import { CityPicker } from '../Filter/cityPicker';
 import { CategoryPicker } from '../Filter/Categorypicker';
 import { SearchBar } from '../Filter/SearchBar';
+import { DonSwitch } from '../Filter/DonSwitch';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   const [subCategoryId, setSubCategoryId] = useState('');
   const [city, setCity] = useState('');
   const [search, setSearch] = useState('');
+  const [isDon, setIsDon] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -50,7 +52,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
     else if (categoryId) params.append('categoryId', categoryId);
     if (city) params.append('city', city);
     if (search) params.append('q', search);
-
+    if (isDon) params.append('isDon', 'true');
     const res = await fetch(`/api/ad/user/${userId}?${params.toString()}`);
     const data = await res.json();
     setAds(data);
@@ -96,6 +98,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
           setSubCategoryId={setSubCategoryId}
         />
         <SearchBar search={search} setSearch={setSearch} />
+        <DonSwitch isDon={isDon} setIsDon={setIsDon} /> {/* Ajout */}
       </div>
 
       {/* Résultats */}

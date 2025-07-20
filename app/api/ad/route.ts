@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     const city = searchParams.get('city');
     const userId = searchParams.get('userId');
     const query = searchParams.get('q')?.trim().toLowerCase();
+    const isDon = searchParams.get('isDon') === 'true';
 
     let categoryIds: string[] = [];
     if (categoryId) {
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
 
     const where: any = {};
     if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
-    if (userId) where.userId = userId;
+    if (isDon) where.isDon = true;
     if (city) where.location = { contains: city, mode: 'insensitive' };
 
     const ads = await prisma.ad.findMany({
@@ -36,11 +37,21 @@ export async function GET(request: Request) {
       include: {
         user: { select: { id: true, name: true, avatar: true } },
         category: { select: { id: true, name: true } },
+        favorites: userId ? { where: { userId } } : false, // charge le favori pour l'user si userId fourni
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Ajoute le champ isFavorite à chaque ad
+    const adsWithFavorite = ads.map((ad: any) => ({
+      ...ad,
+      isFavorite: userId ? ad.favorites?.length > 0 : false,
+    }));
+
+    // Recherche fulltext avec Fuse si besoin
+    let filtered = adsWithFavorite;
     if (query) {
-      const fuse = new Fuse(ads, {
+      const fuse = new Fuse(filtered, {
         keys: [
           'title',
           'description',
@@ -48,12 +59,12 @@ export async function GET(request: Request) {
           'category.name',
           'user.name',
         ],
-        threshold: 0.4, // tolérance à l’imprécision
+        threshold: 0.4,
       });
-      const result = fuse.search(query).map((r: any) => r.item);
-      return NextResponse.json(result);
+      filtered = fuse.search(query).map((r: any) => r.item);
     }
-    return NextResponse.json(ads);
+
+    return NextResponse.json(filtered);
   } catch (error) {
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des annonces' },
@@ -103,6 +114,7 @@ export async function POST(req: NextRequest) {
     location: z.string().min(1),
     lat: z.number().optional(),
     lng: z.number().optional(),
+    isDon: z.boolean().optional(),
     images: z.array(z.string().url()).min(1).max(10),
     categoryId: z.string().uuid(),
     dynamicFields: z.object({}).catchall(z.unknown()),
@@ -158,6 +170,7 @@ export async function POST(req: NextRequest) {
         lat: parsed.lat,
         lng: parsed.lng,
         images: parsed.images,
+        isDon: parsed.isDon ?? false,
         userId: userId,
         categoryId: parsed.categoryId,
       },

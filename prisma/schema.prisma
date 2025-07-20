@@ -12,7 +12,8 @@ model User {
   id          String      @id @default(uuid())
   email       String      @unique
   password    String
-  name        String?
+  name        String
+  prenom        String
   phone       String
   avatar      String? 
   city        String
@@ -41,7 +42,8 @@ model Ad {
   location    String?                                   // Adresse ou ville (texte saisi ou fourni par Mapbox)
   lat         Float?                                    // Latitude GPS
   lng         Float?                                    // Longitude GPS
-  images      Json?                                     // Tableau JSON d'URLs des images (upload Vercel Blob)
+  images      Json? 
+  isDon  Boolean @default(false)
   createdAt   DateTime  @default(now())
   userId      String
   user        User      @relation(fields: [userId], references: [id])
