@@ -14,9 +14,9 @@ export default function Page() {
   }, []);
 
   return (
-    <AuroraBackground>
+    <AuroraBackground className="min-h-screen flex items-center justify-start">
       <div className="p-14 max-w-7xl w-full  z-10 px-2">
-        <div className="w-full bg-white/80 p-10 shadow-2xl rounded-[3rem] backdrop-blur-xl">
+        <div className="w-full bg-white/90 p-10 shadow-2xl rounded-[3rem] backdrop-blur-xl">
           {categories.length > 0 && <NewAdForm categories={categories} />}
         </div>
       </div>

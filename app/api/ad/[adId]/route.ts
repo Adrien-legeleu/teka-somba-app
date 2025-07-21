@@ -10,7 +10,7 @@ export async function GET(
       where: { id: params.adId },
       include: {
         category: { select: { id: true, name: true } },
-        user: { select: { id: true, name: true, avatar: true } },
+        user: { select: { id: true, name: true, prenom: true, avatar: true } },
       },
     });
     if (!ad) {

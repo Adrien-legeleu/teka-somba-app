@@ -48,7 +48,7 @@ export function CityPicker({
         placeholder="Ville (ex: Paris)"
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
-        className="rounded-2xl"
+        className="rounded-3xl border shadow-sm "
       />
       {suggestions.length > 0 && (
         <Command className="rounded-xl border shadow-md max-h-60 overflow-auto bg-white mt-1 animate-in fade-in slide-in-from-top-2">

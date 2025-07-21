@@ -44,13 +44,14 @@ export function FavoriteButton({
 
   return (
     <Button
-      onClick={handleToggleFavorite}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleToggleFavorite();
+      }}
       disabled={loading}
-      variant={isFavorite ? 'destructive' : 'default'}
-      className="flex items-center gap-2"
+      className="flex absolute top-2 right-2 bg-white shadow-lg border items-center gap-2"
     >
       {isFavorite ? <HeartOff /> : <Heart />}
-      {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
     </Button>
   );
 }

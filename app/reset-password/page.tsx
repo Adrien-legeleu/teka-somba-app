@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
           initial={{ opacity: 0, scale: 0.97, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="backdrop-blur-xl bg-white/50 border border-[#ffbf00]/20 rounded-[3rem] shadow-2xl shadow-[#00000010] px-8 py-16 max-w-2xl w-full flex flex-col items-center gap-7"
+          className="backdrop-blur-xl bg-white/90 border border-[#ffbf00]/20 rounded-[3rem] shadow-2xl shadow-[#00000010] px-8 py-16 max-w-2xl w-full flex flex-col items-center gap-7"
         >
           <motion.h1
             initial={{ opacity: 0, y: -30 }}

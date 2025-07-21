@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { X, Loader2 } from 'lucide-react';
+
+type ImageItem = {
+  url: string; // preview locale OU url cloud
+  isUploading: boolean; // true si upload en cours
+};
 
 export default function ImageUploader({
   onChange,
@@ -13,34 +17,55 @@ export default function ImageUploader({
   onChange: (urls: string[]) => void;
   defaultImages?: string[];
 }) {
-  const [images, setImages] = useState<string[]>(defaultImages);
-  const [loadingIndexes, setLoadingIndexes] = useState<number[]>([]);
+  const [images, setImages] = useState<ImageItem[]>(
+    (defaultImages || []).map((url) => ({ url, isUploading: false }))
+  );
   const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    setImages(defaultImages || []);
-  }, [defaultImages]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  // Pour garder la dernière valeur de images pendant l’async
+  const imagesRef = useRef(images);
+  imagesRef.current = images;
 
   async function uploadFiles(files: FileList | File[]) {
-    const newImages: string[] = [];
-    const uploadingIndexes: number[] = [];
+    const newItems: ImageItem[] = Array.from(files).map((file) => ({
+      url: URL.createObjectURL(file), // preview instantanée
+      isUploading: true,
+    }));
 
-    for (const file of files) {
-      const currentIndex = images.length + newImages.length;
-      uploadingIndexes.push(currentIndex);
-      setLoadingIndexes((prev) => [...prev, currentIndex]);
+    // Ajoute preview instantanée
+    setImages((prev) => {
+      const all = [...prev, ...newItems];
+      imagesRef.current = all;
+      return all;
+    });
 
+    // Pour chaque fichier, upload en parallèle et remplace la preview par l’url cloud
+    Array.from(files).forEach(async (file, i) => {
+      const thisPreviewUrl = newItems[i].url;
       const form = new FormData();
       form.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: form });
-      const { url } = await res.json();
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: form });
+        const { url: uploadedUrl } = await res.json();
 
-      newImages.push(url);
-      setLoadingIndexes((prev) => prev.filter((i) => i !== currentIndex));
-    }
-
-    const updated = [...images, ...newImages];
-    setImages(updated);
-    onChange(updated);
+        setImages((prev) => {
+          const idx = prev.findIndex(
+            (img) => img.url === thisPreviewUrl && img.isUploading
+          );
+          if (idx === -1) return prev;
+          const updated = [...prev];
+          updated[idx] = { url: uploadedUrl, isUploading: false };
+          imagesRef.current = updated;
+          // Notifie le parent dès que l’upload est fini (ne remonte QUE les url uploadées)
+          onChange(updated.filter((i) => !i.isUploading).map((i) => i.url));
+          return updated;
+        });
+      } catch (e) {
+        // Si upload fail, retire la preview
+        setImages((prev) => prev.filter((img) => img.url !== thisPreviewUrl));
+      }
+    });
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -61,27 +86,27 @@ export default function ImageUploader({
     e.preventDefault();
   }
 
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   function handleDropImage(index: number) {
     if (draggedIndex === null || draggedIndex === index) return;
-    const updated = [...images];
+    const updated = [...imagesRef.current];
     const [moved] = updated.splice(draggedIndex, 1);
     updated.splice(index, 0, moved);
     setImages(updated);
-    onChange(updated);
+    imagesRef.current = updated;
+    onChange(updated.filter((i) => !i.isUploading).map((i) => i.url));
     setDraggedIndex(null);
   }
 
   function removeImage(index: number) {
-    const updated = images.filter((_, i) => i !== index);
+    const updated = imagesRef.current.filter((_, i) => i !== index);
     setImages(updated);
-    onChange(updated);
+    imagesRef.current = updated;
+    onChange(updated.filter((i) => !i.isUploading).map((i) => i.url));
   }
 
   return (
     <div className="space-y-2">
       <label className="block font-semibold">Images</label>
-
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -101,8 +126,9 @@ export default function ImageUploader({
         />
       </div>
 
+      {/* Miniatures */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-4">
-        {images.map((src, index) => (
+        {images.map((img, index) => (
           <div
             key={index}
             draggable
@@ -111,29 +137,31 @@ export default function ImageUploader({
             onDrop={() => handleDropImage(index)}
             className="relative group"
           >
-            {loadingIndexes.includes(index) ? (
-              <Skeleton className="w-full h-28 rounded-xl" />
+            {img.isUploading ? (
+              <div className="w-full h-28 flex items-center justify-center bg-gray-100 rounded-xl border border-gray-200">
+                <Loader2 className="animate-spin w-7 h-7 text-gray-400" />
+              </div>
             ) : (
               <img
-                src={src}
+                src={img.url}
                 alt={`img-${index}`}
                 className="w-full h-28 object-cover rounded-xl shadow-md border border-gray-200 transition-transform duration-200 group-hover:scale-105"
               />
             )}
 
-            {index === 0 && !loadingIndexes.includes(index) && (
+            {index === 0 && !img.isUploading && (
               <div className="absolute top-1 left-1 text-xs bg-primary text-white px-2 py-0.5 rounded-full shadow">
                 Couverture
               </div>
             )}
 
-            {!loadingIndexes.includes(index) && (
+            {!img.isUploading && (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => removeImage(index)}
-                className="absolute top-1 right-1 bg-white/80 hover:bg-red-500 hover:text-white transition rounded-full w-6 h-6 p-0"
+                className="absolute top-1 right-1 bg-white/90 hover:bg-red-500 hover:text-white transition rounded-full w-6 h-6 p-0"
               >
                 <X className="w-4 h-4" />
               </Button>

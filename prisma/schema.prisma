@@ -105,15 +105,19 @@ model Favorite {
 
 model Message {
   id        String   @id @default(uuid())
-  ad        Ad?      @relation(fields: [adId], references: [id])
-  adId      String?
+  ad        Ad     @relation(fields: [adId], references: [id])
+  adId      String
   sender    User     @relation("MessagesSent", fields: [senderId], references: [id])
   senderId  String
   receiver  User     @relation("MessagesReceived", fields: [receiverId], references: [id])
   receiverId String
   content   String
   isRead    Boolean  @default(false)
+  deletedBySender   Boolean  @default(false)
+  deletedByReceiver Boolean  @default(false)
   createdAt DateTime @default(now())
+    @@index([adId, senderId, receiverId])
+
 }
 
 model Notification {

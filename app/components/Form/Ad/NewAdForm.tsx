@@ -142,7 +142,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       if (res.ok) {
         const { adId } = await res.json();
         toast.success('Annonce créée !');
-        window.location.href = `/ads/${adId}`;
+        window.location.href = `/annonce/${adId}`;
       } else {
         const error = await res.json();
         toast.error(error.error || 'Erreur de création');
@@ -152,20 +152,24 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     }
   };
 
-  // Pour preview
-  // Pour preview et logique bouton
   const watched = watch();
-  const isDon = watched.isDon;
+  const isDon = !!watched.isDon; // Force booléen, car RHF peut envoyer undefined
 
-  // À chaque changement de "isDon", force le champ price à 0 si don
+  // Controlled Price input
+  const priceValue = isDon
+    ? 0
+    : watched.price === undefined
+      ? ''
+      : watched.price;
+
   useEffect(() => {
     if (isDon) {
       setValue('price', 0, { shouldValidate: true });
-    } else if (watched.price === 0) {
-      setValue('price', NaN, { shouldValidate: false }); // on laisse vide si décoché
+    } else {
+      setValue('price', NaN, { shouldValidate: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDon]);
+  }, [isDon, setValue]);
+
   const isFormValid =
     watched.title.trim().length > 0 && categoryId !== null && images.length > 0;
   return (
@@ -209,13 +213,20 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   rows={5}
                 />
                 <Input
-                  {...methods.register('price', { valueAsNumber: true })}
                   type="number"
-                  placeholder="Prix (FCFA)"
                   min={0}
+                  placeholder="Prix (FCFA)"
+                  value={priceValue}
+                  onChange={(e) =>
+                    setValue(
+                      'price',
+                      e.target.value === '' ? NaN : Number(e.target.value),
+                      { shouldValidate: true }
+                    )
+                  }
                   disabled={isDon}
+                  required
                 />
-
                 {dynamicFields.length > 0 && (
                   <DynamicFieldsSection fields={dynamicFields} />
                 )}

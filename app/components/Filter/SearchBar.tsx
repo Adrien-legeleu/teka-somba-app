@@ -14,7 +14,7 @@ export function SearchBar({
       placeholder="Ex: couteau pain palaiseau"
       value={search}
       onChange={(e) => setSearch(e.target.value)}
-      className="rounded-2xl"
+      className="rounded-3xl border shadow-sm "
     />
   );
 }

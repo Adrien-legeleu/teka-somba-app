@@ -74,9 +74,9 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
+    <div className="max-w-5xl w-full mx-auto px-4 py-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div className="bg-white/90 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl shadow-[#0000001c] flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <h1 className="text-3xl font-bold">Mes annonces</h1>
         <Button
           onClick={() => router.push('/dashboard/annonces/new')}
@@ -88,7 +88,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
       </div>
 
       {/* Filtres */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10 sm:grid-cols-3 gap-4 mb-4">
         <CityPicker city={city} setCity={setCity} />
         <CategoryPicker
           categories={categories}
@@ -101,17 +101,18 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         <DonSwitch isDon={isDon} setIsDon={setIsDon} /> {/* Ajout */}
       </div>
 
-      {/* Résultats */}
       {loading ? (
         <p>Chargement...</p>
       ) : ads.length === 0 ? (
-        <p>Aucune annonce publiée.</p>
+        <p className="bg-white/90 backdrop-blur-xl p-10 shadow-2xl shadow-[#0000001c]  rounded-[3rem]">
+          Aucune annonce publiée.
+        </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 rounded-[3rem] bg-white/90 shadow-2xl shadow-[#0000001c] backdrop-blur-xl p-10 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {ads.map((ad) => (
             <div
               key={ad.id}
-              className="relative bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition flex flex-col"
+              className="relative bg-white rounded-3xl  p-4 hover:shadow-lg transition flex flex-col"
             >
               <Link
                 href={`/annonce/${ad.id}`}
