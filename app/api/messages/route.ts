@@ -92,7 +92,6 @@ export async function GET(req: Request) {
   return NextResponse.json(messagesDecrypted);
 }
 
-// DELETE : supprimer une conversation (soft-delete pour ce user)
 export async function DELETE(req: Request) {
   const userId = await getUserIdFromRequest();
   if (!userId)
@@ -105,17 +104,26 @@ export async function DELETE(req: Request) {
       { status: 400 }
     );
 
-  // Soft-delete pour CE user uniquement
+  // Supprime uniquement côté sender
   await prisma.message.updateMany({
     where: {
       adId,
-      OR: [
-        { senderId: userId, receiverId: otherUserId },
-        { senderId: otherUserId, receiverId: userId },
-      ],
+      senderId: userId,
+      receiverId: otherUserId,
     },
     data: {
       deletedBySender: true,
+    },
+  });
+
+  // Supprime uniquement côté receiver
+  await prisma.message.updateMany({
+    where: {
+      adId,
+      senderId: otherUserId,
+      receiverId: userId,
+    },
+    data: {
       deletedByReceiver: true,
     },
   });
