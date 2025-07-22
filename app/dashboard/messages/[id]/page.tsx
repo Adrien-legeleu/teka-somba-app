@@ -7,7 +7,15 @@ import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
 
 export default function ConversationPage() {
-  const { id } = useParams(); // Format: [adId]_[otherUserId]
+  const params = useParams();
+  const rawId =
+    typeof params?.id === 'string'
+      ? params.id
+      : Array.isArray(params?.id)
+        ? params.id[0]
+        : '';
+  const [adId, otherUserId] = rawId.split('_');
+
   const [messages, setMessages] = useState<any[]>([]);
   const [ad, setAd] = useState<any>(null);
   const [otherUser, setOtherUser] = useState<any>(null);
@@ -17,7 +25,10 @@ export default function ConversationPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { me } = useMe();
 
-  const [adId, otherUserId] = id.split('_');
+  // Sécurité params
+  if (!adId || !otherUserId) {
+    return <div className="text-center p-4">Conversation invalide.</div>;
+  }
 
   // Charger la conversation
   useEffect(() => {
@@ -34,7 +45,8 @@ export default function ConversationPage() {
         }
       })
       .finally(() => setLoading(false));
-  }, [adId, otherUserId]);
+    // eslint-disable-next-line
+  }, [adId, otherUserId, me?.id]);
 
   // Scroll auto en bas
   useEffect(() => {
@@ -70,7 +82,7 @@ export default function ConversationPage() {
   return (
     <div className="max-w-2xl mx-auto py-8 flex flex-col h-[90vh]">
       <div className="flex items-center gap-3 mb-6">
-        {ad?.images?.[0] && (
+        {ad?.images?.[0] ? (
           <Image
             src={ad.images[0]}
             width={52}
@@ -78,6 +90,8 @@ export default function ConversationPage() {
             className="rounded-xl"
             alt="annonce"
           />
+        ) : (
+          <div className="w-[52px] h-[52px] bg-gray-200 rounded-xl" />
         )}
         <div>
           <div className="font-bold">{ad?.title}</div>

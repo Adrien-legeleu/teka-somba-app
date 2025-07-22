@@ -9,7 +9,7 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/inbox')
+    fetch('/api/messages/inbox')
       .then((res) => res.json())
       .then(setThreads)
       .finally(() => setLoading(false));
@@ -31,13 +31,15 @@ export default function InboxPage() {
             className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow hover:bg-orange-50 transition group"
           >
             <div className="relative h-16 w-16">
-              {thread.ad.images?.[0] && (
+              {thread.ad.images?.[0] ? (
                 <Image
                   src={thread.ad.images[0]}
                   fill
                   alt="annonce"
                   className="rounded-xl object-cover"
                 />
+              ) : (
+                <div className="w-full h-full bg-gray-200 rounded-xl" />
               )}
             </div>
             <div className="flex-1">
