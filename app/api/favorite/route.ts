@@ -49,6 +49,7 @@ export async function GET(req: Request) {
   }
 
   try {
+    // Récupère tous les favoris de cet user
     const favorites = await prisma.favorite.findMany({
       where: { userId },
       include: {
@@ -60,11 +61,21 @@ export async function GET(req: Request) {
             price: true,
             location: true,
             category: { select: { id: true, name: true } },
+            favorites: false,
           },
         },
       },
     });
-    return NextResponse.json(favorites);
+
+    const ads = favorites
+      .map((fav) => fav.ad)
+      .filter(Boolean)
+      .map((ad) => ({
+        ...ad,
+        isFavorite: true,
+      }));
+
+    return NextResponse.json(ads);
   } catch (error) {
     return NextResponse.json(
       { error: 'Erreur lors de la récupération' },

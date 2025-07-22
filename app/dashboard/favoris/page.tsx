@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
-import UserAdsDashboard from '@/app/components/Dashboard/UserAdsDashboard';
 import FavoriteDashboard from '@/app/components/Favorite/FavoriteDashboard';
 
 export default async function MesFavoritesPage() {

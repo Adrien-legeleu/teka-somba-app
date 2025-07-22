@@ -146,7 +146,7 @@ export default async function DashboardPage() {
             title="Aide"
             desc="Questions fréquentes, support"
             icon={<HelpCircle size={36} />}
-            href="/faq"
+            href="/dashboard/support"
             external
           />
         </div>

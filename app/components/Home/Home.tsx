@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CityPicker } from '../Filter/cityPicker';
@@ -11,7 +11,6 @@ import { DonSwitch } from '../Filter/DonSwitch';
 import { FavoriteButton } from '../Favorite/FavoriteButton';
 
 export default function Home({ userId }: { userId?: string | null }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [ads, setAds] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);

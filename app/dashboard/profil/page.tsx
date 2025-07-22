@@ -1,0 +1,192 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+// import ton composant d’upload (ex : AvatarUploader, IdentityCardUploader)
+import Image from 'next/image';
+import { PasswordChangeBlock } from '@/app/components/Profil/MDProfil';
+
+export default function ProfilPage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState<any>({});
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/profile')
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data);
+        setForm(data);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  function handleChange(e: any) {
+    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+  }
+
+  async function handleSave(e: any) {
+    e.preventDefault();
+    setSaving(true);
+    setSuccess(false);
+    setError(null);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Erreur lors de la sauvegarde');
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message || 'Erreur');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="p-8 text-center">Chargement…</div>;
+  if (!user) return <div className="p-8 text-center">Profil introuvable.</div>;
+
+  return (
+    <div className="max-w-2xl mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold mb-8">Mon profil</h1>
+      <Card className="bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-2xl mb-8">
+        <CardContent className="p-8">
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="flex gap-4 items-center">
+              {form.avatar ? (
+                <Image
+                  src={form.avatar}
+                  alt="Avatar"
+                  width={72}
+                  height={72}
+                  className="rounded-full border"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                  A
+                </div>
+              )}
+              {/* Ici ton composant d’upload AvatarUploader */}
+              {/* <AvatarUploader value={form.avatar} onChange={url => setForm(f => ({ ...f, avatar: url }))} /> */}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                name="prenom"
+                value={form.prenom || ''}
+                onChange={handleChange}
+                placeholder="Prénom"
+                required
+              />
+              <Input
+                name="name"
+                value={form.name || ''}
+                onChange={handleChange}
+                placeholder="Nom"
+                required
+              />
+              <Input
+                name="city"
+                value={form.city || ''}
+                onChange={handleChange}
+                placeholder="Ville"
+              />
+              <Input
+                name="age"
+                value={form.age || ''}
+                onChange={handleChange}
+                type="number"
+                placeholder="Âge"
+                min={0}
+              />
+              <Input
+                name="phone"
+                value={form.phone || ''}
+                onChange={handleChange}
+                placeholder="Téléphone"
+              />
+              <Input
+                name="email"
+                value={form.email || ''}
+                readOnly
+                disabled
+                className="bg-gray-100 text-gray-500 cursor-not-allowed"
+                placeholder="Email"
+              />
+            </div>
+            <div className="text-xs text-gray-400">
+              Pour changer d’adresse, veuillez supprimer votre compte et en
+              recréer un.
+            </div>
+            {/* Upload carte d'identité */}
+            <div>
+              <div className="mb-1 font-medium">
+                Carte d'identité (photo/scan)
+              </div>
+              {form.identityCardUrl ? (
+                <div className="flex items-center gap-4">
+                  <Image
+                    src={form.identityCardUrl}
+                    alt="Carte d'identité"
+                    width={80}
+                    height={60}
+                    className="rounded-lg border"
+                  />
+                  <span
+                    className={
+                      form.isVerified
+                        ? 'bg-green-100 text-green-600 px-3 py-1 rounded-xl text-xs'
+                        : form.isRejected
+                          ? 'bg-red-100 text-red-600 px-3 py-1 rounded-xl text-xs'
+                          : 'bg-yellow-100 text-yellow-700 px-3 py-1 rounded-xl text-xs'
+                    }
+                  >
+                    {form.isVerified
+                      ? 'Validée'
+                      : form.isRejected
+                        ? 'Refusée'
+                        : 'En attente de validation'}
+                  </span>
+                  {/* <IdentityCardUploader ... /> */}
+                </div>
+              ) : (
+                <div>
+                  {/* <IdentityCardUploader onUpload={url => setForm(f => ({ ...f, identityCardUrl: url }))} /> */}
+                  <span className="text-gray-500 text-sm">
+                    Aucun fichier ajouté
+                  </span>
+                </div>
+              )}
+            </div>
+            {success && (
+              <div className="bg-green-100 text-green-700 rounded p-2 text-sm">
+                Profil mis à jour !
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-100 text-red-700 rounded p-2 text-sm">
+                {error}
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-10"
+              disabled={saving}
+            >
+              {saving ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <PasswordChangeBlock />
+    </div>
+  );
+}

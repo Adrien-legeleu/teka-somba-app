@@ -49,7 +49,7 @@ export function FavoriteButton({
         handleToggleFavorite();
       }}
       disabled={loading}
-      className="flex absolute top-2 right-2 bg-white shadow-lg border items-center gap-2"
+      className="flex absolute top-2 right-2 bg-white shadow-lg z-20 border items-center gap-2"
     >
       {isFavorite ? <HeartOff /> : <Heart />}
     </Button>
