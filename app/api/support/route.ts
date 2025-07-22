@@ -28,12 +28,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // Concatène prénom + nom pour le champ name
   const fullName = [user.prenom, user.name].filter(Boolean).join(' ');
-
-  console.log(
-    `Nouvelle demande d'aide de ${fullName} (${user.email}) : ${subject} , ${message} , ${userId} , ${user.email} , ${user.name} `
-  );
 
   const helpRequest = await prisma.helpRequest.create({
     data: {

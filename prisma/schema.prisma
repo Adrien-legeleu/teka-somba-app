@@ -60,7 +60,7 @@ model Ad {
 model AdField {
   id               String   @id @default(uuid())
   adId             String
-  ad               Ad       @relation(fields: [adId], references: [id])
+  ad               Ad       @relation(fields: [adId], references: [id],  onDelete: Cascade)
   categoryFieldId  String
   categoryField    CategoryField @relation(fields: [categoryFieldId], references: [id])
   value            Json
@@ -98,7 +98,7 @@ model Favorite {
   id        String   @id @default(uuid())
   user      User     @relation(fields: [userId], references: [id])
   userId    String
-  ad        Ad       @relation(fields: [adId], references: [id])
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
   adId      String
   createdAt DateTime @default(now())
 
@@ -107,7 +107,7 @@ model Favorite {
 
 model Message {
   id        String   @id @default(uuid())
-  ad        Ad     @relation(fields: [adId], references: [id])
+  ad        Ad     @relation(fields: [adId], references: [id], onDelete: Cascade)
   adId      String
   sender    User     @relation("MessagesSent", fields: [senderId], references: [id])
   senderId  String
@@ -136,7 +136,7 @@ model Payment {
   id          String   @id @default(uuid())
   buyer       User     @relation("PaymentsAsBuyer", fields: [buyerId], references: [id])
   buyerId     String
-  ad          Ad       @relation(fields: [adId], references: [id])
+  ad          Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
   adId        String
   amount      Float
   status      PaymentStatus @default(PENDING)

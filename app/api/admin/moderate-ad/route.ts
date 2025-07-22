@@ -1,9 +1,11 @@
-// app/api/admin/users/route.ts
+// POST: { adId, action: 'delete' }
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendEmail } from '@/lib/email';
 import { getUserIdFromRequest } from '@/lib/authUser';
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
+  const { adId, action } = await req.json();
   const userId = await getUserIdFromRequest();
 
   if (!userId) {
@@ -25,16 +27,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
   }
 
-  // Seuls les users NON validés et NON rejetés apparaissent
-  const users = await prisma.user.findMany({
-    where: { isVerified: false, isRejected: false },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      city: true,
-      identityCardUrl: true,
-    },
+  const ad = await prisma.ad.findUnique({
+    where: { id: adId },
+    include: { user: true },
   });
-  return NextResponse.json(users);
+  if (!ad)
+    return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
+
+  if (action === 'delete') {
+    await prisma.ad.delete({ where: { id: adId } });
+    await sendEmail(
+      ad.user.email,
+      'Annonce supprimée',
+      `Votre annonce "${ad.title}" a été supprimée par l’équipe d’administration.`
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }
