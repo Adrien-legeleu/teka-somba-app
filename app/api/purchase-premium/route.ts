@@ -61,6 +61,13 @@ export async function POST(req: NextRequest) {
       },
     });
   }
+  await prisma.premiumPurchase.create({
+    data: {
+      userId,
+      offerId,
+      adId,
+    },
+  });
 
   return NextResponse.json({ success: true });
 }
