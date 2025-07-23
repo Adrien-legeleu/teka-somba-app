@@ -41,6 +41,7 @@ export default async function DashboardPage() {
       avatar: true,
       age: true,
       isAdmin: true,
+      credit: true,
     },
   });
   if (!user) redirect('/login');
@@ -91,7 +92,7 @@ export default async function DashboardPage() {
           <div className="flex flex-col items-end gap-1">
             <div className="text-gray-600 text-sm">Porte-monnaie</div>
             <div className="text-3xl font-bold text-[var(--color-secondary)]">
-              0,00 €
+              {user.credit} crédits
             </div>
             <div className="text-xs text-gray-400">Solde disponible</div>
             <Button

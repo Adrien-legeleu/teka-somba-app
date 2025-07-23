@@ -51,8 +51,10 @@ model Ad {
   lat         Float?                                    // Latitude GPS
   lng         Float?                                    // Longitude GPS
   images      Json? 
+  boostType   String? // exemple: "VIP", "Hebdo", "Journalier"
+boostUntil  DateTime?
+isVip Boolean @default(false) // Indique si l'annonce est actuellement VIP
     premiumPurchase PremiumPurchase[]
-
   isDon  Boolean @default(false)
   createdAt   DateTime  @default(now())
   userId      String

@@ -10,6 +10,7 @@ import { CityPicker } from '../Filter/cityPicker';
 import { CategoryPicker } from '../Filter/Categorypicker';
 import { SearchBar } from '../Filter/SearchBar';
 import { DonSwitch } from '../Filter/DonSwitch';
+import { PremiumOffers } from '../Payment/PremiumOffers';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
@@ -22,6 +23,18 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   const [city, setCity] = useState('');
   const [search, setSearch] = useState('');
   const [isDon, setIsDon] = useState(false);
+  const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  function openModal(adId: string) {
+    setSelectedAdId(adId);
+    setShowModal(true);
+  }
+
+  function closeModal() {
+    setSelectedAdId(null);
+    setShowModal(false);
+  }
 
   useEffect(() => {
     fetchCategories();
@@ -127,6 +140,12 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
                     className="rounded-xl w-full h-40 object-cover mb-3"
                   />
                 )}
+                {ad.boostUntil && new Date(ad.boostUntil) > new Date() && (
+                  <div className="absolute top-2 right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded">
+                    Boosté
+                  </div>
+                )}
+
                 <h2 className="font-semibold text-lg line-clamp-1">
                   {ad.title}
                 </h2>
@@ -157,10 +176,21 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
                 >
                   <Trash2 className="w-5 h-5 text-red-500" />
                 </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => openModal(ad.id)}
+                  className="mt-2"
+                >
+                  Booster
+                </Button>
               </div>
             </div>
           ))}
         </div>
+      )}
+      {showModal && selectedAdId && (
+        <PremiumOffers adId={selectedAdId} onClose={closeModal} />
       )}
     </div>
   );
