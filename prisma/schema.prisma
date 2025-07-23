@@ -14,17 +14,23 @@ model User {
   password    String
   name        String
   prenom        String
+    premiumPurchase PremiumPurchase[]
+
   phone       String
   avatar      String? 
   helpRequests HelpRequest[]
+  walletTransaction WalletTransaction[]
+credit Int @default(0)
 
   city        String
   age         Int? 
   isAdmin     Boolean     @default(false)
   notifications Notification[]
   favorites   Favorite[]
+  // wallet   Wallet[]
+  // purchase   Purchase[]
   ads         Ad[]
-  paymentsAsBuyer Payment[] @relation("PaymentsAsBuyer")
+  // paymentsAsBuyer Payment[] @relation("PaymentsAsBuyer")
   messagesSent     Message[] @relation("MessagesSent")
   messagesReceived Message[] @relation("MessagesReceived")
   identityCardUrl   String?      // URL/photo de la carte d'identité
@@ -45,6 +51,8 @@ model Ad {
   lat         Float?                                    // Latitude GPS
   lng         Float?                                    // Longitude GPS
   images      Json? 
+    premiumPurchase PremiumPurchase[]
+
   isDon  Boolean @default(false)
   createdAt   DateTime  @default(now())
   userId      String
@@ -54,7 +62,7 @@ model Ad {
   fields      AdField[] 
   favorites   Favorite[]            // <--- AJOUT
   messages    Message[]             // <--- AJOUT
-  payments    Payment[]             // <--- AJOUT
+  // payments    Payment[]             // <--- AJOUT
 }
 
 model AdField {
@@ -132,23 +140,35 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
-model Payment {
-  id          String   @id @default(uuid())
-  buyer       User     @relation("PaymentsAsBuyer", fields: [buyerId], references: [id])
-  buyerId     String
-  ad          Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
-  adId        String
-  amount      Float
-  status      PaymentStatus @default(PENDING)
-  paymentIntentId String? 
-  createdAt   DateTime  @default(now())
+model WalletTransaction {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  amount    Int      // Montant en crédits (positif ou négatif)
+  type      TransactionType
+  metadata  String?  // Par exemple "Paiement Orange Money" ou "Achat Boost"
+  createdAt DateTime @default(now())
 }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
+enum TransactionType {
+  RECHARGE
+  PURCHASE
+}
+
+model PremiumOffer {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  premiumPurchase PremiumPurchase[]
+  price       Int      // en crédits
+  duration    Int?     // en jours (pour Boost/VIP)
+  type        OfferType
+}
+
+enum OfferType {
+  BOOST_HEBDO
+  BOOST_JOURNALIER
+  VIP
 }
 
 model HelpRequest {
@@ -167,4 +187,15 @@ enum HelpStatus {
   PENDING
   TRAITED
   CLOSED
+}
+
+model PremiumPurchase {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  offer     PremiumOffer @relation(fields: [offerId], references: [id])
+  offerId   String
+  ad        Ad       @relation(fields: [adId], references: [id])
+  adId      String
+  createdAt DateTime @default(now())
 }

@@ -131,10 +131,10 @@ export default async function DashboardPage() {
             href="/dashboard/profil"
           />
           <DashboardCard
-            title="Paramètres"
-            desc="Mes infos et préférences"
+            title="Votre Wallet"
+            desc="Les fonctionnalités Premiums"
             icon={<Settings size={36} />}
-            href="/dashboard/parametres"
+            href="/dashboard/wallet"
           />
           <DashboardCard
             title="Factures"
