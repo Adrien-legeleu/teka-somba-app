@@ -156,3 +156,32 @@ h5,
 h6 {
   font-family: var(--font-title);
 }
+
+/* Ajoute en bas de global.css */
+.grid-4 {
+  display: grid;
+  grid-template-columns: 30% 25% 25% 20%;
+  align-items: center;
+}
+
+.filter-item + .filter-item {
+  border-left: 1px solid #e5e7eb; /* gris clair */
+  padding-left: 1rem;
+}
+
+.filter-item {
+  padding-right: 1rem;
+  transition: background 0.2s ease;
+  border-radius: 9999px;
+}
+
+.filter-item.active {
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .grid-4 {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.5rem;
+  }
+}

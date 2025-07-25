@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { X } from 'lucide-react';
 
 type Offer = {
   id: string;
@@ -11,12 +13,12 @@ type Offer = {
   price: number;
 };
 
-export function PremiumOffers({
+export default function PremiumModal({
   adId,
   onClose,
 }: {
   adId: string;
-  onClose?: () => void;
+  onClose: () => void;
 }) {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,34 +42,56 @@ export function PremiumOffers({
 
     if (res.ok) {
       toast.success('Offre appliquée avec succès.');
-      onClose?.();
+      onClose();
     } else {
       toast.error(data.error || 'Erreur lors de l’achat.');
     }
   };
 
   return (
-    <div className="space-y-6 p-4 max-w-md mx-auto bg-white rounded-xl shadow-lg">
-      <h2 className="text-lg font-bold text-center">
-        Choisissez une offre Premium
-      </h2>
-      {offers.map((offer) => (
-        <div
-          key={offer.id}
-          className="rounded-lg border p-4 shadow-sm hover:shadow transition"
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
         >
-          <h3 className="text-md font-semibold">{offer.title}</h3>
-          <p className="text-sm text-gray-600">{offer.description}</p>
-          <div className="mt-2 font-bold">{offer.price} crédits</div>
-          <Button
-            onClick={() => handleBuy(offer.id)}
-            disabled={loading}
-            className="mt-2 w-full"
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-black"
           >
-            {loading ? 'Chargement...' : 'Acheter'}
-          </Button>
-        </div>
-      ))}
-    </div>
+            <X className="w-5 h-5" />
+          </button>
+          <h2 className="text-2xl font-bold text-center mb-6">
+            Boostez votre annonce
+          </h2>
+          <div className="space-y-4">
+            {offers.map((offer) => (
+              <div
+                key={offer.id}
+                className="rounded-xl border p-4 shadow hover:shadow-md transition"
+              >
+                <h3 className="text-lg font-semibold">{offer.title}</h3>
+                <p className="text-sm text-gray-600">{offer.description}</p>
+                <div className="mt-2 font-bold">{offer.price} crédits</div>
+                <Button
+                  onClick={() => handleBuy(offer.id)}
+                  disabled={loading}
+                  className="mt-3 w-full bg-orange-500 hover:bg-orange-600"
+                >
+                  {loading ? 'Chargement...' : 'Acheter'}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

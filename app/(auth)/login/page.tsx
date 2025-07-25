@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
-import Login from '../components/Form/Login';
+import Login from '@/app/components/Form/Login';
 
 export default async function LoginPage() {
   const cookieStore = await cookies();

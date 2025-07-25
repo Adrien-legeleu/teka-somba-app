@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import Home from './components/Home/Home';
-import { AuroraBackground } from '@/components/ui/aurora-background';
+import Home from '../components/Home/Home';
 
 export default async function Page() {
   const cookieStore = await cookies();
@@ -15,8 +14,8 @@ export default async function Page() {
   const userId = payload ? (payload as any).userId : null;
 
   return (
-    <AuroraBackground className="min-h-screen flex justify-start">
+    <div className="min-h-screen flex justify-start">
       <Home userId={userId ?? null} />
-    </AuroraBackground>
+    </div>
   );
 }

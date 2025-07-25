@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CityPicker } from '../Filter/cityPicker';
-import { CategoryPicker } from '../Filter/Categorypicker';
-import { SearchBar } from '../Filter/SearchBar';
-import { DonSwitch } from '../Filter/DonSwitch';
+
 import { FavoriteButton } from '../Favorite/FavoriteButton';
+import FilterBar from '../Filter/Filterbar';
 
 export default function Home({ userId }: { userId?: string | null }) {
   const searchParams = useSearchParams();
@@ -94,32 +92,33 @@ export default function Home({ userId }: { userId?: string | null }) {
   }
 
   return (
-    <div className="max-w-5xl w-full mx-auto px-4 py-12">
+    <div className=" w-full mx-auto  ">
       {/* Filtres */}
-      <div className="grid grid-cols-1 rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-3 gap-4 mb-6">
-        <CityPicker city={city} setCity={setCity} />
-        <CategoryPicker
-          categories={categories}
-          categoryId={categoryId}
-          setCategoryId={setCategoryId}
-          subCategoryId={subCategoryId}
-          setSubCategoryId={setSubCategoryId}
-        />
-        <SearchBar search={search} setSearch={setSearch} />
-        <DonSwitch isDon={isDon} setIsDon={setIsDon} />
-      </div>
+      <FilterBar
+        search={search}
+        setSearch={setSearch}
+        city={city}
+        setCity={setCity}
+        categories={categories}
+        categoryId={categoryId}
+        setCategoryId={setCategoryId}
+        subCategoryId={subCategoryId}
+        setSubCategoryId={setSubCategoryId}
+        isDon={isDon}
+        setIsDon={setIsDon}
+      />
 
       {/* Résultats */}
       {loading ? (
         <p>Chargement...</p>
       ) : ads.length === 0 ? (
-        <p className="rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10 ">
+        <p className="shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10 ">
           Aucune annonce trouvée.
         </p>
       ) : (
-        <div className="grid grid-cols-1 rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 z-10 shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {ads.map((ad) => (
-            <div key={ad.id} className="border-b px-4">
+            <div key={ad.id} className="border-b  pb-2">
               <div className="relative ">
                 <Link href={`/annonce/${ad.id}`} className="   transition">
                   {ad.images?.[0] && (
@@ -128,7 +127,7 @@ export default function Home({ userId }: { userId?: string | null }) {
                       alt={ad.title}
                       width={300}
                       height={200}
-                      className="rounded-3xl shadow-lg shadow-[#00000005] w-full h-40 object-cover"
+                      className="rounded-3xl aspect-square shadow-2xl shadow-[#0000010] border border-gray-100 w-full object-cover "
                     />
                   )}
                 </Link>

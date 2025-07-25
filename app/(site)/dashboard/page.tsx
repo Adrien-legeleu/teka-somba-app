@@ -47,66 +47,67 @@ export default async function DashboardPage() {
   if (!user) redirect('/login');
 
   return (
-    <AuroraBackground>
-      <div className="flex flex-col w-full min-h-screen items-center py-14 px-2">
-        {/* En-tête profil + solde */}
-        <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white/90 border border-[#ffbf00]/30 rounded-[3rem] p-7 mb-10 shadow-xl">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt="Avatar"
-                  className="rounded-full w-full h-full object-cover"
-                />
-              ) : (
-                user.name?.[0]?.toUpperCase() || '?'
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-xl">
-                  {user.prenom} {user.name}
-                </span>
-                {user.isAdmin && (
-                  <Link
-                    href={'/admin'}
-                    className="bg-[#ffbf00]/20 px-2 py-0.5 text-xs rounded-full text-[#ec5d22] font-semibold"
-                  >
-                    admin★
-                  </Link>
+    <div>
+      <div className="flex flex-col w-full min-h-screen items-center pb-14 px-2">
+        <div className="w-full flex border-b items-center justify-center bg-neutral-50 pt-20 pb-5">
+          <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white  border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-black/10 border shadow-2xl">
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt="Avatar"
+                    className="rounded-full w-full h-full object-cover"
+                  />
+                ) : (
+                  user.name?.[0]?.toUpperCase() || '?'
                 )}
-                <span className="text-gray-500 text-sm">{user.age}</span>
               </div>
-              <div className="text-sm text-gray-500">{user.city}</div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-xl">
+                    {user.prenom} {user.name}
+                  </span>
+                  {user.isAdmin && (
+                    <Link
+                      href={'/admin'}
+                      className="bg-[#ffbf00]/20 px-2 py-0.5 text-xs rounded-full text-[#ec5d22] font-semibold"
+                    >
+                      admin★
+                    </Link>
+                  )}
+                  <span className="text-gray-500 text-sm">{user.age}</span>
+                </div>
+                <div className="text-sm text-gray-500">{user.city}</div>
+                <Button
+                  className="mt-2 bg-[var(--color-accent)] text-white hover:bg-[var(--color-primary)] px-4 py-1"
+                  variant="ghost"
+                  size="sm"
+                >
+                  Modifier le profil
+                </Button>
+              </div>
+            </div>
+            {/* Porte-monnaie */}
+            <div className="flex flex-col items-end gap-1">
+              <div className="text-gray-600 text-sm">Porte-monnaie</div>
+              <div className="text-3xl font-bold text-[var(--color-secondary)]">
+                {user.credit} crédits
+              </div>
+              <div className="text-xs text-gray-400">Solde disponible</div>
               <Button
-                className="mt-2 bg-[var(--color-accent)] text-white hover:bg-[var(--color-primary)] px-4 py-1"
-                variant="ghost"
+                className="mt-2 text-[var(--color-accent)] border-[var(--color-accent)] bg-white/90 hover:bg-[var(--color-primary)] hover:text-white transition-all"
+                variant="outline"
                 size="sm"
               >
-                Modifier le profil
+                Ajouter de l’argent
               </Button>
             </div>
-          </div>
-          {/* Porte-monnaie */}
-          <div className="flex flex-col items-end gap-1">
-            <div className="text-gray-600 text-sm">Porte-monnaie</div>
-            <div className="text-3xl font-bold text-[var(--color-secondary)]">
-              {user.credit} crédits
-            </div>
-            <div className="text-xs text-gray-400">Solde disponible</div>
-            <Button
-              className="mt-2 text-[var(--color-accent)] border-[var(--color-accent)] bg-white/90 hover:bg-[var(--color-primary)] hover:text-white transition-all"
-              variant="outline"
-              size="sm"
-            >
-              Ajouter de l’argent
-            </Button>
           </div>
         </div>
 
         {/* Grid Cards */}
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6  py-12">
           <DashboardCard
             title="Annonces"
             desc="Gérer mes annonces déposées"
@@ -163,7 +164,7 @@ export default async function DashboardPage() {
           </Button>
         </form>
       </div>
-    </AuroraBackground>
+    </div>
   );
 }
 
@@ -186,7 +187,7 @@ function DashboardCard({
       href={href}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      className="group relative rounded-[3rem] bg-white/90 border border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-xl hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
+      className="group relative border rounded-3xl bg-white  border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
     >
       <div className="rounded-xl bg-[var(--color-primary)] text-white p-2 shadow">
         {icon}

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export default function WalletRecharge() {
   const [loading, setLoading] = useState(false);
@@ -16,30 +17,49 @@ export default function WalletRecharge() {
     if (data?.url) window.location.href = data.url;
   };
 
+  const offers = [
+    { amount: 5000, credits: 5000, highlight: false },
+    { amount: 10000, credits: 10000, highlight: false },
+    { amount: 15000, credits: 17500, highlight: true, tag: '🔥 Populaire' },
+  ];
+
   return (
-    <div className="p-4 rounded-lg shadow bg-white max-w-md mx-auto space-y-4">
-      <h2 className="text-lg font-semibold text-center">Ajouter des crédits</h2>
-      <button
-        onClick={() => handleRecharge(5000)}
-        disabled={loading}
-        className="w-full bg-blue-500 text-white p-2 rounded"
-      >
-        5 000 FCFA → 5 000 crédits
-      </button>
-      <button
-        onClick={() => handleRecharge(10000)}
-        disabled={loading}
-        className="w-full bg-blue-500 text-white p-2 rounded"
-      >
-        10 000 FCFA → 10 000 crédits
-      </button>
-      <button
-        onClick={() => handleRecharge(15000)}
-        disabled={loading}
-        className="w-full bg-blue-600 text-white p-2 rounded"
-      >
-        15 000 FCFA → 17 500 crédits (offre spéciale)
-      </button>
+    <div className="space-y-8">
+      <h2 className="text-2xl font-extrabold text-center text-white drop-shadow-md">
+        Ajouter des crédits
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        {offers.map((offer) => (
+          <button
+            key={offer.amount}
+            onClick={() => handleRecharge(offer.amount)}
+            disabled={loading}
+            className={`relative flex flex-col items-center justify-center text-center p-6 cursor-pointer rounded-3xl border-2 shadow-lg transition-all transform hover:-translate-y-1 hover:shadow-2xl duration-300
+              ${
+                offer.highlight
+                  ? 'bg-gradient-to-br from-[#FF8C42] via-[#FF771F] to-[#FF5E00] text-white scale-105 border-orange-300 animate-pulse'
+                  : 'bg-white/90 text-gray-800 hover:border-orange-400'
+              }
+            `}
+          >
+            {offer.tag && (
+              <span className="absolute -top-4 px-3 py-1 text-sm bg-white text-orange-600 font-bold rounded-full shadow-md">
+                {offer.tag}
+              </span>
+            )}
+            <div className="text-3xl font-bold mb-2">
+              {offer.amount.toLocaleString()} FCFA
+            </div>
+            <div className="text-lg font-medium">
+              {offer.credits.toLocaleString()} crédits
+            </div>
+            {loading && (
+              <Loader2 className="w-5 h-5 animate-spin mt-2 text-white" />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

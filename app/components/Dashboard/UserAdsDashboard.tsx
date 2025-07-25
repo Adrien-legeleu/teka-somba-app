@@ -2,25 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Edit, Trash2, PlusCircle } from 'lucide-react';
-import { CityPicker } from '../Filter/cityPicker';
-import { CategoryPicker } from '../Filter/Categorypicker';
-import { SearchBar } from '../Filter/SearchBar';
-import { DonSwitch } from '../Filter/DonSwitch';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { PremiumOffers } from '../Payment/PremiumOffers';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import FilterBar from '../Filter/Filterbar';
+import { FavoriteButton } from '../Favorite/FavoriteButton';
+import PremiumModal from '../Payment/PremiumOffers';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
@@ -28,23 +17,15 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Filtres
   const [categoryId, setCategoryId] = useState('');
   const [subCategoryId, setSubCategoryId] = useState('');
   const [city, setCity] = useState('');
   const [search, setSearch] = useState('');
   const [isDon, setIsDon] = useState(false);
+
+  // Modal Premium
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
-
-  function openModal(adId: string) {
-    setSelectedAdId(adId);
-    setShowModal(true);
-  }
-
-  function closeModal() {
-    setSelectedAdId(null);
-    setShowModal(false);
-  }
 
   useEffect(() => {
     fetchCategories();
@@ -53,12 +34,10 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   useEffect(() => {
     const timeout = setTimeout(fetchUserAds, 300); // debounce
     return () => clearTimeout(timeout);
-    // eslint-disable-next-line
   }, [search, categoryId, subCategoryId, city]);
 
   useEffect(() => {
     fetchUserAds();
-    // eslint-disable-next-line
   }, [categoryId, subCategoryId, city]);
 
   async function fetchCategories() {
@@ -97,65 +76,76 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="max-w-5xl w-full mx-auto px-4 py-12">
+    <div className="w-full mx-auto">
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl shadow-[#0000001c] flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h1 className="text-3xl font-bold">Mes annonces</h1>
-        <Button
-          onClick={() => router.push('/dashboard/annonces/new')}
-          className="flex items-center gap-2"
-        >
-          <PlusCircle className="w-5 h-5" />
-          Nouvelle annonce
-        </Button>
+      <div className="z-30 relative  bg-neutral-50 backdrop-blur-xl py-5 flex items-center justify-center">
+        <div className="bg-white p-5  shadow-black/10  shadow-2xl border rounded-full flex items-center justify-between mx-auto max-w-5xl w-full">
+          <h1 className="text-3xl font-bold">Mes annonces</h1>
+          <Button
+            onClick={() => router.push('/dashboard/annonces/new')}
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 transition rounded-full px-6 py-3 text-lg shadow-xl"
+          >
+            <PlusCircle className="w-5 h-5" />
+            Nouvelle annonce
+          </Button>
+        </div>
       </div>
 
       {/* Filtres */}
-      <div className="grid grid-cols-1 rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10 sm:grid-cols-3 gap-4 mb-4">
-        <CityPicker city={city} setCity={setCity} />
-        <CategoryPicker
-          categories={categories}
-          categoryId={categoryId}
-          setCategoryId={setCategoryId}
-          subCategoryId={subCategoryId}
-          setSubCategoryId={setSubCategoryId}
-        />
-        <SearchBar search={search} setSearch={setSearch} />
-        <DonSwitch isDon={isDon} setIsDon={setIsDon} /> {/* Ajout */}
-      </div>
+      <FilterBar
+        search={search}
+        setSearch={setSearch}
+        city={city}
+        setCity={setCity}
+        categories={categories}
+        categoryId={categoryId}
+        setCategoryId={setCategoryId}
+        subCategoryId={subCategoryId}
+        setSubCategoryId={setSubCategoryId}
+        isDon={isDon}
+        setIsDon={setIsDon}
+      />
 
+      {/* Résultats */}
       {loading ? (
         <p>Chargement...</p>
       ) : ads.length === 0 ? (
-        <p className="bg-white/90 backdrop-blur-xl p-10 shadow-2xl shadow-[#0000001c]  rounded-[3rem]">
+        <p className="shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10 rounded-[3rem]">
           Aucune annonce publiée.
         </p>
       ) : (
-        <div className="grid grid-cols-1 rounded-[3rem] bg-white/90 shadow-2xl shadow-[#0000001c] backdrop-blur-xl p-10 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 rounded-[3rem]">
           {ads.map((ad) => (
-            <div
-              key={ad.id}
-              className="relative bg-white rounded-3xl  p-4 hover:shadow-lg transition flex flex-col"
-            >
-              <Link
-                href={`/annonce/${ad.id}`}
-                className="block"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {ad.images?.[0] && (
-                  <img
-                    src={ad.images[0]}
-                    alt={ad.title}
-                    className="rounded-xl w-full h-40 object-cover mb-3"
-                  />
-                )}
+            <div key={ad.id} className="relative pb-4">
+              <div className="relative">
+                <Link
+                  href={`/annonce/${ad.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {ad.images?.[0] && (
+                    <Image
+                      src={ad.images[0]}
+                      alt={ad.title}
+                      width={300}
+                      height={200}
+                      className="rounded-3xl aspect-square shadow-2xl shadow-[#00000010] border border-gray-100 w-full object-cover"
+                    />
+                  )}
+                </Link>
+                <FavoriteButton
+                  userId={userId}
+                  adId={ad.id}
+                  isFavoriteInitial={ad.isFavorite}
+                />
                 {ad.boostUntil && new Date(ad.boostUntil) > new Date() && (
-                  <div className="absolute top-2 right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded">
+                  <div className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-lg shadow-md">
                     Boosté
                   </div>
                 )}
+              </div>
 
+              <div className="mt-2">
                 <h2 className="font-semibold text-lg line-clamp-1">
                   {ad.title}
                 </h2>
@@ -167,9 +157,10 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
                     {ad.location}
                   </div>
                 )}
-                <div className="text-xs mt-1">{ad.category?.name}</div>
-              </Link>
-              <div className="flex gap-2 mt-4">
+              </div>
+
+              {/* Boutons d'action */}
+              <div className="flex gap-2 mt-3">
                 <Button
                   variant="outline"
                   size="icon"
@@ -189,36 +180,23 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => openModal(ad.id)}
-                  className="mt-2"
+                  className="ml-auto bg-orange-500 text-white hover:bg-orange-600"
+                  onClick={() => setSelectedAdId(ad.id)}
                 >
                   Booster
                 </Button>
-                <Dialog>
-                  <DialogTrigger>
-                    {ad.boostUntil && new Date(ad.boostUntil) > new Date()
-                      ? "Booster jusqu'au " +
-                        new Date(ad.boostUntil).toLocaleDateString('fr-FR')
-                      : 'Booster cette annonce'}
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Are you absolutely sure?</DialogTitle>
-                      <DialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your account and remove your data from our
-                        servers.
-                      </DialogDescription>
-                    </DialogHeader>
-                  </DialogContent>
-                </Dialog>
               </div>
             </div>
           ))}
         </div>
       )}
-      {showModal && selectedAdId && (
-        <PremiumOffers adId={selectedAdId} onClose={closeModal} />
+
+      {/* Modal Premium */}
+      {selectedAdId && (
+        <PremiumModal
+          adId={selectedAdId}
+          onClose={() => setSelectedAdId(null)}
+        />
       )}
     </div>
   );

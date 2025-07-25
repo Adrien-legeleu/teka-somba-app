@@ -57,7 +57,7 @@ export default function ProfilPage() {
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-8">Mon profil</h1>
-      <Card className="bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-2xl mb-8">
+      <Card className="bg-white/90 backdrop-blur-xl shadow-black/10 rounded-3xl shadow-2xl mb-8">
         <CardContent className="p-8">
           <form onSubmit={handleSave} className="space-y-6">
             <div className="flex gap-4 items-center">
@@ -74,8 +74,6 @@ export default function ProfilPage() {
                   A
                 </div>
               )}
-              {/* Ici ton composant d’upload AvatarUploader */}
-              {/* <AvatarUploader value={form.avatar} onChange={url => setForm(f => ({ ...f, avatar: url }))} /> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input

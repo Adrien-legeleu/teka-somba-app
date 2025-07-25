@@ -45,10 +45,10 @@ export default function SupportPage() {
   }
 
   return (
-    <AuroraBackground className="min-h-screen flex justify-center items-start">
-      <div className="w-full max-w-5xl mx-auto py-14 px-2 mt-20 md:px-0">
+    <div className="min-h-screen flex justify-center items-start">
+      <div className="w-full max-w-5xl mx-auto  px-2 mt-20 md:px-0">
         {/* Header */}
-        <div className="bg-white/90 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl shadow-[#0000001c] mb-8">
+        <div className="bg-white/90 border backdrop-blur-xl p-10 rounded-3xl shadow-2xl shadow-black/10 mb-8">
           <h1 className="text-3xl font-bold mb-2">Aide & support</h1>
           <p className="text-gray-600">
             Besoin d'aide ? Consultez la FAQ ou contactez-nous directement.
@@ -56,7 +56,7 @@ export default function SupportPage() {
         </div>
 
         {/* FAQ - Accordion */}
-        <div className="mb-8 bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-2xl shadow-[#0000001c] px-8 py-6">
+        <div className="bg-white/90 border backdrop-blur-xl p-10 rounded-3xl shadow-2xl shadow-black/10 mb-8">
           <div className="font-semibold text-lg mb-4">
             FAQ (Questions fréquentes)
           </div>
@@ -111,7 +111,7 @@ export default function SupportPage() {
         </div>
 
         {/* Formulaire de contact support */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-2xl shadow-[#0000001c] px-8 py-8">
+        <div className="bg-white/90 border backdrop-blur-xl p-10 rounded-3xl shadow-2xl shadow-black/10 mb-8">
           <div className="font-semibold text-lg mb-4">Contacter le support</div>
           <form className="space-y-5" onSubmit={handleSubmit}>
             <Input
@@ -154,6 +154,6 @@ export default function SupportPage() {
           </form>
         </div>
       </div>
-    </AuroraBackground>
+    </div>
   );
 }

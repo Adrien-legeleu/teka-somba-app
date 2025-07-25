@@ -33,7 +33,7 @@ export default function Header() {
   const selectedCatId = searchParams.get('categoryId');
 
   return (
-    <header className="w-full bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100 z-50 sticky top-0">
+    <header className="w-full bg-neutral-50  backdrop-blur-sm   border-gray-100 z-50 sticky top-0">
       {/* BARRE PRINCIPALE */}
       <div className="max-w-7xl mx-auto px-4 flex items-center h-[72px] gap-6">
         {/* Logo */}
@@ -98,7 +98,7 @@ export default function Header() {
       </div>
 
       {/* MENU CATEGORIES (dynamique, dropdown au hover) */}
-      <nav className="w-full border-t border-gray-100 shadow-sm bg-white">
+      <nav className="w-full bg-transparent backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto">
           {categories.map((cat: any) => (
             <div key={cat.id} className="relative group">

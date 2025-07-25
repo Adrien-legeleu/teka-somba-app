@@ -1,9 +1,8 @@
 'use client';
-
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
-export function DonSwitch({
+export function DonSection({
   isDon,
   setIsDon,
 }: {
@@ -11,9 +10,11 @@ export function DonSwitch({
   setIsDon: (val: boolean) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-1">
+      <Label htmlFor="don-filter" className="font-semibold text-sm">
+        Dons uniquement
+      </Label>
       <Switch id="don-filter" checked={isDon} onCheckedChange={setIsDon} />
-      <Label htmlFor="don-filter">Dons uniquement</Label>
     </div>
   );
 }

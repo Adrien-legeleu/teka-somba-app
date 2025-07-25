@@ -1,33 +1,26 @@
-// CityPicker.tsx
 'use client';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-  CommandEmpty,
-} from '@/components/ui/command';
+import { Label } from '@/components/ui/label';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export function CityPicker({
+export function CitySection({
   city,
   setCity,
+  isActive,
+  close,
 }: {
   city: string;
   setCity: (val: string) => void;
+  isActive: boolean;
+  close: () => void;
 }) {
   const [search, setSearch] = useState(city || '');
   const [suggestions, setSuggestions] = useState<any[]>([]);
 
   async function handleSearch(q: string) {
     setSearch(q);
-
-    // 🔁 Si l'utilisateur efface ou modifie manuellement → ville invalide → reset
-    if (q !== city) {
-      setCity(''); // 🔥 invalide la ville sélectionnée
-    }
-
+    setCity('');
     if (!q.trim()) return setSuggestions([]);
     try {
       const res = await fetch(
@@ -43,34 +36,43 @@ export function CityPicker({
   }
 
   return (
-    <div>
+    <div className="relative flex flex-col gap-1">
+      <Label htmlFor="city" className="font-semibold text-sm">
+        Ville
+      </Label>
       <Input
-        placeholder="Ville (ex: Paris)"
+        id="city"
+        placeholder="Paris, Lyon, Marseille..."
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
-        className="rounded-3xl border shadow-sm "
+        className="rounded-full text-sm border-none shadow-none focus:ring-0 bg-transparent"
       />
-      {suggestions.length > 0 && (
-        <Command className="rounded-xl border shadow-md max-h-60 overflow-auto bg-white mt-1 animate-in fade-in slide-in-from-top-2">
-          <CommandList>
-            <CommandEmpty>Aucun résultat</CommandEmpty>
-            <CommandGroup heading="Villes">
-              {suggestions.map((place: any) => (
-                <CommandItem
-                  key={place.id}
-                  onSelect={() => {
-                    setCity(place.text); // ✅ ville validée
-                    setSearch(place.text);
-                    setSuggestions([]);
-                  }}
-                >
-                  {place.place_name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      )}
+
+      <AnimatePresence>
+        {isActive && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-14 left-0 right-0 bg-white shadow-md rounded-xl p-2 z-50"
+          >
+            {suggestions.map((place: any) => (
+              <div
+                key={place.id}
+                className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg"
+                onClick={() => {
+                  setCity(place.text);
+                  setSearch(place.text);
+                  setSuggestions([]);
+                  close();
+                }}
+              >
+                {place.place_name}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

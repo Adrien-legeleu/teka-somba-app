@@ -54,7 +54,7 @@ export function PasswordChangeBlock() {
   }
 
   return (
-    <div className="bg-white/90 rounded-[2rem] shadow-xl mt-12 mb-4 p-8">
+    <div className="bg-white/90 rounded-3xl shadow-2xl shadow-black/10  border mt-12 mb-4 p-8">
       <div className="font-semibold text-xl mb-3">Changer mon mot de passe</div>
       <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
         <Input

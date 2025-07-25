@@ -13,13 +13,15 @@ export async function GET() {
       where: {
         userId,
         boostUntil: {
-          gt: new Date(), // uniquement celles encore actives
+          gt: new Date(),
         },
       },
       select: {
         id: true,
         title: true,
         boostUntil: true,
+        boostType: true,
+        images: true,
       },
     });
 

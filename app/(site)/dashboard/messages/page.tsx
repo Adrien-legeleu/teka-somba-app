@@ -8,19 +8,6 @@ import { Trash2 } from 'lucide-react'; // Icône poubelle
 export default function InboxPage() {
   const [threads, setThreads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  if (!token) redirect('/login');
-
-  let payload;
-  try {
-    payload = jwt.verify(token, process.env.JWT_SECRET!);
-  } catch {
-    redirect('/login');
-  }
-
-  const userId = (payload as any).userId;
-  if (!userId) redirect('/login');
 
   useEffect(() => {
     fetch('/api/messages/inbox')

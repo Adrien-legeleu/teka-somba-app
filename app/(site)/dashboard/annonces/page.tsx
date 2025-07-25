@@ -20,8 +20,8 @@ export default async function MesAnnoncesPage() {
   if (!userId) redirect('/login');
 
   return (
-    <AuroraBackground className="min-h-screen flex justify-start">
+    <div className="min-h-screen flex justify-start">
       <UserAdsDashboard userId={userId} />
-    </AuroraBackground>
+    </div>
   );
 }
