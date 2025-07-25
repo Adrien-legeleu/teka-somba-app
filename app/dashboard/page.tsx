@@ -50,7 +50,7 @@ export default async function DashboardPage() {
     <AuroraBackground>
       <div className="flex flex-col w-full min-h-screen items-center py-14 px-2">
         {/* En-tête profil + solde */}
-        <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white/90 border border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-xl">
+        <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white/90 border border-[#ffbf00]/30 rounded-[3rem] p-7 mb-10 shadow-xl">
           <div className="flex items-center gap-5">
             <div className="w-20 h-20 rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
               {user.avatar ? (
@@ -186,7 +186,7 @@ function DashboardCard({
       href={href}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      className="group relative rounded-3xl bg-white/90 border border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-xl hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
+      className="group relative rounded-[3rem] bg-white/90 border border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-xl hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
     >
       <div className="rounded-xl bg-[var(--color-primary)] text-white p-2 shadow">
         {icon}

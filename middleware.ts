@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const token = req.cookies.get('token')?.value;
 
-  // Routes publiques (mais avec protection login/signup si déjà connecté)
+  // Routes publiques accessibles à tous
   const publicRoutes = [
     '/',
     '/login',
@@ -13,34 +14,43 @@ export function middleware(req: NextRequest) {
     '/reset-password',
   ];
 
-  // Récupération du token
-  const token = req.cookies.get('token')?.value;
-
-  // Si utilisateur tente d’accéder à /login ou /signup ET est déjà connecté
+  // Rediriger vers /dashboard si connecté et tente d’accéder à login ou signup
   if ((pathname === '/login' || pathname === '/signup') && token) {
     try {
       jwt.verify(token, process.env.JWT_SECRET!);
-      // Si token valide : redirection dashboard
       return NextResponse.redirect(new URL('/dashboard', req.url));
     } catch {
-      // Token cassé ou expiré → laisse passer
+      // Token invalide : on laisse passer
     }
   }
 
-  // Les autres routes publiques restent accessibles
-  if (publicRoutes.some((r) => pathname.startsWith(r))) {
+  // Autoriser les routes publiques
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // Pour toutes les routes protégées
-  if (!token) return NextResponse.redirect(new URL('/login', req.url));
+  // Vérification JWT
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!);
-    if (pathname.startsWith('/admin') && !(payload as any).isAdmin) {
-      return NextResponse.redirect(new URL('/', req.url));
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
+
+    // Si route admin → il faut isAdmin
+    if (pathname.startsWith('/admin')) {
+      if (!payload.isAdmin) {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
     }
+
     return NextResponse.next();
   } catch {
+    // Token cassé ou expiré → redirection login
     return NextResponse.redirect(new URL('/login', req.url));
   }
 }
+
+export const config = {
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/login', '/signup'],
+};

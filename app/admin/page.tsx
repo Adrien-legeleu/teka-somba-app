@@ -1,24 +1,19 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { redirect } from 'next/navigation';
 import AdminPanel from '../components/admin/AdminPanel';
 import { prisma } from '@/lib/prisma';
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  if (!token) redirect('/login');
+  if (!token) return;
   let payload;
   try {
     payload = jwt.verify(token, process.env.JWT_SECRET!);
-  } catch {
-    redirect('/login');
-  }
+  } catch {}
 
   const userId = (payload as any).userId;
-  if (!userId) redirect('/login');
 
-  // Récupération du vrai user
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -31,7 +26,7 @@ export default async function AdminPage() {
       isAdmin: true,
     },
   });
-  if (!user || !user.isAdmin) redirect('/login');
+  if (!user || !user.isAdmin) return;
 
   return <AdminPanel />;
 }

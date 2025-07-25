@@ -9,6 +9,7 @@ import { AuroraBackground } from '@/components/ui/aurora-background';
 import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
 import ContactSellerModal from '@/app/components/Contact/ContactSellerModal';
+import TrackAdView from '@/app/components/Fonctionnalities/TrackAdView';
 export default function AdDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -61,6 +62,7 @@ export default function AdDetailsPage() {
 
   return (
     <AuroraBackground className="min-h-screen flex items-start justify-start py-10">
+      {ad && <TrackAdView adId={ad.id} />}
       <div className="max-w-5xl w-full mx-auto p-8 bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-2xl flex flex-col md:flex-row gap-10">
         {/* Bloc images sans animation, fluide */}
         <div className="md:w-1/2 flex flex-col gap-4">

@@ -10,6 +10,16 @@ import { CityPicker } from '../Filter/cityPicker';
 import { CategoryPicker } from '../Filter/Categorypicker';
 import { SearchBar } from '../Filter/SearchBar';
 import { DonSwitch } from '../Filter/DonSwitch';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { PremiumOffers } from '../Payment/PremiumOffers';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
@@ -184,6 +194,24 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
                 >
                   Booster
                 </Button>
+                <Dialog>
+                  <DialogTrigger>
+                    {ad.boostUntil && new Date(ad.boostUntil) > new Date()
+                      ? "Booster jusqu'au " +
+                        new Date(ad.boostUntil).toLocaleDateString('fr-FR')
+                      : 'Booster cette annonce'}
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Are you absolutely sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete your account and remove your data from our
+                        servers.
+                      </DialogDescription>
+                    </DialogHeader>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           ))}

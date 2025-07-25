@@ -12,6 +12,11 @@ export async function POST(req: Request) {
     await prisma.favorite.create({
       data: { userId, adId },
     });
+    await prisma.adAnalytics.upsert({
+      where: { adId },
+      create: { adId, favoritesCount: 1 },
+      update: { favoritesCount: { increment: 1 } },
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     // Si favori déjà existant (clé unique), ignore
@@ -33,6 +38,10 @@ export async function DELETE(req: Request) {
           adId,
         },
       },
+    });
+    await prisma.adAnalytics.update({
+      where: { adId },
+      data: { favoritesCount: { decrement: 1 } },
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

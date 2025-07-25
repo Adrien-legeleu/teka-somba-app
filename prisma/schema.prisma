@@ -51,9 +51,9 @@ model Ad {
   lat         Float?                                    // Latitude GPS
   lng         Float?                                    // Longitude GPS
   images      Json? 
-  boostType   String? // exemple: "VIP", "Hebdo", "Journalier"
+  boostType   String? 
 boostUntil  DateTime?
-isVip Boolean @default(false) // Indique si l'annonce est actuellement VIP
+isVip Boolean @default(false) 
     premiumPurchase PremiumPurchase[]
   isDon  Boolean @default(false)
   createdAt   DateTime  @default(now())
@@ -62,10 +62,22 @@ isVip Boolean @default(false) // Indique si l'annonce est actuellement VIP
   categoryId  String
   category    Category  @relation("AdCategory", fields: [categoryId], references: [id])
   fields      AdField[] 
-  favorites   Favorite[]            // <--- AJOUT
-  messages    Message[]             // <--- AJOUT
-  // payments    Payment[]             // <--- AJOUT
+  favorites   Favorite[]         
+  messages    Message[]   
+  adAnalytics AdAnalytics? 
 }
+model AdAnalytics {
+  id             String   @id @default(uuid())
+  adId           String   @unique
+  ad             Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  views          Int      @default(0)
+  uniqueViews    Int      @default(0)
+  favoritesCount Int      @default(0)
+  messagesCount  Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 
 model AdField {
   id               String   @id @default(uuid())

@@ -46,7 +46,11 @@ export async function POST(req: Request) {
     },
   });
 
-  // TODO: ici tu pourras brancher la notif websocket (à venir)
+  await prisma.adAnalytics.upsert({
+    where: { adId },
+    create: { adId, messagesCount: 1 },
+    update: { messagesCount: { increment: 1 } },
+  });
 
   return NextResponse.json({ ...message, content }, { status: 201 });
 }
