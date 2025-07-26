@@ -12,10 +12,9 @@ export async function GET(
         category: { select: { id: true, name: true, parentId: true } },
         user: { select: { id: true, name: true, avatar: true } },
         fields: {
-          include: {
-            categoryField: true,
-          },
+          include: { categoryField: true },
         },
+        adAnalytics: true,
       },
     });
 

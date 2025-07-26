@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import FilterBar from '../Filter/Filterbar';
-import { FavoriteButton } from '../Favorite/FavoriteButton';
 import PremiumModal from '../Payment/PremiumOffers';
+import DeleteAdButton from '../Button/DeleteAdButton';
+import EditAdButton from '../Button/EditAdButton';
+import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text';
+import { cn } from '@/lib/utils';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
@@ -57,22 +60,10 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
     if (isDon) params.append('isDon', 'true');
     const res = await fetch(`/api/ad/user/${userId}?${params.toString()}`);
     const data = await res.json();
+    console.log(data);
+
     setAds(data);
     setLoading(false);
-  }
-
-  async function handleDelete(adId: string) {
-    if (!window.confirm('Supprimer cette annonce ?')) return;
-    const res = await fetch(`/api/ad/user/${userId}/${adId}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) {
-      toast.success('Annonce supprimée');
-      setAds((ads) => ads.filter((a) => a.id !== adId));
-    } else {
-      const error = await res.json();
-      toast.error(error.error || 'Erreur à la suppression');
-    }
   }
 
   return (
@@ -133,14 +124,26 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
                     />
                   )}
                 </Link>
-                <FavoriteButton
-                  userId={userId}
-                  adId={ad.id}
-                  isFavoriteInitial={ad.isFavorite}
-                />
+
                 {ad.boostUntil && new Date(ad.boostUntil) > new Date() && (
-                  <div className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-lg shadow-md">
-                    Boosté
+                  <div className="group absolute top-2 left-2 bg-white/90 backdrop-blur-xl mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f] ">
+                    <span
+                      className={cn(
+                        'absolute inset-0 block h-full w-full animate-gradient rounded-[inherit] bg-gradient-to-r from-[#ffaa40]/50 via-[#9c40ff]/50 to-[#ffaa40]/50 bg-[length:300%_100%] p-[1px]'
+                      )}
+                      style={{
+                        WebkitMask:
+                          'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'destination-out',
+                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        maskComposite: 'subtract',
+                        WebkitClipPath: 'padding-box',
+                      }}
+                    />
+
+                    <AnimatedGradientText className="text-sm font-medium">
+                      Boosté
+                    </AnimatedGradientText>
                   </div>
                 )}
               </div>
@@ -160,31 +163,23 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
               </div>
 
               {/* Boutons d'action */}
-              <div className="flex gap-2 mt-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  title="Modifier"
-                  onClick={() => router.push(`/dashboard/annonces/${ad.id}`)}
-                >
-                  <Edit className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  title="Supprimer"
-                  onClick={() => handleDelete(ad.id)}
-                >
-                  <Trash2 className="w-5 h-5 text-red-500" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="ml-auto bg-orange-500 text-white hover:bg-orange-600"
-                  onClick={() => setSelectedAdId(ad.id)}
-                >
-                  Booster
-                </Button>
+              <div className="flex items-center justify-between gap-3 mt-3">
+                <div className="flex items-center justify-center gap-0">
+                  <EditAdButton adId={ad.id} />
+                  <DeleteAdButton
+                    userId={userId}
+                    adId={ad.id}
+                    onDeleted={() =>
+                      setAds((ads) => ads.filter((a) => a.id !== ad.id))
+                    }
+                  />
+                </div>
+                {!ad.boostUntil ||
+                  (new Date(ad.boostUntil) < new Date() && (
+                    <div onClick={() => setSelectedAdId(ad.id)}>
+                      <InteractiveHoverButton text="Booster" />
+                    </div>
+                  ))}
               </div>
             </div>
           ))}

@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import CategoryPicker from './CategoryPicker';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import DeleteAdButton from '../../Button/DeleteAdButton';
 
 type Category = {
   id: string;
@@ -232,13 +233,24 @@ export default function EditAdForm({
                   }}
                   defaultImages={images}
                 />
-                <Button
-                  type="submit"
-                  className="mt-4 w-full"
-                  disabled={!isFormValid}
-                >
-                  Modifier l'annonce
-                </Button>
+                <div className="flex  w-full mt-4  items-center justify-center gap-5">
+                  <Button
+                    type="submit"
+                    className="mt-4 text-white "
+                    disabled={!isFormValid}
+                  >
+                    Modifier l'annonce
+                  </Button>
+                  {/* Delete Button */}
+                  <DeleteAdButton
+                    userId={userId}
+                    className="top-1"
+                    adId={ad.id}
+                    onDeleted={() =>
+                      (window.location.href = '/dashboard/annonces')
+                    }
+                  />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

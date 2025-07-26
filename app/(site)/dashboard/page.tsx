@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import AnalyticsDashboard from '@/app/components/Fonctionnalities/DashboardAnalyticsClient';
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -152,8 +153,9 @@ export default async function DashboardPage() {
             external
           />
         </div>
-
-        {/* Déconnexion */}
+        <div className="w-full max-w-5xl mx-auto p-4 pb-10">
+          <AnalyticsDashboard />
+        </div>
         <form action="/api/auth/logout" method="POST">
           <Button
             type="submit"

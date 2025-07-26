@@ -64,7 +64,16 @@ export default function Home({ userId }: { userId?: string | null }) {
     // Ajoute searchParams pour chaque changement d'URL
   }, [categories, searchParams]);
 
-  // Rafraîchis les annonces à chaque changement de filtre
+  const isDonParam = searchParams.get('isDon') === 'true';
+
+  useEffect(() => {
+    setIsDon(isDonParam);
+  }, [isDonParam]);
+  const qParam = searchParams.get('q') || '';
+  useEffect(() => {
+    setSearch(qParam);
+  }, [qParam]);
+
   useEffect(() => {
     fetchAds();
     // eslint-disable-next-line react-hooks/exhaustive-deps

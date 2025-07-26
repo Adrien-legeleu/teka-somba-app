@@ -43,6 +43,12 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --animate-gradient: gradient 8s linear infinite;
+  @keyframes gradient {
+    to {
+      background-position: var(--bg-size, 300%) 0;
+    }
+  }
 }
 
 :root {
@@ -183,5 +189,154 @@ h6 {
   .grid-4 {
     grid-template-columns: 1fr 1fr;
     row-gap: 0.5rem;
+  }
+}
+
+.edit-button {
+  width: 55px;
+  height: 55px;
+  border-radius: 20px;
+  border: none;
+  background-color: transparent; /* Fond transparent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.edit-button svg {
+  height: 20px;
+  fill: #ff771f; /* Icône orange */
+  z-index: 3;
+  transition: all 0.2s;
+  transform-origin: bottom;
+}
+
+.edit-button:hover svg {
+  transform: rotate(-15deg) translateX(5px);
+}
+
+.edit-button::after {
+  content: '';
+  width: 25px;
+  height: 1.5px;
+  position: absolute;
+  bottom: 19px;
+  left: -5px;
+  background-color: #ff771f; /* Trait orange */
+  border-radius: 2px;
+  z-index: 2;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s ease-out;
+}
+
+.edit-button:hover::after {
+  transform: scaleX(1);
+  left: 0px;
+  transform-origin: right;
+}
+
+.favorite-button {
+  @apply flex justify-center items-center backdrop-blur-sm rounded-3xl p-4 transition duration-500;
+  background-color: #e8e8e80f;
+  border-color: #ffe2e2;
+  box-shadow: rgba(10, 37, 64, 0.218) 0px -2px 6px 0px inset;
+}
+
+.favorite-button:hover {
+  background-color: #eee;
+  transform: scale(1.05);
+  animation: movingBorders 3s infinite;
+}
+
+.favorite-button svg {
+  fill: rgb(255, 110, 110);
+  transition: opacity 0.2s ease-in-out;
+}
+
+.favorite-button:hover .filled {
+  opacity: 1;
+  animation: beatingHeart 1.2s infinite;
+}
+
+@keyframes beatingHeart {
+  0% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.15);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.15);
+  }
+  60% {
+    transform: scale(1);
+  }
+}
+
+.delete-button .trash-svg {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  overflow: visible;
+}
+
+.delete-button #lid-group {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.delete-button:hover #lid-group {
+  transform: rotate(-28deg) translateY(2px);
+}
+
+.delete-button:active #lid-group {
+  transform: rotate(-12deg) scale(0.98);
+}
+
+.delete-button:hover .trash-svg {
+  transform: scale(1.08) rotate(3deg);
+}
+
+.delete-button:active .trash-svg {
+  transform: scale(0.96) rotate(-1deg);
+}
+
+@keyframes switch-cross-to-check {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes switch-check-to-cross {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes switch-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
   }
 }

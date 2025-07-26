@@ -1,5 +1,5 @@
 'use client';
-import { Input } from '@/components/ui/input';
+
 import { Label } from '@/components/ui/label';
 
 export function SearchSection({
@@ -10,17 +10,17 @@ export function SearchSection({
   setSearch: (val: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 w-full">
       <Label htmlFor="search" className="font-semibold text-sm">
         Recherche
       </Label>
-      <Input
+      <input
         type="text"
         id="search"
-        placeholder="Ex: couteau pain palaiseau"
+        placeholder="Ex : vélo électrique, canapé..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="rounded-full text-sm border-none shadow-none focus:ring-0 focus:outline-none focus:border-none bg-transparent"
+        className="text-sm bg-transparent border-none focus:outline-none focus:ring-0 focus:border-none shadow-none p-0"
       />
     </div>
   );

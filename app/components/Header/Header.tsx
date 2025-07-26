@@ -1,11 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { UserCircle, Heart, MessageCircle, Plus, Search } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  UserCircle,
+  Heart,
+  MessageCircle,
+  Plus,
+  Gift,
+  Luggage,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SearchSection } from '../Filter/SearchBar'; // Import SearchSection
 
 export default function Header() {
   const pathname = usePathname();
@@ -13,100 +22,150 @@ export default function Header() {
   const router = useRouter();
 
   const [categories, setCategories] = useState<any[]>([]);
+  const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [activeField, setActiveField] = useState<string | null>(null);
 
-  // Récupère dynamiquement les catégories
+  const [activeCat, setActiveCat] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState({
+    left: 0,
+    top: 0,
+    width: 200,
+  });
+  const catRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const selectedCatId = searchParams.get('categoryId');
+  const isDonActive = searchParams.get('isDon') === 'true';
+
   useEffect(() => {
     fetch('/api/categories')
       .then((res) => res.json())
       .then((data) => setCategories(data));
   }, []);
 
-  // Navigation personnalisée
+  // Met à jour search quand URL change
+  useEffect(() => {
+    setSearch(searchParams.get('q') || '');
+  }, [searchParams]);
+
   function handleCategoryClick(catId: string, e: React.MouseEvent) {
     e.preventDefault();
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
     params.set('categoryId', catId);
     router.push('/?' + params.toString());
   }
 
-  // ID sélectionné dans l'URL
-  const selectedCatId = searchParams.get('categoryId');
+  function handleDonClick(e: React.MouseEvent) {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    if (isDonActive) params.delete('isDon');
+    else params.set('isDon', 'true');
+    router.push('/?' + params.toString());
+  }
+
+  function handleSearchSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    const params = new URLSearchParams(window.location.search);
+    if (search.trim()) params.set('q', search);
+    else params.delete('q');
+    router.push('?' + params.toString());
+  }
+
+  function showDropdown(catId: string) {
+    setActiveCat(catId);
+    const rect = catRefs.current[catId]?.getBoundingClientRect();
+    if (rect) {
+      setDropdownPos({
+        left: rect.left + window.scrollX,
+        top: rect.bottom + window.scrollY,
+        width: rect.width,
+      });
+    }
+  }
+
+  function closeDropdown() {
+    setActiveCat(null);
+  }
 
   return (
-    <header className="w-full bg-neutral-50  backdrop-blur-sm   border-gray-100 z-50 sticky top-0">
-      {/* BARRE PRINCIPALE */}
-      <div className="max-w-7xl mx-auto px-4 flex items-center h-[72px] gap-6">
+    <header className="w-full bg-neutral-50 border-b border-gray-100 z-[1000] sticky top-0">
+      <div className="max-w-7xl mx-auto px-4 flex items-center h-20 gap-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-4">
-          <span className="text-3xl font-black text-orange-500 tracking-tight font-[Poppins,Arial,sans-serif]">
+          <span className="text-3xl font-black text-orange-500 tracking-tight">
             teka
           </span>
-          <span className="text-3xl font-black text-[#FFBF00] font-[Poppins,Arial,sans-serif]">
-            somba
-          </span>
+          <span className="text-3xl font-black text-[#FFBF00]">somba</span>
         </Link>
 
         {/* Déposer une annonce */}
         <Link href="/dashboard/annonces/new">
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-6 py-2 text-lg font-semibold flex items-center gap-2 shadow">
-            <Plus size={20} /> Déposer une annonce
+          <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-6 py-2 text-lg font-semibold flex items-center gap-2 shadow-md hover:scale-105 transition">
+            <Plus size={22} /> Déposer une annonce
           </Button>
         </Link>
 
-        {/* Recherche rapide */}
+        {/* Barre de recherche animée */}
         <form
-          action="/recherche"
-          className="flex items-center bg-gray-100 rounded-xl px-4 ml-4 max-w-sm w-full relative"
+          onSubmit={handleSearchSubmit}
+          className="flex items-center justify-between border h-16  border-gray-200 p-2 rounded-full  ml-4 max-w-md w-full shadow-sm transition relative"
         >
           <input
-            name="q"
-            placeholder="Rechercher…"
-            className="bg-transparent outline-none border-0 h-10 w-full text-gray-700 font-medium"
-            autoComplete="off"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher un article..."
+            className="bg-transparent outline-none border-0 h-full w-full text-gray-700 text-sm font-medium px-2"
           />
           <button
             type="submit"
-            className="ml-2 p-1 bg-orange-500 hover:bg-orange-600 rounded-xl text-white"
+            className=" text-lg bg-orange-500 min-w-16 h-full  hover:bg-orange-600 rounded-full text-white transition"
           >
-            <Search size={20} />
+            🔍
           </button>
         </form>
 
         <div className="flex-1" />
 
-        {/* Icônes actions */}
-        <nav className="flex items-center gap-4">
-          <Link href="/dashboard/favoris" className="relative group">
+        {/* Icônes */}
+        <nav className="flex items-center gap-5">
+          <Link href="/dashboard/favoris">
             <Heart
-              size={24}
-              className="text-gray-600 group-hover:text-orange-500 transition"
+              size={28}
+              className="text-gray-600 hover:text-orange-500 transition-transform hover:scale-110"
             />
           </Link>
-          <Link href="/dashboard/messages" className="relative group">
+          <Link href="/dashboard/messages">
             <MessageCircle
-              size={24}
-              className="text-gray-600 group-hover:text-orange-500 transition"
+              size={28}
+              className="text-gray-600 hover:text-orange-500 transition-transform hover:scale-110"
             />
           </Link>
-          <Link href="/dashboard" className="relative group">
+          <Link href="/dashboard">
             <UserCircle
-              size={24}
-              className="text-gray-600 group-hover:text-orange-500 transition"
+              size={28}
+              className="text-gray-600 hover:text-orange-500 transition-transform hover:scale-110"
             />
           </Link>
         </nav>
       </div>
 
-      {/* MENU CATEGORIES (dynamique, dropdown au hover) */}
-      <nav className="w-full bg-transparent backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto">
+      {/* MENU CATEGORIES */}
+      <nav className="w-full z-50 relative border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto no-scrollbar">
           {categories.map((cat: any) => (
-            <div key={cat.id} className="relative group">
-              {/* Catégorie principale */}
+            <div
+              key={cat.id}
+              ref={(el) => {
+                catRefs.current[cat.id] = el;
+              }}
+              className="relative group"
+              onMouseEnter={() => showDropdown(cat.id)}
+              onMouseLeave={closeDropdown}
+            >
               <a
                 href={`/?categoryId=${cat.id}`}
                 onClick={(e) => handleCategoryClick(cat.id, e)}
-                className={`px-2 py-1 text-base font-medium whitespace-nowrap transition ${
+                className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition ${
                   selectedCatId === cat.id
                     ? 'text-orange-600 border-b-2 border-orange-500'
                     : 'text-gray-700 hover:text-orange-500'
@@ -114,22 +173,38 @@ export default function Header() {
               >
                 {cat.name}
               </a>
-              {/* Dropdown sous-catégories au hover */}
-              {cat.children && cat.children.length > 0 && (
-                <div
-                  className="
-                  absolute left-0 top-full min-w-[200px]
-                  bg-white border shadow-lg rounded-xl py-2 mt-2 opacity-0 pointer-events-none
-                  group-hover:opacity-100 group-hover:pointer-events-auto
-                  transition-all duration-150 z-50
-                "
-                >
-                  {cat.children.map((sub: any) => (
+            </div>
+          ))}
+        </div>
+
+        {/* SOUS-CATEGORIES (Portal) */}
+        {activeCat &&
+          categories.find((c) => c.id === activeCat)?.children?.length > 0 &&
+          createPortal(
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bg-white border max-h-96 overflow-scroll shadow-lg rounded-3xl py-2 z-[9999]"
+                style={{
+                  position: 'absolute',
+                  top: dropdownPos.top,
+                  left: dropdownPos.left,
+                  minWidth: dropdownPos.width,
+                }}
+                onMouseEnter={() => setActiveCat(activeCat)}
+                onMouseLeave={closeDropdown}
+              >
+                {categories
+                  .find((c) => c.id === activeCat)
+                  ?.children.map((sub: any) => (
                     <a
                       key={sub.id}
                       href={`/?categoryId=${sub.id}`}
                       onClick={(e) => handleCategoryClick(sub.id, e)}
-                      className={`block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition rounded-lg ${
+                      className={`block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition rounded-3xl ${
                         selectedCatId === sub.id
                           ? 'text-orange-600 font-bold'
                           : ''
@@ -138,12 +213,37 @@ export default function Header() {
                       {sub.name}
                     </a>
                   ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              </motion.div>
+            </AnimatePresence>,
+            document.body
+          )}
       </nav>
+
+      {/* LIENS SUPPLÉMENTAIRES */}
+      <div className="max-w-7xl mx-auto px-4 flex items-center gap-4 h-12">
+        <a
+          href="/?isDon=true"
+          onClick={handleDonClick}
+          className={`flex items-center gap-2 px-4 py-1 rounded-full transition ${
+            isDonActive
+              ? 'bg-orange-100 text-orange-600 font-semibold'
+              : 'text-gray-700 hover:text-orange-500'
+          }`}
+        >
+          <Gift size={18} /> Dons
+        </a>
+
+        <Link
+          href="/services-bagages"
+          className={`flex items-center gap-2 px-4 py-1 rounded-full transition ${
+            pathname?.includes('services-bagages')
+              ? 'bg-orange-100 text-orange-600 font-semibold'
+              : 'text-gray-700 hover:text-orange-500'
+          }`}
+        >
+          <Luggage size={18} /> Services bagages
+        </Link>
+      </div>
     </header>
   );
 }
