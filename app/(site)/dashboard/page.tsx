@@ -95,8 +95,9 @@ export default async function DashboardPage() {
                   className="mt-2 bg-[var(--color-accent)] text-white hover:bg-[var(--color-primary)] px-4 py-1"
                   variant="ghost"
                   size="sm"
+                  asChild
                 >
-                  Modifier le profil
+                  <Link href="/dashboard/profil">Modifier mon profil</Link>
                 </Button>
               </div>
             </div>
@@ -111,8 +112,9 @@ export default async function DashboardPage() {
                 className="mt-2 text-[var(--color-accent)] border-[var(--color-accent)] bg-white/90 hover:bg-[var(--color-primary)] hover:text-white transition-all"
                 variant="outline"
                 size="sm"
+                asChild
               >
-                Ajouter de l’argent
+                <Link href="/dashboard/wallet">Ajouter de l’argent</Link>
               </Button>
             </div>
           </div>

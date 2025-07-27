@@ -76,7 +76,8 @@ export default function AdDetailsPage() {
             <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-md">
               <Image
                 src={ad.images?.[activeImage]}
-                fill
+                width={800}
+                height={800}
                 alt={`image-${activeImage}`}
                 className="object-cover rounded-3xl transition-transform duration-500 hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -116,7 +117,7 @@ export default function AdDetailsPage() {
                   >
                     <Image
                       src={img}
-                      fill
+                      width={500}
                       alt={`miniature-${i}`}
                       className="object-cover hover:scale-105 transition-transform"
                       sizes="80px"
@@ -180,8 +181,8 @@ export default function AdDetailsPage() {
                 {ad.user?.avatar && (
                   <Image
                     src={ad.user.avatar}
-                    width={52}
-                    height={52}
+                    width={100}
+                    height={100}
                     alt="avatar"
                     className="rounded-full object-cover shadow-md"
                   />
