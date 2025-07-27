@@ -1,12 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserIdFromRequest } from '@/lib/authUser';
 
-export async function GET(
-  req: Request,
-  { params }: { params: { adId: string } }
-) {
-  const { adId } = params; // <-- Pas de await ici
+export async function GET(req: NextRequest) {
+  const { pathname } = new URL(req.url);
+  const adId = pathname.split('/').slice(-2, -1)[0]; // Récupère [adId]
 
   const userId = await getUserIdFromRequest();
   if (!userId)
