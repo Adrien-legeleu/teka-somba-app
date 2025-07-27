@@ -156,11 +156,13 @@ export default function Home({ userId }: { userId?: string | null }) {
                 />
               </div>
               <Link href={`/annonce/${ad.id}`} className="transition">
-                <h2 className="font-semibold text-lg line-clamp-1">
-                  {ad.title}
-                </h2>
-                <div className="text-primary font-bold mt-1">
-                  {ad.price.toLocaleString()} FCFA
+                <div className="flex w-full items-center justify-between">
+                  <h2 className="font-semibold text-md line-clamp-1">
+                    {ad.title}
+                  </h2>
+                  <p className="text-primary font-bold mt-1">
+                    {ad.price.toLocaleString()} FCFA
+                  </p>
                 </div>
                 {ad.location && (
                   <div className="text-sm text-muted-foreground mt-1">

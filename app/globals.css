@@ -241,8 +241,8 @@ h6 {
 }
 
 .favorite-button {
-  @apply flex justify-center items-center backdrop-blur-sm rounded-3xl p-4 transition duration-500;
-  background-color: #e8e8e80f;
+  @apply flex justify-center items-center rounded-[1.3rem] p-3 transition duration-500;
+  background-color: #ffffff;
   border-color: #ffe2e2;
   box-shadow: rgba(10, 37, 64, 0.218) 0px -2px 6px 0px inset;
 }

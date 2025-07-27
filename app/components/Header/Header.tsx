@@ -5,15 +5,10 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  UserCircle,
-  Heart,
-  MessageCircle,
-  Plus,
-  Gift,
-  Luggage,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus, Gift, Luggage } from 'lucide-react';
+import DashboardNav from './DashboardNav';
+import Image from 'next/image';
+import { IconSearch } from '@tabler/icons-react';
 
 type Category = {
   id: string;
@@ -34,6 +29,7 @@ export default function Header() {
     top: 0,
     width: 200,
   });
+  const [expanded, setExpanded] = useState(false);
   const catRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const selectedCatId = searchParams.get('categoryId');
@@ -90,65 +86,73 @@ export default function Header() {
 
   return (
     <header className="w-full bg-neutral-50 border-b border-gray-100 z-[1000] sticky top-0">
-      <div className="max-w-7xl mx-auto px-4 flex items-center h-20 gap-6">
+      <div className="max-w-7xl mx-auto relative px-4 flex justify-between items-center h-20 gap-10">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 mr-4">
-          <span className="text-3xl font-black text-orange-500 tracking-tight">
-            teka
+        <Link href="/">
+          <Image
+            src={'/logo teka somba.png'}
+            alt="logo teka somba"
+            width={200}
+            height={200}
+            className="w-full object-contain h-16 "
+          />
+        </Link>
+        <Link
+          href="/dashboard/annonces/new"
+          style={{
+            background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+          }}
+          className="css-btn relative flex items-center text-white font-medium text-[17px] rounded-3xl px-[1.2em] pr-[3.3em] py-[0.35em] h-[2.8em] overflow-hidden cursor-pointer shadow-inner shadow-orange-700 transition-all duration-300 group"
+        >
+          Déposer une annonce
+          <span className="absolute right-[0.3em] p-2 group-hover:p-0 flex items-center justify-center bg-white rounded-3xl h-[2.2em] w-[2.2em] ml-[1em] shadow-md shadow-orange-700 transition-all duration-300 group-hover:w-[calc(100%-0.6em)]">
+            <Plus className="w-full h-full text-orange-600 transition-transform duration-300 group-hover:translate-x-[0.1em]" />
           </span>
-          <span className="text-3xl font-black text-[#FFBF00]">somba</span>
         </Link>
 
-        {/* Déposer une annonce */}
-        <Link href="/dashboard/annonces/new">
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-6 py-2 text-lg font-semibold flex items-center gap-2 shadow-md hover:scale-105 transition">
-            <Plus size={22} /> Déposer une annonce
-          </Button>
-        </Link>
-
-        {/* Barre de recherche */}
         <form
+          onMouseEnter={() => setExpanded(true)}
+          onMouseLeave={() => setExpanded(false)}
           onSubmit={handleSearchSubmit}
-          className="flex items-center justify-between border h-16 border-gray-200 p-2 rounded-full ml-4 max-w-md w-full shadow-sm transition relative"
+          className="relative flex items-center bg-white border border-gray-200 rounded-full shadow-sm overflow-hidden h-16 max-w-md p-2 w-full"
         >
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un article..."
-            className="bg-transparent outline-none border-0 h-full w-full text-gray-700 text-sm font-medium px-2"
+            className="flex-grow px-4 text-gray-700 placeholder-gray-400 bg-transparent outline-none h-full"
           />
-          <button
+
+          <motion.button
             type="submit"
-            className="text-lg bg-orange-500 min-w-16 h-full hover:bg-orange-600 rounded-full text-white transition"
+            initial={false}
+            animate={{ width: expanded ? '140px' : '64px' }}
+            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            className="flex items-center justify-center text-white font-medium h-full"
+            style={{
+              background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+              borderRadius: '9999px',
+            }}
           >
-            🔍
-          </button>
+            <IconSearch size={22} className="text-white" />
+            <AnimatePresence>
+              {expanded && (
+                <motion.span
+                  initial={{ opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="ml-2 text-sm font-semibold whitespace-nowrap"
+                >
+                  Rechercher
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </form>
-
         <div className="flex-1" />
-
-        {/* Icônes */}
-        <nav className="flex items-center gap-5">
-          <Link href="/dashboard/favoris">
-            <Heart
-              size={28}
-              className="text-gray-600 hover:text-orange-500 transition-transform hover:scale-110"
-            />
-          </Link>
-          <Link href="/dashboard/messages">
-            <MessageCircle
-              size={28}
-              className="text-gray-600 hover:text-orange-500 transition-transform hover:scale-110"
-            />
-          </Link>
-          <Link href="/dashboard">
-            <UserCircle
-              size={28}
-              className="text-gray-600 hover:text-orange-500 transition-transform hover:scale-110"
-            />
-          </Link>
-        </nav>
+        <DashboardNav />
       </div>
 
       {/* MENU CATEGORIES */}
