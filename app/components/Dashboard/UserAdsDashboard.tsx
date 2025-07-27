@@ -25,14 +25,17 @@ type Ad = {
   images: string[];
   boostUntil?: string | null;
 };
-
+type SortOrder = 'asc' | 'desc';
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
   const [ads, setAds] = useState<Ad[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Filtres
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
   const [categoryId, setCategoryId] = useState('');
   const [subCategoryId, setSubCategoryId] = useState('');
   const [city, setCity] = useState('');
@@ -41,6 +44,20 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
 
   // Modal Premium
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
+  // ...
+  useEffect(() => {
+    const timeout = setTimeout(fetchUserAds, 300);
+    return () => clearTimeout(timeout);
+  }, [
+    search,
+    categoryId,
+    subCategoryId,
+    city,
+    isDon,
+    priceMin,
+    priceMax,
+    sortOrder,
+  ]);
 
   useEffect(() => {
     fetchCategories();
@@ -60,16 +77,21 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
     const data: Category[] = await res.json();
     setCategories(data);
   }
-
   async function fetchUserAds() {
     setLoading(true);
     const params = new URLSearchParams();
-    if (subCategoryId)
-      params.append('categoryId', subCategoryId); // priorité sous-cat
+    if (subCategoryId) params.append('categoryId', subCategoryId);
     else if (categoryId) params.append('categoryId', categoryId);
     if (city) params.append('city', city);
     if (search) params.append('q', search);
     if (isDon) params.append('isDon', 'true');
+
+    // ⇩⇩⇩ AJOUTE
+    if (priceMin) params.append('priceMin', priceMin);
+    if (priceMax) params.append('priceMax', priceMax);
+    params.append('sortBy', 'price'); // ou 'createdAt' si tu veux trier par date
+    params.append('sortOrder', sortOrder); // 'asc' | 'desc'
+    // ⇧⇧⇧
 
     const res = await fetch(`/api/ad/user/${userId}?${params.toString()}`);
     const data: Ad[] = await res.json();
@@ -93,7 +115,6 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* Filtres */}
       <FilterBar
         search={search}
         setSearch={setSearch}
@@ -106,8 +127,15 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         setSubCategoryId={setSubCategoryId}
         isDon={isDon}
         setIsDon={setIsDon}
+        // ⇩⇩⇩ AJOUTE
+        priceMin={priceMin}
+        setPriceMin={setPriceMin}
+        priceMax={priceMax}
+        setPriceMax={setPriceMax}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        // ⇧⇧⇧
       />
-
       {/* Résultats */}
       {loading ? (
         <p>Chargement...</p>
