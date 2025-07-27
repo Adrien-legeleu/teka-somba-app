@@ -247,7 +247,7 @@ export default function EditAdForm({
                     className="mt-4 text-white "
                     disabled={!isFormValid}
                   >
-                    Modifier l'annonce
+                    Modifier l&apos;annonce
                   </Button>
                   {/* Delete Button */}
                   <DeleteAdButton

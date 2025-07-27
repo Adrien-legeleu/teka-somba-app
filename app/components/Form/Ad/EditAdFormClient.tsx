@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import EditAdForm from './EditAdForm';
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, MessageSquare } from 'lucide-react';
-import DeleteAdButton from '../../Button/DeleteAdButton';
 
 export default function EditAdFormClient({
   userId,

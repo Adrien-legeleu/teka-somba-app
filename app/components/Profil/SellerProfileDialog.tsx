@@ -34,6 +34,8 @@ export default function SellerProfile({ user, ad }: SellerProfileProps) {
   }
 
   const fullName = `${user.prenom ?? ''} ${user.name ?? ''}`.trim();
+  console.log('USER:', user);
+  console.log('AD:', ad);
 
   return (
     <div className="mt-10 p-6 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border space-y-6">
@@ -81,6 +83,9 @@ export default function SellerProfile({ user, ad }: SellerProfileProps) {
           <div className="bg-neutral-50 rounded-2xl p-3 sm:col-span-2">
             <div className="text-xs uppercase text-gray-400">Localisation</div>
             <div className="font-medium">{ad.location}</div>
+            <p className="text-xs text-neutral-600">
+              La localisation exacte sera donnée par le vendeur.
+            </p>
           </div>
         )}
       </div>

@@ -249,7 +249,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   className="mt-4 w-full"
                   disabled={!isFormValid}
                 >
-                  Créer l'annonce
+                  Créer l&apos;annonce
                 </Button>
               </motion.div>
             )}

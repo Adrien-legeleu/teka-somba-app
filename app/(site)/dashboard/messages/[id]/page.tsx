@@ -50,13 +50,9 @@ export default function ConversationPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { me } = useMe();
 
-  // Si les IDs sont invalides, on arrête ici
-  if (!adId || !otherUserId) {
-    return <div className="text-center p-4">Conversation invalide.</div>;
-  }
-
   // Charger la conversation
   useEffect(() => {
+    if (!adId || !otherUserId) return; // On ne fait rien si les IDs sont invalides
     const fetchMessages = async () => {
       setLoading(true);
       try {
@@ -113,6 +109,11 @@ export default function ConversationPage() {
     } finally {
       setSending(false);
     }
+  }
+
+  // Condition de rendu APRÈS tous les hooks
+  if (!adId || !otherUserId) {
+    return <div className="text-center p-4">Conversation invalide.</div>;
   }
 
   if (loading) return <div className="p-8 text-center">Chargement…</div>;
