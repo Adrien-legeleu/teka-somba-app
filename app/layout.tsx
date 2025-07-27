@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Inter, Poppins } from 'next/font/google';
+import Footer from './components/Footer/Footer';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,6 +30,8 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${inter.variable} ${poppins.variable} antialiased`}>
         {children}
+
+        <Footer />
       </body>
     </html>
   );

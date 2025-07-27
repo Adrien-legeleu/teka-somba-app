@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-
 import { FavoriteButton } from '../Favorite/FavoriteButton';
 import FilterBar from '../Filter/Filterbar';
 import { Category } from '@/types/category';
+import { IconMapPin } from '@tabler/icons-react';
 
 type Ad = {
   id: string;
@@ -30,13 +30,14 @@ export default function Home({ userId }: { userId?: string | null }) {
   const [city, setCity] = useState('');
   const [search, setSearch] = useState('');
   const [isDon, setIsDon] = useState(false);
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Récupère catégories au chargement
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Initialise le filtre catégorie depuis l'URL (quand catégories chargées)
   useEffect(() => {
     if (categories.length === 0) return;
     const urlCatId = searchParams.get('categoryId');
@@ -60,33 +61,29 @@ export default function Home({ userId }: { userId?: string | null }) {
       }
     }
 
-    if (foundParent && foundChild) {
-      setCategoryId(foundParent.id);
-      setSubCategoryId(foundChild.id);
-    } else if (foundParent) {
-      setCategoryId(foundParent.id);
-      setSubCategoryId('');
-    } else {
-      setCategoryId('');
-      setSubCategoryId('');
-    }
+    setCategoryId(foundParent?.id || '');
+    setSubCategoryId(foundChild?.id || '');
   }, [categories, searchParams]);
 
   const isDonParam = searchParams.get('isDon') === 'true';
-
-  useEffect(() => {
-    setIsDon(isDonParam);
-  }, [isDonParam]);
+  useEffect(() => setIsDon(isDonParam), [isDonParam]);
 
   const qParam = searchParams.get('q') || '';
-  useEffect(() => {
-    setSearch(qParam);
-  }, [qParam]);
+  useEffect(() => setSearch(qParam), [qParam]);
 
   useEffect(() => {
     fetchAds();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId, subCategoryId, city, isDon, userId, search]);
+  }, [
+    categoryId,
+    subCategoryId,
+    city,
+    isDon,
+    userId,
+    search,
+    priceMin,
+    priceMax,
+    sortOrder,
+  ]);
 
   async function fetchCategories() {
     const res = await fetch('/api/categories');
@@ -103,6 +100,13 @@ export default function Home({ userId }: { userId?: string | null }) {
     if (search) params.append('q', search);
     if (isDon) params.append('isDon', 'true');
     if (userId) params.append('userId', userId);
+    if (priceMin) params.append('priceMin', priceMin);
+    if (priceMax) params.append('priceMax', priceMax);
+    if (sortOrder) {
+      params.append('sortBy', 'price');
+      params.append('sortOrder', sortOrder);
+    }
+
     const res = await fetch('/api/ad?' + params.toString());
     const data: Ad[] = await res.json();
     setAds(data);
@@ -110,7 +114,7 @@ export default function Home({ userId }: { userId?: string | null }) {
   }
 
   return (
-    <div className="w-full mx-auto">
+    <div className="w-full mx-auto  pb-32 ">
       {/* Filtres */}
       <FilterBar
         search={search}
@@ -124,28 +128,34 @@ export default function Home({ userId }: { userId?: string | null }) {
         setSubCategoryId={setSubCategoryId}
         isDon={isDon}
         setIsDon={setIsDon}
+        priceMin={priceMin}
+        setPriceMin={setPriceMin}
+        priceMax={priceMax}
+        setPriceMax={setPriceMax}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
       />
 
       {/* Résultats */}
       {loading ? (
-        <p>Chargement...</p>
+        <p className="text-center text-gray-500 py-10">Chargement...</p>
       ) : ads.length === 0 ? (
-        <p className="shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10">
+        <p className="text-center rounded-2xl shadow-md bg-white p-10 text-gray-600">
           Aucune annonce trouvée.
         </p>
       ) : (
-        <div className="grid grid-cols-1 z-10 shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 px-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
           {ads.map((ad) => (
-            <div key={ad.id} className="border-b pb-2">
+            <div key={ad.id} className="   overflow-hidden relative">
               <div className="relative">
-                <Link href={`/annonce/${ad.id}`} className="transition">
+                <Link href={`/annonce/${ad.id}`}>
                   {ad.images?.[0] && (
                     <Image
                       src={ad.images[0]}
                       alt={ad.title}
                       width={300}
                       height={200}
-                      className="rounded-3xl aspect-square shadow-2xl shadow-[#0000010] border border-gray-100 w-full object-cover"
+                      className="w-full aspect-square rounded-3xl  object-cover"
                     />
                   )}
                 </Link>
@@ -155,20 +165,18 @@ export default function Home({ userId }: { userId?: string | null }) {
                   isFavoriteInitial={ad.isFavorite}
                 />
               </div>
-              <Link href={`/annonce/${ad.id}`} className="transition">
-                <div className="flex w-full items-center justify-between">
-                  <h2 className="font-semibold text-md line-clamp-1">
-                    {ad.title}
-                  </h2>
-                  <p className="text-primary font-bold mt-1">
-                    {ad.price.toLocaleString()} FCFA
-                  </p>
-                </div>
+              <Link href={`/annonce/${ad.id}`} className="block pl-1 py-4">
+                <h2 className="font-semibold text-sm md:text-base line-clamp-1">
+                  {ad.title}
+                </h2>
                 {ad.location && (
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {ad.location}
+                  <div className="flex items-center text-xs text-gray-500 mt-1">
+                    <IconMapPin size={14} className="mr-1" /> {ad.location}
                   </div>
                 )}
+                <p className=" font-semibold mt-2 text-sm md:text-base">
+                  {ad.price.toLocaleString()} FCFA
+                </p>
               </Link>
             </div>
           ))}

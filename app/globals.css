@@ -4,6 +4,9 @@
 @import 'leaflet/dist/leaflet.css';
 
 @custom-variant dark (&:is(.dark *));
+@theme {
+  --breakpoint-xs: 450px;
+}
 
 @theme inline {
   --color-background: var(--background);

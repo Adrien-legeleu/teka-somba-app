@@ -26,12 +26,35 @@ interface AdWithRelations {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+
     const categoryId = searchParams.get('categoryId');
     const city = searchParams.get('city');
     const userId = searchParams.get('userId');
-    const query = searchParams.get('q')?.trim().toLowerCase();
+    const query = searchParams.get('q')?.trim().toLowerCase() || '';
     const isDon = searchParams.get('isDon') === 'true';
 
+    // ----- Nouveaux paramètres -----
+    const priceMinRaw = searchParams.get('priceMin');
+    const priceMaxRaw = searchParams.get('priceMax');
+
+    const sortByRaw = searchParams.get('sortBy');
+    const sortByParam: 'price' | 'createdAt' =
+      sortByRaw === 'price' ? 'price' : 'createdAt';
+
+    const sortOrderRaw = searchParams.get('sortOrder');
+    const sortOrderParam: 'asc' | 'desc' =
+      sortOrderRaw === 'asc' ? 'asc' : 'desc';
+
+    const priceMin =
+      priceMinRaw !== null && !Number.isNaN(Number(priceMinRaw))
+        ? Number(priceMinRaw)
+        : undefined;
+    const priceMax =
+      priceMaxRaw !== null && !Number.isNaN(Number(priceMaxRaw))
+        ? Number(priceMaxRaw)
+        : undefined;
+
+    // ----- Catégorie + sous-catégories -----
     let categoryIds: string[] = [];
     if (categoryId) {
       const category = await prisma.category.findUnique({
@@ -44,11 +67,27 @@ export async function GET(request: Request) {
       ];
     }
 
+    // ----- WHERE -----
     const where: Prisma.AdWhereInput = {};
     if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
     if (isDon) where.isDon = true;
     if (city) where.location = { contains: city, mode: 'insensitive' };
 
+    if (priceMin !== undefined || priceMax !== undefined) {
+      where.price = {};
+      if (priceMin !== undefined)
+        (where.price as Prisma.IntFilter).gte = priceMin;
+      if (priceMax !== undefined)
+        (where.price as Prisma.IntFilter).lte = priceMax;
+    }
+
+    // ----- TRI DB -----
+    const orderBy: Prisma.AdOrderByWithRelationInput =
+      sortByParam === 'price'
+        ? { price: sortOrderParam }
+        : { createdAt: sortOrderParam };
+
+    // ----- Récupération -----
     const ads = (await prisma.ad.findMany({
       where,
       include: {
@@ -56,7 +95,7 @@ export async function GET(request: Request) {
         category: { select: { id: true, name: true } },
         favorites: userId ? { where: { userId } } : false,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
     })) as AdWithRelations[];
 
     const adsWithFavorite = ads.map((ad) => ({
@@ -64,7 +103,8 @@ export async function GET(request: Request) {
       isFavorite: userId ? (ad.favorites?.length ?? 0) > 0 : false,
     }));
 
-    let filtered = adsWithFavorite;
+    // ----- Recherche fuzzy (après DB) -----
+    let result = adsWithFavorite;
     if (query) {
       const fuse = new Fuse(adsWithFavorite, {
         keys: [
@@ -76,11 +116,24 @@ export async function GET(request: Request) {
         ],
         threshold: 0.4,
       });
-      filtered = fuse.search(query).map((r) => r.item);
+      result = fuse.search(query).map((r) => r.item);
+
+      // Conserver le tri demandé même après fuzzy
+      result.sort((a, b) => {
+        const dir = sortOrderParam === 'asc' ? 1 : -1;
+        if (sortByParam === 'price') {
+          return (a.price - b.price) * dir;
+        }
+        return (
+          (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
+          dir
+        );
+      });
     }
 
-    return NextResponse.json(filtered);
-  } catch {
+    return NextResponse.json(result);
+  } catch (e) {
+    console.error(e);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des annonces' },
       { status: 500 }

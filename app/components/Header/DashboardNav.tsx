@@ -16,7 +16,7 @@ export default function DashboardNav() {
 
   return (
     <LayoutGroup>
-      <nav className="relative flex items-center justify-center gap-6 bg-white rounded-full border border-gray-200  px-4 py-2 shadow-sm">
+      <nav className="relative flex items-center justify-center lg:gap-2 ap-1 bg-white rounded-full border border-gray-200  px-1 py-1 shadow-sm">
         {icons.map((x, i) => {
           const Icon = x.Icon;
           const isActive = i === activeIndex;
@@ -32,7 +32,7 @@ export default function DashboardNav() {
                   />
                 )}
                 <Icon
-                  className={`w-6 h-6 transition-transform duration-200 ${
+                  className={`lg:w-6 lg:h-6 h-5 w-5 transition-transform duration-200 ${
                     isActive ? 'scale-110 text-orange-500' : 'text-orange-500'
                   }`}
                 />
