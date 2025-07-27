@@ -12,7 +12,7 @@ import EditAdButton from '../Button/EditAdButton';
 import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text';
 import { cn } from '@/lib/utils';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-import PremiumModal from '../Payment/PremiumOffers';
+import DashboardPremiumOffers from '../Payment/DashboardPremiumOffers';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
@@ -188,7 +188,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
 
       {/* Modal Premium */}
       {selectedAdId && (
-        <PremiumModal
+        <DashboardPremiumOffers
           adId={selectedAdId}
           onClose={() => setSelectedAdId(null)}
         />

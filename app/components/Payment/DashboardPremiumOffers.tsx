@@ -13,7 +13,7 @@ type Offer = {
   price: number;
 };
 
-export default function PremiumModal({
+export default function DashboardPremiumOffers({
   adId,
   onClose,
 }: {
