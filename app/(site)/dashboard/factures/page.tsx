@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-('use client');
+// prettier-ignore
+'use client';
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
