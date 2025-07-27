@@ -4,29 +4,8 @@ import { useEffect, useState } from 'react';
 import EditAdForm from './EditAdForm';
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, MessageSquare } from 'lucide-react';
-import { DynamicField, DynamicFieldValues } from '@/types/ad';
-
-type Category = {
-  id: string;
-  name: string;
-  parentId: string | null;
-  fields?: DynamicField[];
-  children: Category[];
-};
-
-type Ad = {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  images: string[];
-  location: string;
-  lat: number | null;
-  lng: number | null;
-  isDon?: boolean;
-  category?: { id: string };
-  dynamicFields?: DynamicFieldValues;
-};
+import { Ad } from '@/types/ad';
+import { Category } from '@/types/category';
 
 export default function EditAdFormClient({
   userId,
@@ -35,7 +14,7 @@ export default function EditAdFormClient({
   userId: string;
   adId: string;
 }) {
-  const [ad, setAd] = useState<Ad>(null);
+  const [ad, setAd] = useState<Ad | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -59,7 +38,6 @@ export default function EditAdFormClient({
   return (
     <div className="p-10 space-y-8">
       {/* Bloc Analytics */}
-
       <div className="grid grid-cols-3 gap-4 w-full md:w-2/3">
         <Card className="p-4 text-center rounded-2xl shadow-md">
           <Eye className="w-5 h-5 mx-auto text-gray-400 mb-1" />
