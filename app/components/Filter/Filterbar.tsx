@@ -192,7 +192,7 @@ export default function FilterBar({
             </Button>
           </DrawerTrigger>
 
-          <DrawerContent className="p-6 max-h-[85vh] z-[10000000] ">
+          <DrawerContent className="p-6 max-h-[85vh] !rounded-t-3xl z-[10000000] ">
             <DrawerHeader>
               <DrawerTitle>Tous les filtres</DrawerTitle>
             </DrawerHeader>
