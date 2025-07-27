@@ -144,7 +144,7 @@ export default function Home({ userId }: { userId?: string | null }) {
           Aucune annonce trouvée.
         </p>
       ) : (
-        <div className="grid grid-cols-1 px-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
+        <div className="grid grid-cols-1 px-10 home:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
           {ads.map((ad) => (
             <div key={ad.id} className="   overflow-hidden relative">
               <div className="relative">
