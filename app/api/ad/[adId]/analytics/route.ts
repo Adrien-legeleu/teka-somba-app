@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserIdFromRequest } from '@/lib/authUser';
 
-export async function GET(req: Request, context: { params: { adId: string } }) {
-  const adId = context.params.adId;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ adId: string }> }
+): Promise<NextResponse> {
+  const { adId } = await params;
 
   const userId = await getUserIdFromRequest();
   if (!userId) {
@@ -14,19 +17,14 @@ export async function GET(req: Request, context: { params: { adId: string } }) {
     where: { id: adId },
     select: { userId: true },
   });
-
   if (!ad) {
     return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
   }
-
   if (ad.userId !== userId) {
     return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
   }
 
-  const analytics = await prisma.adAnalytics.findUnique({
-    where: { adId },
-  });
-
+  const analytics = await prisma.adAnalytics.findUnique({ where: { adId } });
   return NextResponse.json(
     analytics ?? {
       views: 0,
