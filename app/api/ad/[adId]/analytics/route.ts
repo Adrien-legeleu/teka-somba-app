@@ -3,24 +3,23 @@ import { prisma } from '@/lib/prisma';
 import { getUserIdFromRequest } from '@/lib/authUser';
 
 export async function GET(
-  req: NextRequest,
-  context: { params: { adId: string } }
+  request: NextRequest,
+  context: { params: Promise<{ adId: string }> }
 ) {
-  const { adId } = context.params;
+  const { adId } = await context.params;
 
   const userId = await getUserIdFromRequest();
-  if (!userId) {
+  if (!userId)
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-  }
 
   const ad = await prisma.ad.findUnique({
     where: { id: adId },
     select: { userId: true },
   });
 
-  if (!ad) {
+  if (!ad)
     return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
-  }
+
   if (ad.userId !== userId) {
     return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
   }
