@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
+import SuspenseWrapper from '@/app/components/Dashboard/SuspenseWrapper';
 
 type AuthPayload = JwtPayload & {
   userId: string;
@@ -26,5 +27,5 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  return <>{children}</>;
+  return <SuspenseWrapper>{children}</SuspenseWrapper>;
 }
