@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
