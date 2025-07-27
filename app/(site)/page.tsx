@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Home from '../components/Home/Home';
+import { Suspense } from 'react';
+export const runtime = 'nodejs';
 
 type AuthPayload = JwtPayload & {
   userId: string;
@@ -26,7 +28,9 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen flex justify-start">
-      <Home userId={userId} />
+      <Suspense fallback={<div>Chargement...</div>}>
+        <Home userId={userId} />
+      </Suspense>
     </div>
   );
 }

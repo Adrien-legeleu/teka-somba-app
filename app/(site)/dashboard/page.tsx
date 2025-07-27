@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import AnalyticsDashboard from '@/app/components/Fonctionnalities/DashboardAnalyticsClient';
 import Image from 'next/image';
+export const runtime = 'nodejs';
 
 interface JWTPayload {
   userId: string;

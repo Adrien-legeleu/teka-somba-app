@@ -2,7 +2,8 @@ import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import AdminPanel from '../components/admin/AdminPanel';
 import { prisma } from '@/lib/prisma';
-
+import { Suspense } from 'react';
+export const runtime = 'nodejs';
 type AuthPayload = JwtPayload & {
   userId: string;
 };
@@ -39,7 +40,12 @@ export default async function AdminPage() {
     },
   });
 
-  if (!user || !user.isAdmin) return null;
-
-  return <AdminPanel />;
+  if (!user || !user.isAdmin) {
+    return null;
+  }
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <AdminPanel />
+    </Suspense>
+  );
 }

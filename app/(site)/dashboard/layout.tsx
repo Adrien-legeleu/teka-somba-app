@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
 import SuspenseWrapper from '@/app/components/Dashboard/SuspenseWrapper';
-
+export const runtime = 'nodejs';
 type AuthPayload = JwtPayload & {
   userId: string;
 };
