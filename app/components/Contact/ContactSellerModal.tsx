@@ -12,25 +12,9 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Ad } from '@/types/ad';
 import Image from 'next/image';
 import { useState } from 'react';
-
-type AdUser = {
-  id: string;
-  name: string;
-  prenom?: string | null;
-  avatar?: string | null;
-  city?: string | null;
-};
-
-type Ad = {
-  id: string;
-  title: string;
-  price: number;
-  location?: string;
-  images: string[];
-  user: AdUser;
-};
 
 interface ContactSellerModalProps {
   ad: Ad;
@@ -53,7 +37,15 @@ export default function ContactSellerModal({
   async function handleSend() {
     setSending(true);
     setError(null);
+
     try {
+      if (!ad.user) {
+        setError(
+          'Impossible de contacter ce vendeur (informations manquantes).'
+        );
+        setSending(false);
+        return;
+      }
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

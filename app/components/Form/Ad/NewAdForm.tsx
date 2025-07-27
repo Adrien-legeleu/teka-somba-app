@@ -1,6 +1,6 @@
 'use client';
-import { motion, AnimatePresence } from 'framer-motion';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
+import { DynamicField, DynamicFieldValues } from '@/types/ad';
 
 type Category = {
   id: string;
@@ -27,41 +28,20 @@ type Category = {
   children: Category[];
 };
 
-type DynamicField = {
-  name: string;
-  label: string;
-  type: string;
-  required: boolean;
-  options?: string[];
-};
-
 export default function NewAdForm({ categories }: { categories: Category[] }) {
-  // States
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [dynamicFields, setDynamicFields] = useState<any[]>([]);
+  const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [location, setLocation] = useState<string>('');
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
 
-  // Fetch champs dynamiques de la catégorie sélectionnée
-  //   useEffect(() => {
-  //     if (!categoryId) return setDynamicFields([]);
-  //     fetch(`/api/categories/${categoryId}/fields`)
-  //       .then((r) => r.json())
-  //       .then((data) => setDynamicFields(data.fields))
-  //       .catch(() => setDynamicFields([]));
-  //   }, [categoryId]);
-
-  // Fonction récursive pour trouver la catégorie sélectionnée
   useEffect(() => {
     if (!categoryId) return setDynamicFields([]);
-
-    // Fonction récursive, typée
     function findCategoryById(cats: Category[], id: string): Category | null {
       for (const cat of cats) {
         if (cat.id === id) return cat;
-        if (cat.children && cat.children.length) {
+        if (cat.children?.length) {
           const found = findCategoryById(cat.children, id);
           if (found) return found;
         }
@@ -73,7 +53,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     setDynamicFields(cat?.fields || []);
   }, [categoryId, categories]);
 
-  // Schéma Zod minimal côté client (validation basique, la vraie validation est côté backend)
   const zodBase = z.object({
     title: z.string().min(1, 'Titre obligatoire'),
     description: z.string().min(1, 'Description obligatoire'),
@@ -104,26 +83,22 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   });
 
   const { handleSubmit, setValue, watch, formState } = methods;
-  console.log('formState.errors', formState.errors);
 
-  // Gère submit
-  const onSubmit = async (data: any) => {
-    // On récupère la catégorie sélectionnée
+  const onSubmit = async (data: z.infer<typeof zodBase>) => {
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
       .find((cat) => cat.id === (categoryId ?? data.categoryId));
+
     const expectedDynamicFields = (selectedCat?.fields || []).map(
       (f) => f.name
     );
 
-    // Filtrer les dynamicFields pour n’envoyer QUE ceux qui sont attendus par la catégorie sélectionnée
     const filteredDynamicFields = Object.fromEntries(
       Object.entries(data.dynamicFields || {}).filter(
         ([key, value]) => expectedDynamicFields.includes(key) && value !== ''
       )
     );
 
-    // Puis tu POST comme d’habitude :
     try {
       const res = await fetch('/api/ad', {
         method: 'POST',
@@ -135,7 +110,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
           lat,
           lng,
           categoryId,
-          dynamicFields: filteredDynamicFields, // <= ici la correction !
+          dynamicFields: filteredDynamicFields,
         }),
       });
 
@@ -147,15 +122,13 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         const error = await res.json();
         toast.error(error.error || 'Erreur de création');
       }
-    } catch (e) {
+    } catch {
       toast.error('Erreur inconnue');
     }
   };
 
   const watched = watch();
-  const isDon = !!watched.isDon; // Force booléen, car RHF peut envoyer undefined
-
-  // Controlled Price input
+  const isDon = !!watched.isDon;
   const priceValue = isDon
     ? 0
     : watched.price === undefined
@@ -163,15 +136,13 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       : watched.price;
 
   useEffect(() => {
-    if (isDon) {
-      setValue('price', 0, { shouldValidate: true });
-    } else {
-      setValue('price', NaN, { shouldValidate: true });
-    }
+    if (isDon) setValue('price', 0, { shouldValidate: true });
+    else setValue('price', NaN, { shouldValidate: true });
   }, [isDon, setValue]);
 
   const isFormValid =
     watched.title.trim().length > 0 && categoryId !== null && images.length > 0;
+
   return (
     <FormProvider {...methods}>
       <form
@@ -179,7 +150,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         className="grid md:grid-cols-3 gap-8"
       >
         <div className="md:col-span-2 flex flex-col gap-6">
-          {/* 1. Étape Catégorie + Titre */}
           <CategoryPicker
             categories={categories}
             onSelect={(id) => {
@@ -187,7 +157,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
               setValue('categoryId', id);
             }}
           />
-
           <Input
             {...methods.register('title')}
             placeholder="Titre de l'annonce"
@@ -196,7 +165,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
             <Switch id="don" {...methods.register('isDon')} />
             <Label htmlFor="don">Mettre en don (gratuit)</Label>
           </div>
-
           <AnimatePresence>
             {categoryId && (
               <motion.div
@@ -255,8 +223,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
             )}
           </AnimatePresence>
         </div>
-
-        {/* Aperçu : toujours visible (si tu veux le cacher au début aussi, ajoute categoryId ici) */}
         <div className="md:col-span-1">
           <AdPreview
             ad={{
@@ -266,6 +232,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
               lat,
               lng,
               categoryId,
+              dynamicFields: watched.dynamicFields as DynamicFieldValues,
             }}
             dynamicFields={dynamicFields}
           />

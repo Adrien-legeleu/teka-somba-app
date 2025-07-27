@@ -4,6 +4,29 @@ import { useEffect, useState } from 'react';
 import EditAdForm from './EditAdForm';
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, MessageSquare } from 'lucide-react';
+import { DynamicField, DynamicFieldValues } from '@/types/ad';
+
+type Category = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  fields?: DynamicField[];
+  children: Category[];
+};
+
+type Ad = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  images: string[];
+  location: string;
+  lat: number | null;
+  lng: number | null;
+  isDon?: boolean;
+  category?: { id: string };
+  dynamicFields?: DynamicFieldValues;
+};
 
 export default function EditAdFormClient({
   userId,
@@ -12,8 +35,8 @@ export default function EditAdFormClient({
   userId: string;
   adId: string;
 }) {
-  const [ad, setAd] = useState<any>(null);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [ad, setAd] = useState<Ad>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {

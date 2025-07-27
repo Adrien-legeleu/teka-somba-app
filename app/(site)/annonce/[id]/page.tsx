@@ -11,33 +11,7 @@ import { useMe } from '@/hooks/useMe';
 import ContactSellerModal from '@/app/components/Contact/ContactSellerModal';
 import TrackAdView from '@/app/components/Fonctionnalities/TrackAdView';
 import SellerProfile from '@/app/components/Profil/SellerProfileDialog';
-
-interface User {
-  id: string;
-  name: string;
-  prenom?: string | null;
-  avatar?: string | null;
-  phone?: string | null;
-  city?: string | null;
-  age?: number | null;
-  isVerified?: boolean;
-}
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Ad {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  location?: string;
-  images: string[];
-  category?: Category;
-  user?: User;
-}
+import { Ad } from '@/types/ad';
 
 export default function AdDetailsPage() {
   const { id } = useParams();
@@ -241,7 +215,6 @@ export default function AdDetailsPage() {
                 ) : (
                   <ContactSellerModal
                     ad={ad}
-                    user={me}
                     disabled={false}
                     onSent={() => router.push('/dashboard/messages')}
                   />

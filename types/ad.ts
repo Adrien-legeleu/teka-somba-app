@@ -10,7 +10,13 @@ export type DynamicFieldValue = string | number | boolean | null | undefined;
 
 export type DynamicFieldValues = Record<string, DynamicFieldValue>;
 
-export type Ad = {
+export interface AdAnalytics {
+  views: number;
+  messagesCount: number;
+  favoritesCount: number;
+}
+
+export interface Ad {
   id: string;
   title: string;
   description: string;
@@ -20,9 +26,11 @@ export type Ad = {
   lat: number | null;
   lng: number | null;
   isDon?: boolean;
-  categoryId?: string | null;
+  category?: { id: string; name?: string };
   dynamicFields?: DynamicFieldValues;
-};
+  adAnalytics?: AdAnalytics;
+  user?: User;
+}
 
 export type Category = {
   id: string;
@@ -31,3 +39,13 @@ export type Category = {
   fields?: DynamicField[];
   children: Category[];
 };
+export interface User {
+  id: string;
+  name: string;
+  prenom?: string | null;
+  avatar?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  age?: number | null;
+  isVerified?: boolean;
+}
