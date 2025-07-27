@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-// prettier-ignore
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -66,7 +64,9 @@ export default function FacturePage() {
                 </div>
                 <div className="text-right">
                   <p
-                    className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`font-semibold ${
+                      tx.amount > 0 ? 'text-green-600' : 'text-red-600'
+                    }`}
                   >
                     {tx.amount > 0 ? `+${tx.amount}` : tx.amount} crédits
                   </p>
