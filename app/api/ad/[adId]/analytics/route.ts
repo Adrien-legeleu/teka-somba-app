@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserIdFromRequest } from '@/lib/authUser';
 
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ adId: string }> }
+  req: Request,
+  { params }: { params: { adId: string } }
 ) {
-  const { adId } = await context.params;
+  const { adId } = params; // <-- Pas de await ici
 
   const userId = await getUserIdFromRequest();
   if (!userId)
