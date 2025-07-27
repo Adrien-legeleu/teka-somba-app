@@ -11,7 +11,7 @@ export function FavoriteButton({
 }: {
   adId: string;
   userId?: string | null; // Peut être undefined si pas connecté
-  isFavoriteInitial: boolean;
+  isFavoriteInitial: boolean | undefined;
 }) {
   const [isFavorite, setIsFavorite] = useState(isFavoriteInitial);
   const [loading, setLoading] = useState(false);

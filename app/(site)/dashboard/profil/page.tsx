@@ -1,18 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-// import ton composant d’upload (ex : AvatarUploader, IdentityCardUploader)
 import Image from 'next/image';
 import { PasswordChangeBlock } from '@/app/components/Profil/MDProfil';
 
+// Interface pour l'utilisateur
+interface UserProfile {
+  id: string;
+  name: string;
+  prenom: string;
+  email: string;
+  city?: string;
+  age?: number;
+  phone?: string;
+  avatar?: string;
+  identityCardUrl?: string;
+  isVerified?: boolean;
+  isRejected?: boolean;
+}
+
 export default function ProfilPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState<any>({});
+  const [form, setForm] = useState<Partial<UserProfile>>({});
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,22 +33,24 @@ export default function ProfilPage() {
   useEffect(() => {
     fetch('/api/profile')
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: UserProfile) => {
         setUser(data);
         setForm(data);
       })
       .finally(() => setLoading(false));
   }, []);
 
-  function handleChange(e: any) {
-    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   }
 
-  async function handleSave(e: any) {
+  async function handleSave(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaving(true);
     setSuccess(false);
     setError(null);
+
     try {
       const res = await fetch('/api/profile', {
         method: 'PUT',
@@ -44,8 +59,9 @@ export default function ProfilPage() {
       });
       if (!res.ok) throw new Error('Erreur lors de la sauvegarde');
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || 'Erreur');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur';
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -98,7 +114,7 @@ export default function ProfilPage() {
               />
               <Input
                 name="age"
-                value={form.age || ''}
+                value={form.age?.toString() || ''}
                 onChange={handleChange}
                 type="number"
                 placeholder="Âge"
@@ -123,10 +139,11 @@ export default function ProfilPage() {
               Pour changer d’adresse, veuillez supprimer votre compte et en
               recréer un.
             </div>
+
             {/* Upload carte d'identité */}
             <div>
               <div className="mb-1 font-medium">
-                Carte d'identité (photo/scan)
+                Carte d&apos;identité (photo/scan)
               </div>
               {form.identityCardUrl ? (
                 <div className="flex items-center gap-4">
@@ -152,17 +169,16 @@ export default function ProfilPage() {
                         ? 'Refusée'
                         : 'En attente de validation'}
                   </span>
-                  {/* <IdentityCardUploader ... /> */}
                 </div>
               ) : (
                 <div>
-                  {/* <IdentityCardUploader onUpload={url => setForm(f => ({ ...f, identityCardUrl: url }))} /> */}
                   <span className="text-gray-500 text-sm">
                     Aucun fichier ajouté
                   </span>
                 </div>
               )}
             </div>
+
             {success && (
               <div className="bg-green-100 text-green-700 rounded p-2 text-sm">
                 Profil mis à jour !
@@ -173,6 +189,7 @@ export default function ProfilPage() {
                 {error}
               </div>
             )}
+
             <Button
               type="submit"
               className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-10"
@@ -183,7 +200,6 @@ export default function ProfilPage() {
           </form>
         </CardContent>
       </Card>
-
       <PasswordChangeBlock />
     </div>
   );

@@ -1,10 +1,34 @@
 'use client';
+
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
+
+interface User {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
+interface Ad {
+  id: string;
+  title: string;
+  images: string[];
+}
+
+interface Message {
+  id: string;
+  adId: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+  receiver?: User;
+  sender?: User;
+  ad?: Ad;
+}
 
 export default function ConversationPage() {
   const params = useParams();
@@ -14,38 +38,50 @@ export default function ConversationPage() {
       : Array.isArray(params?.id)
         ? params.id[0]
         : '';
+
   const [adId, otherUserId] = rawId.split('_');
 
-  const [messages, setMessages] = useState<any[]>([]);
-  const [ad, setAd] = useState<any>(null);
-  const [otherUser, setOtherUser] = useState<any>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [ad, setAd] = useState<Ad | null>(null);
+  const [otherUser, setOtherUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { me } = useMe();
 
-  // Sécurité params
+  // Si les IDs sont invalides, on arrête ici
   if (!adId || !otherUserId) {
     return <div className="text-center p-4">Conversation invalide.</div>;
   }
 
   // Charger la conversation
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/messages?adId=${adId}&otherUserId=${otherUserId}`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchMessages = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/messages?adId=${adId}&otherUserId=${otherUserId}`
+        );
+        const data: Message[] = await res.json();
         setMessages(data);
+
         if (data.length > 0) {
           setAd(data[0].ad ?? null);
           setOtherUser(
-            data[0].senderId === me?.id ? data[0].receiver : data[0].sender
+            data[0].senderId === me?.id
+              ? (data[0].receiver ?? null)
+              : (data[0].sender ?? null)
           );
         }
-      })
-      .finally(() => setLoading(false));
-    // eslint-disable-next-line
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
   }, [adId, otherUserId, me?.id]);
 
   // Scroll auto en bas
@@ -66,12 +102,14 @@ export default function ConversationPage() {
           content: message,
         }),
       });
-      if (!res.ok) throw new Error('Erreur');
+
+      if (!res.ok) throw new Error("Erreur lors de l'envoi");
+
       setMessage('');
-      // Recharge messages
-      fetch(`/api/messages?adId=${adId}&otherUserId=${otherUserId}`)
-        .then((res) => res.json())
-        .then(setMessages);
+      const updated = await fetch(
+        `/api/messages?adId=${adId}&otherUserId=${otherUserId}`
+      );
+      setMessages(await updated.json());
     } finally {
       setSending(false);
     }
@@ -99,7 +137,7 @@ export default function ConversationPage() {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto bg-gray-50 rounded-2xl px-4 py-3 mb-3">
-        {messages.map((msg, idx) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`mb-2 flex ${msg.senderId === me?.id ? 'justify-end' : 'justify-start'}`}

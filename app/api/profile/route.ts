@@ -36,11 +36,11 @@ export async function PUT(req: Request) {
   if (!userId)
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-  let { name, prenom, city, age, phone, avatar, identityCardUrl } =
+  const { name, prenom, city, age, phone, avatar, identityCardUrl } =
     await req.json();
 
   // Correction : convertis age en number (ou null si vide/NaN)
-  age =
+  const parsedAge =
     age === '' || age === undefined || age === null
       ? null
       : isNaN(Number(age))
@@ -53,7 +53,7 @@ export async function PUT(req: Request) {
       name,
       prenom,
       city,
-      age,
+      age: parsedAge,
       phone,
       ...(avatar ? { avatar } : {}),
       ...(identityCardUrl
@@ -88,7 +88,6 @@ export async function PATCH(req: Request) {
       { status: 401 }
     );
 
-  // Optionnel : vérifie la robustesse du nouveau mot de passe ici
   if (newPassword.length < 8)
     return NextResponse.json(
       { error: 'Le nouveau mot de passe doit faire au moins 8 caractères.' },

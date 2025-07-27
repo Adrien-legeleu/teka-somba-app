@@ -1,11 +1,13 @@
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
-  let event;
+
+  let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(
@@ -21,11 +23,25 @@ export async function POST(req: Request) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any;
-    const userId = session.metadata.userId;
-    const amount = parseInt(session.metadata.amount); // ex: 5000 => 5000 FCFA
+    const session = event.data.object as Stripe.Checkout.Session;
 
-    // Conversion FCFA -> crédits (1 crédit = 1 FCFA ici)
+    // On vérifie que les métadonnées existent
+    const userId = session.metadata?.userId;
+    const amountStr = session.metadata?.amount;
+
+    if (!userId || !amountStr) {
+      return NextResponse.json(
+        { error: 'Metadata userId ou amount manquant.' },
+        { status: 400 }
+      );
+    }
+
+    const amount = parseInt(amountStr, 10);
+    if (isNaN(amount)) {
+      return NextResponse.json({ error: 'Amount invalide.' }, { status: 400 });
+    }
+
+    // Conversion FCFA -> crédits (1 crédit = 1 FCFA)
     const credits = amount;
 
     await prisma.user.update({

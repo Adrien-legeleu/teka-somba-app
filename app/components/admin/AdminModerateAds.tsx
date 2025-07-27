@@ -4,14 +4,16 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CityPicker } from '../Filter/cityPicker';
-import { CategoryPicker } from '../Filter/Categorypicker';
-import { SearchBar } from '../Filter/SearchBar';
-import { DonSwitch } from '../Filter/DonSwitch';
-import { FavoriteButton } from '../Favorite/FavoriteButton';
+
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { CitySection } from '../Filter/cityPicker';
+import { CategorySection } from '../Filter/Categorypicker';
+import { SearchSection } from '../Filter/SearchBar';
+import { DonSection } from '../Filter/DonSwitch';
+import { Ad } from '@/types/ad';
+import { Category } from '@/types/category';
 
 export default function AdminModerateAds({
   userId,
@@ -19,8 +21,8 @@ export default function AdminModerateAds({
   userId?: string | null;
 }) {
   const searchParams = useSearchParams();
-  const [ads, setAds] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
   // États filtres
@@ -50,7 +52,7 @@ export default function AdminModerateAds({
         break;
       }
       if (cat.children) {
-        const child = cat.children.find((sub: any) => sub.id === urlCatId);
+        const child = cat.children.find((sub: Category) => sub.id === urlCatId);
         if (child) {
           foundParent = cat;
           foundChild = child;
@@ -118,16 +120,16 @@ export default function AdminModerateAds({
     <div className="max-w-5xl w-full mx-auto px-4 py-12">
       {/* Filtres */}
       <div className="grid grid-cols-1 rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-3 gap-4 mb-6">
-        <CityPicker city={city} setCity={setCity} />
-        <CategoryPicker
+        <CitySection city={city} setCity={setCity} />
+        <CategorySection
           categories={categories}
           categoryId={categoryId}
           setCategoryId={setCategoryId}
           subCategoryId={subCategoryId}
           setSubCategoryId={setSubCategoryId}
         />
-        <SearchBar search={search} setSearch={setSearch} />
-        <DonSwitch isDon={isDon} setIsDon={setIsDon} />
+        <SearchSection search={search} setSearch={setSearch} />
+        <DonSection isDon={isDon} setIsDon={setIsDon} />
       </div>
 
       {/* Résultats */}

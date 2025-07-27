@@ -1,15 +1,7 @@
 'use client';
 
+import { DynamicField, DynamicFieldValues } from '@/types/ad';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
-
-type DynamicField = {
-  id: string;
-  name: string;
-  type: string;
-  required: boolean;
-  options?: string[];
-};
 
 type AdPreviewProps = {
   ad: {
@@ -21,7 +13,7 @@ type AdPreviewProps = {
     lat?: number | null;
     lng?: number | null;
     categoryId?: string | null;
-    dynamicFields?: Record<string, any>;
+    dynamicFields?: DynamicFieldValues;
   };
   dynamicFields?: DynamicField[];
 };
@@ -53,7 +45,7 @@ export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
             <Image
               key={i}
               src={img}
-              alt={`Aperçu image ${i}`}
+              alt={`Aperçu image ${i + 1}`}
               width={56}
               height={56}
               className="w-14 h-14 object-cover rounded-md"
@@ -84,7 +76,7 @@ export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
             const value = values?.[f.name];
             if (value === undefined || value === '') return null;
             return (
-              <li key={f.name}>
+              <li key={f.id}>
                 <span className="font-medium capitalize">{f.name}</span> :{' '}
                 {String(value)}
               </li>

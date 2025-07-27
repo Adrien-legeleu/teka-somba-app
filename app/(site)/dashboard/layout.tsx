@@ -1,6 +1,10 @@
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
+
+type AuthPayload = JwtPayload & {
+  userId: string;
+};
 
 export default async function DashboardLayout({
   children,
@@ -13,8 +17,11 @@ export default async function DashboardLayout({
   if (!token) redirect('/login');
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    if (!payload?.userId) redirect('/login');
+    const payload = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as AuthPayload;
+    if (!payload.userId) redirect('/login');
   } catch {
     redirect('/login');
   }

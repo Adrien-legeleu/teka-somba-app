@@ -5,15 +5,20 @@ import { Label } from '@/components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
-export function CitySection({
-  city,
-  setCity,
-}: {
+type MapboxFeature = {
+  id: string;
+  text: string;
+  place_name: string;
+};
+
+interface CitySectionProps {
   city: string;
   setCity: (val: string) => void;
-}) {
+}
+
+export function CitySection({ city, setCity }: CitySectionProps) {
   const [search, setSearch] = useState(city || '');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +36,7 @@ export function CitySection({
         )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&autocomplete=true&language=fr&types=place`
       );
       const data = await res.json();
-      setSuggestions(data.features || []);
+      setSuggestions((data.features as MapboxFeature[]) || []);
       setOpen(true);
     } catch {
       setSuggestions([]);
@@ -52,7 +57,7 @@ export function CitySection({
 
   return (
     <div ref={wrapRef} className="relative flex flex-col gap-1 w-full">
-      <Label htmlFor="city" className="font-semibold text-sm">
+      <Label htmlFor="city" className="font-semibold text-xs">
         Ville
       </Label>
 
@@ -63,7 +68,7 @@ export function CitySection({
         onFocus={() => search && suggestions.length > 0 && setOpen(true)}
         onChange={(e) => handleSearch(e.target.value)}
         className="rounded-full text-sm bg-transparent border-none shadow-none
-                 focus:outline-none focus:ring-0 focus:border-none px-3"
+                 focus:outline-none focus:ring-0 focus:border-none "
       />
 
       {createPortal(
@@ -77,15 +82,15 @@ export function CitySection({
               style={{
                 position: 'absolute',
                 top:
-                  wrapRef.current?.getBoundingClientRect().bottom ??
-                  0 + window.scrollY,
+                  (wrapRef.current?.getBoundingClientRect().bottom ?? 0) +
+                  window.scrollY,
                 left:
-                  wrapRef.current?.getBoundingClientRect().left ??
-                  0 + window.scrollX,
+                  (wrapRef.current?.getBoundingClientRect().left ?? 0) +
+                  window.scrollX,
                 width: wrapRef.current?.offsetWidth ?? 200,
               }}
             >
-              {suggestions.map((place: any) => (
+              {suggestions.map((place) => (
                 <div
                   key={place.id}
                   className="p-2 hover:bg-gray-100 cursor-pointer rounded-3xl transition"

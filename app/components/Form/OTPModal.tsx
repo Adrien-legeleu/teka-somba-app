@@ -87,7 +87,7 @@ export default function OTPModal({
           )}
 
           <h2 className="text-2xl font-bold text-gray-800 mb-3">
-            Vérification de l'email
+            Vérification de l&apos;email
           </h2>
           <p className="text-sm text-gray-500 mb-6">
             Un code de confirmation a été envoyé à <br />
@@ -98,7 +98,7 @@ export default function OTPModal({
           <InputOTP
             maxLength={6}
             value={otp}
-            onChange={(val: any) => setOtp(val)}
+            onChange={(val: string) => setOtp(val)}
           >
             <InputOTPGroup>
               {[...Array(6)].map((_, i) => (

@@ -64,7 +64,7 @@ export function CategorySection({
   return (
     <div ref={wrapRef} className="relative w-full">
       <Label
-        className="font-semibold text-sm cursor-pointer"
+        className="font-semibold text-xs cursor-pointer"
         onClick={() => {
           setOpenCat(true);
           setOpenSub(false);

@@ -1,4 +1,5 @@
 'use client';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,17 +15,34 @@ import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { useState } from 'react';
 
-export default function ContactSellerModal({
-  ad,
-  user,
-  disabled,
-  onSent,
-}: {
-  ad: any;
-  user: any;
+type AdUser = {
+  id: string;
+  name: string;
+  prenom?: string | null;
+  avatar?: string | null;
+  city?: string | null;
+};
+
+type Ad = {
+  id: string;
+  title: string;
+  price: number;
+  location?: string;
+  images: string[];
+  user: AdUser;
+};
+
+interface ContactSellerModalProps {
+  ad: Ad;
   disabled: boolean;
   onSent?: () => void;
-}) {
+}
+
+export default function ContactSellerModal({
+  ad,
+  disabled,
+  onSent,
+}: ContactSellerModalProps) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(
     `Bonjour, je suis intéressé(e) par "${ad.title}" à ${formatPrice(ad.price)} FCFA sur TekaSomba. Est-il toujours disponible ?`
@@ -48,8 +66,12 @@ export default function ContactSellerModal({
       if (!res.ok) throw new Error('Erreur lors de l’envoi du message.');
       setOpen(false);
       onSent?.();
-    } catch (err: any) {
-      setError(err.message || 'Erreur inconnue');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Erreur inconnue');
+      }
     } finally {
       setSending(false);
     }
@@ -131,7 +153,6 @@ export default function ContactSellerModal({
   );
 }
 
-// Helper pour format FCFA propre (séparateur espace)
 function formatPrice(price: number) {
   return price.toLocaleString('fr-FR').replace(/\s/g, ' ').replace(/,/g, ' ');
 }

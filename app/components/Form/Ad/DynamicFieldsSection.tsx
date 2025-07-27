@@ -1,13 +1,19 @@
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
+import { DynamicField } from '@/types/ad';
 
-export default function DynamicFieldsSection({ fields }: { fields: any[] }) {
+export default function DynamicFieldsSection({
+  fields,
+}: {
+  fields: DynamicField[];
+}) {
   const { register } = useFormContext();
 
   return (
     <div className="space-y-2">
       {fields.map((field, idx) => {
-        const key = field.id || field.name || idx;
+        const key = field.id || field.name || String(idx);
+
         if (field.type === 'enum' && Array.isArray(field.options)) {
           return (
             <div key={key}>
@@ -17,7 +23,7 @@ export default function DynamicFieldsSection({ fields }: { fields: any[] }) {
                 className="input-class"
               >
                 <option value="">Sélectionnez</option>
-                {field.options.map((opt: string) => (
+                {field.options.map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}
                   </option>
@@ -26,6 +32,7 @@ export default function DynamicFieldsSection({ fields }: { fields: any[] }) {
             </div>
           );
         }
+
         if (field.type === 'int' || field.type === 'number') {
           return (
             <div key={key}>
@@ -37,6 +44,7 @@ export default function DynamicFieldsSection({ fields }: { fields: any[] }) {
             </div>
           );
         }
+
         if (field.type === 'boolean' || field.type === 'bool') {
           return (
             <div key={key} className="flex gap-2 items-center">
@@ -48,7 +56,8 @@ export default function DynamicFieldsSection({ fields }: { fields: any[] }) {
             </div>
           );
         }
-        // Par défaut string
+
+        // Par défaut : string
         return (
           <div key={key}>
             <label>{field.name}</label>

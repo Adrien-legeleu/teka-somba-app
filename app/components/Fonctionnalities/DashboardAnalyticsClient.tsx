@@ -13,6 +13,17 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 
+type AdAnalytics = {
+  views: number;
+  messagesCount: number;
+  favoritesCount: number;
+};
+
+type AdData = {
+  createdAt: string;
+  adAnalytics?: AdAnalytics | null;
+};
+
 type MonthlyStats = {
   month: string;
   views: number;
@@ -30,7 +41,7 @@ export default function AnalyticsDashboard() {
     const fetchStats = async () => {
       const res = await fetch('/api/user/analytics');
       if (res.ok) {
-        const data = await res.json();
+        const data: AdData[] = await res.json();
 
         // Regrouper par mois
         const grouped = Array(6)
@@ -42,7 +53,7 @@ export default function AnalyticsDashboard() {
               month: 'short',
             });
 
-            const monthAds = data.filter((ad: any) => {
+            const monthAds = data.filter((ad) => {
               const adDate = new Date(ad.createdAt);
               return (
                 adDate.getMonth() === monthDate.getMonth() &&
@@ -53,17 +64,15 @@ export default function AnalyticsDashboard() {
             return {
               month: monthLabel,
               views: monthAds.reduce(
-                (sum: number, ad: any) => sum + (ad.adAnalytics?.views || 0),
+                (sum, ad) => sum + (ad.adAnalytics?.views || 0),
                 0
               ),
               messages: monthAds.reduce(
-                (sum: number, ad: any) =>
-                  sum + (ad.adAnalytics?.messagesCount || 0),
+                (sum, ad) => sum + (ad.adAnalytics?.messagesCount || 0),
                 0
               ),
               favorites: monthAds.reduce(
-                (sum: number, ad: any) =>
-                  sum + (ad.adAnalytics?.favoritesCount || 0),
+                (sum, ad) => sum + (ad.adAnalytics?.favoritesCount || 0),
                 0
               ),
             };
@@ -79,26 +88,13 @@ export default function AnalyticsDashboard() {
     };
     fetchStats();
   }, []);
+
   const chartConfig = {
     views: { label: 'Vues', color: 'hsl(var(--chart-1))' },
     messages: { label: 'Messages', color: 'hsl(var(--chart-2))' },
     favorites: { label: 'Favoris', color: 'hsl(var(--chart-3))' },
   } satisfies ChartConfig;
-  const RoundedBar = (props: any) => {
-    const { fill, x, y, width, height, radius } = props;
 
-    return (
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        rx={radius}
-        ry={radius}
-        fill={fill}
-      />
-    );
-  };
   return (
     <div className="w-full flex flex-col gap-8">
       {/* Titre + Chart */}
@@ -123,28 +119,17 @@ export default function AnalyticsDashboard() {
                 />
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 <ChartLegend content={<ChartLegendContent />} />
-                <Bar
-                  dataKey="views"
-                  stackId="a"
-                  fill="#f97316"
-                  shape={<RoundedBar radius={15} />}
-                  radius={[4, 4, 0, 0]}
-                  name="Vues"
-                />
+                <Bar dataKey="views" stackId="a" fill="#f97316" name="Vues" />
                 <Bar
                   dataKey="messages"
                   stackId="a"
-                  shape={<RoundedBar radius={10} />}
                   fill="#3b82f6"
-                  radius={[4, 4, 0, 0]}
                   name="Messages"
                 />
                 <Bar
                   dataKey="favorites"
                   stackId="a"
-                  shape={<RoundedBar radius={10} />}
                   fill="#10b981"
-                  radius={[4, 4, 0, 0]}
                   name="Favoris"
                 />
               </BarChart>

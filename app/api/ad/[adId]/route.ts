@@ -20,7 +20,7 @@ export async function GET(
       );
     }
     return NextResponse.json(ad);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Erreur lors de la récupération de l'annonce." },
       { status: 500 }

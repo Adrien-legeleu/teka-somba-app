@@ -158,7 +158,7 @@ export default function SignUp() {
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-800 mb-1">
-                Carte d'identité (photo)
+                Carte d&apos;identité (photo)
               </label>
               <Input
                 name="identityCard"

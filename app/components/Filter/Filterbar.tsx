@@ -6,6 +6,21 @@ import { SearchSection } from './SearchBar';
 import { CitySection } from './cityPicker';
 import { CategorySection } from './Categorypicker';
 import { DonSection } from './DonSwitch';
+import { Category } from '@/types/category';
+
+interface FilterBarProps {
+  search: string;
+  setSearch: (value: string) => void;
+  city: string;
+  setCity: (value: string) => void;
+  categories: Category[];
+  categoryId: string;
+  setCategoryId: (id: string) => void;
+  subCategoryId: string;
+  setSubCategoryId: (id: string) => void;
+  isDon: boolean;
+  setIsDon: (value: boolean) => void;
+}
 
 export default function FilterBar({
   search,
@@ -19,7 +34,7 @@ export default function FilterBar({
   setSubCategoryId,
   isDon,
   setIsDon,
-}: any) {
+}: FilterBarProps) {
   const [activeField, setActiveField] = useState<string | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +67,7 @@ export default function FilterBar({
     <div className="p-10 bg-neutral-50">
       <div
         ref={barRef}
-        className={`mx-auto max-w-5xl py-2 grid-4 relative flex rounded-full shadow-lg overflow-hidden border 
+        className={`mx-auto max-w-5xl py-1 grid-4 relative flex rounded-full shadow-lg overflow-hidden border border-black/20
         ${activeField ? 'bg-neutral-100' : 'bg-white'}`}
       >
         {/* Highlight animé */}
@@ -68,7 +83,7 @@ export default function FilterBar({
         {/* Recherche */}
         <div
           data-field="search"
-          className={`${baseClass} border-r`}
+          className={`${baseClass} border-r `}
           onClick={() => setActiveField('search')}
         >
           <SearchSection search={search} setSearch={setSearch} />
@@ -80,7 +95,7 @@ export default function FilterBar({
           className={`${baseClass} border-r`}
           onClick={() => setActiveField('city')}
         >
-          <CitySection city={city} setCity={setCity} />{' '}
+          <CitySection city={city} setCity={setCity} />
         </div>
 
         {/* Catégorie */}
@@ -101,7 +116,7 @@ export default function FilterBar({
         {/* Don */}
         <div
           data-field="don"
-          className={`${baseClass}`}
+          className={baseClass}
           onClick={() => setActiveField('don')}
         >
           <DonSection isDon={isDon} setIsDon={setIsDon} />

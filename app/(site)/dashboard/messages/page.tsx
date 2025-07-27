@@ -1,24 +1,47 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Trash2 } from 'lucide-react'; // Icône poubelle
+import { Trash2 } from 'lucide-react';
+
+interface Ad {
+  id: string;
+  title: string;
+  images: string[];
+}
+
+interface User {
+  id: string;
+  name: string;
+}
+
+interface Message {
+  content: string;
+  createdAt: string;
+}
+
+interface Thread {
+  ad: Ad;
+  otherUser: User;
+  lastMessage: Message;
+}
 
 export default function InboxPage() {
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/messages/inbox')
       .then((res) => res.json())
-      .then(setThreads)
+      .then((data: Thread[]) => setThreads(data))
       .finally(() => setLoading(false));
   }, []);
 
   async function handleDelete(adId: string, otherUserId: string) {
-    const confirm = window.confirm('Supprimer cette conversation ?');
-    if (!confirm) return;
+    const confirmDelete = window.confirm('Supprimer cette conversation ?');
+    if (!confirmDelete) return;
 
     const res = await fetch('/api/messages', {
       method: 'DELETE',
@@ -27,7 +50,6 @@ export default function InboxPage() {
     });
 
     if (res.ok) {
-      // Filtrer la conversation supprimée
       setThreads((prev) =>
         prev.filter(
           (t) => !(t.ad.id === adId && t.otherUser.id === otherUserId)
@@ -49,7 +71,7 @@ export default function InboxPage() {
       <div className="space-y-4">
         {threads.map((thread) => (
           <div
-            key={thread.ad.id + '-' + thread.otherUser.id}
+            key={`${thread.ad.id}-${thread.otherUser.id}`}
             className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow hover:bg-orange-50 transition group"
           >
             <Link

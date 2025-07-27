@@ -12,10 +12,37 @@ import ContactSellerModal from '@/app/components/Contact/ContactSellerModal';
 import TrackAdView from '@/app/components/Fonctionnalities/TrackAdView';
 import SellerProfile from '@/app/components/Profil/SellerProfileDialog';
 
+interface User {
+  id: string;
+  name: string;
+  prenom?: string | null;
+  avatar?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  age?: number | null;
+  isVerified?: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Ad {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  location?: string;
+  images: string[];
+  category?: Category;
+  user?: User;
+}
+
 export default function AdDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [ad, setAd] = useState<any>(null);
+  const [ad, setAd] = useState<Ad | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const { me, loading: loadingMe } = useMe();

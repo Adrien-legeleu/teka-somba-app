@@ -4,7 +4,7 @@ import NewAdForm from '@/app/components/Form/Ad/NewAdForm';
 import { AuroraBackground } from '@/components/ui/aurora-background';
 
 export default function Page() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     fetch('/api/categories')

@@ -14,17 +14,20 @@ import {
   Luggage,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SearchSection } from '../Filter/SearchBar'; // Import SearchSection
+
+type Category = {
+  id: string;
+  name: string;
+  children?: Category[];
+};
 
 export default function Header() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState(searchParams.get('q') || '');
-  const [activeField, setActiveField] = useState<string | null>(null);
-
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [dropdownPos, setDropdownPos] = useState({
     left: 0,
@@ -39,10 +42,9 @@ export default function Header() {
   useEffect(() => {
     fetch('/api/categories')
       .then((res) => res.json())
-      .then((data) => setCategories(data));
+      .then((data: Category[]) => setCategories(data));
   }, []);
 
-  // Met à jour search quand URL change
   useEffect(() => {
     setSearch(searchParams.get('q') || '');
   }, [searchParams]);
@@ -104,10 +106,10 @@ export default function Header() {
           </Button>
         </Link>
 
-        {/* Barre de recherche animée */}
+        {/* Barre de recherche */}
         <form
           onSubmit={handleSearchSubmit}
-          className="flex items-center justify-between border h-16  border-gray-200 p-2 rounded-full  ml-4 max-w-md w-full shadow-sm transition relative"
+          className="flex items-center justify-between border h-16 border-gray-200 p-2 rounded-full ml-4 max-w-md w-full shadow-sm transition relative"
         >
           <input
             type="text"
@@ -118,7 +120,7 @@ export default function Header() {
           />
           <button
             type="submit"
-            className=" text-lg bg-orange-500 min-w-16 h-full  hover:bg-orange-600 rounded-full text-white transition"
+            className="text-lg bg-orange-500 min-w-16 h-full hover:bg-orange-600 rounded-full text-white transition"
           >
             🔍
           </button>
@@ -152,7 +154,7 @@ export default function Header() {
       {/* MENU CATEGORIES */}
       <nav className="w-full z-50 relative border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto no-scrollbar">
-          {categories.map((cat: any) => (
+          {categories.map((cat) => (
             <div
               key={cat.id}
               ref={(el) => {
@@ -162,7 +164,7 @@ export default function Header() {
               onMouseEnter={() => showDropdown(cat.id)}
               onMouseLeave={closeDropdown}
             >
-              <a
+              <Link
                 href={`/?categoryId=${cat.id}`}
                 onClick={(e) => handleCategoryClick(cat.id, e)}
                 className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition ${
@@ -172,14 +174,14 @@ export default function Header() {
                 }`}
               >
                 {cat.name}
-              </a>
+              </Link>
             </div>
           ))}
         </div>
 
         {/* SOUS-CATEGORIES (Portal) */}
         {activeCat &&
-          categories.find((c) => c.id === activeCat)?.children?.length > 0 &&
+          categories.find((c) => c.id === activeCat)?.children?.length &&
           createPortal(
             <AnimatePresence>
               <motion.div
@@ -189,7 +191,6 @@ export default function Header() {
                 transition={{ duration: 0.2 }}
                 className="absolute bg-white border max-h-96 overflow-scroll shadow-lg rounded-3xl py-2 z-[9999]"
                 style={{
-                  position: 'absolute',
                   top: dropdownPos.top,
                   left: dropdownPos.left,
                   minWidth: dropdownPos.width,
@@ -199,8 +200,8 @@ export default function Header() {
               >
                 {categories
                   .find((c) => c.id === activeCat)
-                  ?.children.map((sub: any) => (
-                    <a
+                  ?.children?.map((sub) => (
+                    <Link
                       key={sub.id}
                       href={`/?categoryId=${sub.id}`}
                       onClick={(e) => handleCategoryClick(sub.id, e)}
@@ -211,7 +212,7 @@ export default function Header() {
                       }`}
                     >
                       {sub.name}
-                    </a>
+                    </Link>
                   ))}
               </motion.div>
             </AnimatePresence>,
@@ -221,7 +222,7 @@ export default function Header() {
 
       {/* LIENS SUPPLÉMENTAIRES */}
       <div className="max-w-7xl mx-auto px-4 flex items-center gap-4 h-12">
-        <a
+        <Link
           href="/?isDon=true"
           onClick={handleDonClick}
           className={`flex items-center gap-2 px-4 py-1 rounded-full transition ${
@@ -231,7 +232,7 @@ export default function Header() {
           }`}
         >
           <Gift size={18} /> Dons
-        </a>
+        </Link>
 
         <Link
           href="/services-bagages"

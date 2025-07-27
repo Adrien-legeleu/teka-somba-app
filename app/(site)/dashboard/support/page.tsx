@@ -4,26 +4,30 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
-import { AuroraBackground } from '@/components/ui/aurora-background';
+
+// Définition du type du formulaire
+interface SupportForm {
+  subject: string;
+  message: string;
+}
 
 export default function SupportPage() {
-  const [form, setForm] = useState({ subject: '', message: '' });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [form, setForm] = useState<SupportForm>({ subject: '', message: '' });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -37,8 +41,10 @@ export default function SupportPage() {
       if (!res.ok) throw new Error('Erreur lors de l’envoi');
       setSuccess(true);
       setForm({ subject: '', message: '' });
-    } catch (err: any) {
-      setError(err.message || 'Erreur');
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Erreur lors de l’envoi';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -46,12 +52,12 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen flex justify-center items-start">
-      <div className="w-full max-w-5xl mx-auto  px-2 mt-20 md:px-0">
+      <div className="w-full max-w-5xl mx-auto px-2 mt-20 md:px-0">
         {/* Header */}
         <div className="bg-white/90 border backdrop-blur-xl p-10 rounded-3xl shadow-2xl shadow-black/10 mb-8">
           <h1 className="text-3xl font-bold mb-2">Aide & support</h1>
           <p className="text-gray-600">
-            Besoin d'aide ? Consultez la FAQ ou contactez-nous directement.
+            Besoin d&apos;aide ? Consultez la FAQ ou contactez-nous directement.
           </p>
         </div>
 

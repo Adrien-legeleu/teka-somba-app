@@ -11,7 +11,7 @@ export function SearchSection({
 }) {
   return (
     <div className="flex flex-col gap-1 w-full">
-      <Label htmlFor="search" className="font-semibold text-sm">
+      <Label htmlFor="search" className="font-semibold text-xs">
         Recherche
       </Label>
       <input

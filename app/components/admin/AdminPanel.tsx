@@ -4,8 +4,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Trash2, UserCheck2, X, Check, Shield } from 'lucide-react';
+import { UserCheck2, X, Check, Shield } from 'lucide-react';
 import AdminModerateAds from './AdminModerateAds';
+import { User } from '@prisma/client';
 
 export default function AdminPanel() {
   const [tab, setTab] = useState('users');
@@ -38,7 +39,7 @@ export default function AdminPanel() {
 }
 
 function UserModeration() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ function UserModeration() {
                 rel="noopener noreferrer"
                 className="ml-4 text-blue-600 underline"
               >
-                Carte d'identité
+                Carte d&apos;identité
               </a>
             )}
           </div>

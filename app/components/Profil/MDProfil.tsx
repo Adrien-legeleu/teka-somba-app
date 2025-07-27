@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
+type PasswordForm = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
 export function PasswordChangeBlock() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<PasswordForm>({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -12,11 +18,11 @@ export function PasswordChangeBlock() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleChange(e: any) {
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   }
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSuccess(false);
     setError(null);
@@ -46,15 +52,16 @@ export function PasswordChangeBlock() {
         newPassword: '',
         confirmPassword: '',
       });
-    } catch (err: any) {
-      setError(err.message || 'Erreur');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur';
+      setError(message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="bg-white/90 rounded-3xl shadow-2xl shadow-black/10  border mt-12 mb-4 p-8">
+    <div className="bg-white/90 rounded-3xl shadow-2xl shadow-black/10 border mt-12 mb-4 p-8">
       <div className="font-semibold text-xl mb-3">Changer mon mot de passe</div>
       <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
         <Input

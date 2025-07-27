@@ -6,6 +6,23 @@ import { Prisma } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Fuse from 'fuse.js';
 
+type AuthPayload = JwtPayload & { userId?: string };
+
+interface AdWithRelations {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  location?: string;
+  images: string[];
+  isDon?: boolean;
+  createdAt: Date;
+  category: { id: string; name: string };
+  user: { id: string; name: string; avatar: string | null };
+  favorites?: { id: string }[];
+  isFavorite?: boolean;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -27,31 +44,29 @@ export async function GET(request: Request) {
       ];
     }
 
-    const where: any = {};
+    const where: Prisma.AdWhereInput = {};
     if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
     if (isDon) where.isDon = true;
     if (city) where.location = { contains: city, mode: 'insensitive' };
 
-    const ads = await prisma.ad.findMany({
+    const ads = (await prisma.ad.findMany({
       where,
       include: {
         user: { select: { id: true, name: true, avatar: true } },
         category: { select: { id: true, name: true } },
-        favorites: userId ? { where: { userId } } : false, // charge le favori pour l'user si userId fourni
+        favorites: userId ? { where: { userId } } : false,
       },
       orderBy: { createdAt: 'desc' },
-    });
+    })) as AdWithRelations[];
 
-    // Ajoute le champ isFavorite à chaque ad
-    const adsWithFavorite = ads.map((ad: any) => ({
+    const adsWithFavorite = ads.map((ad) => ({
       ...ad,
-      isFavorite: userId ? ad.favorites?.length > 0 : false,
+      isFavorite: userId ? (ad.favorites?.length ?? 0) > 0 : false,
     }));
 
-    // Recherche fulltext avec Fuse si besoin
     let filtered = adsWithFavorite;
     if (query) {
-      const fuse = new Fuse(filtered, {
+      const fuse = new Fuse(adsWithFavorite, {
         keys: [
           'title',
           'description',
@@ -61,11 +76,11 @@ export async function GET(request: Request) {
         ],
         threshold: 0.4,
       });
-      filtered = fuse.search(query).map((r: any) => r.item);
+      filtered = fuse.search(query).map((r) => r.item);
     }
 
     return NextResponse.json(filtered);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des annonces' },
       { status: 500 }
@@ -74,39 +89,32 @@ export async function GET(request: Request) {
 }
 
 export async function POST(req: NextRequest) {
-  // 1. Authentification custom
   const token = req.cookies.get('token')?.value;
-  if (!token) {
+  if (!token)
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-  }
+
   let userId: string | undefined;
   try {
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret)
-      throw new Error('JWT_SECRET manquant dans les variables d’environnement');
-    const payload = jwt.verify(token, jwtSecret);
-    userId = (payload as JwtPayload & { userId?: string }).userId;
-    if (!userId) {
+    if (!jwtSecret) throw new Error('JWT_SECRET manquant');
+    const payload = jwt.verify(token, jwtSecret) as AuthPayload;
+    userId = payload.userId;
+    if (!userId)
       return NextResponse.json(
-        { error: 'Utilisateur non trouvé dans le token' },
+        { error: 'Utilisateur non trouvé' },
         { status: 401 }
       );
-    }
-    console.log('✅ UserId extrait du token:', userId);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Token invalide' }, { status: 401 });
   }
 
-  // 2. Parse du body
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
-    console.log('✅ Body reçu:', body);
   } catch {
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
   }
 
-  // 3. Validation des champs communs
   const baseSchema = z.object({
     title: z.string().min(1),
     description: z.string().min(1),
@@ -117,50 +125,41 @@ export async function POST(req: NextRequest) {
     isDon: z.boolean().optional(),
     images: z.array(z.string().url()).min(1).max(10),
     categoryId: z.string().uuid(),
-    dynamicFields: z.object({}).catchall(z.unknown()),
+    dynamicFields: z.record(z.string(), z.unknown()), // Fixe le problème de .record
   });
 
-  let parsed;
+  let parsed: z.infer<typeof baseSchema>;
   try {
     parsed = baseSchema.parse(body);
-    console.log('✅ Body validé par Zod:', parsed);
-  } catch (err: any) {
-    console.log('❌ Erreur validation Zod:', err);
+  } catch (err) {
     return NextResponse.json(
-      { error: 'Erreur de validation', details: err.errors },
+      { error: 'Erreur de validation', details: (err as z.ZodError).issues },
       { status: 400 }
     );
   }
 
-  // 4. Récupère la catégorie et ses champs dynamiques
   const category = await prisma.category.findUnique({
     where: { id: parsed.categoryId },
     include: { fields: true },
   });
-  if (!category) {
+  if (!category)
     return NextResponse.json({ error: 'Catégorie invalide' }, { status: 400 });
-  }
-  console.log('✅ Catégorie trouvée:', category);
 
-  // 5. Valide les champs dynamiques avec le schéma généré
   const dynamicSchema = buildDynamicSchema(category.fields);
-  let dynamicParsed;
+  let dynamicParsed: Record<string, unknown>;
   try {
     dynamicParsed = dynamicSchema.parse(parsed.dynamicFields);
-    console.log('✅ Champs dynamiques validés:', dynamicParsed);
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
       {
-        error: 'Erreur de validation des champs dynamiques',
-        details: err.errors,
+        error: 'Erreur validation des champs dynamiques',
+        details: (err as z.ZodError).issues,
       },
       { status: 400 }
     );
   }
 
-  // 6. Création séquentielle : Ad puis AdField(s)
   try {
-    // 1. Crée l'annonce principale
     const newAd = await prisma.ad.create({
       data: {
         title: parsed.title,
@@ -171,24 +170,16 @@ export async function POST(req: NextRequest) {
         lng: parsed.lng,
         images: parsed.images,
         isDon: parsed.isDon ?? false,
-        userId: userId,
+        userId,
         categoryId: parsed.categoryId,
       },
     });
-    console.log('✅ Annonce créée:', newAd);
 
-    // 2. Ajoute les champs dynamiques un à un
     for (const fieldDef of category.fields) {
       let value = dynamicParsed[fieldDef.name];
-
-      // On skip si pas de valeur (vide, undefined, null)
       if (value === undefined || value === '' || value === null) continue;
-
-      // Cast number proprement si besoin
-      if (fieldDef.type === 'number' && typeof value === 'string') {
+      if (fieldDef.type === 'number' && typeof value === 'string')
         value = Number(value);
-      }
-      console.log(`➡️ Ajout champ dynamique: ${fieldDef.name} =>`, value);
 
       await prisma.adField.create({
         data: {
@@ -203,8 +194,7 @@ export async function POST(req: NextRequest) {
       { success: true, adId: newAd.id },
       { status: 201 }
     );
-  } catch (err) {
-    console.error("❌ Erreur lors de la création de l'annonce:", err);
+  } catch {
     return NextResponse.json(
       { error: "Erreur lors de la création de l'annonce." },
       { status: 500 }

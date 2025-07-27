@@ -7,11 +7,21 @@ import Image from 'next/image';
 
 import { FavoriteButton } from '../Favorite/FavoriteButton';
 import FilterBar from '../Filter/Filterbar';
+import { Category } from '@/types/category';
+
+type Ad = {
+  id: string;
+  title: string;
+  price: number;
+  location?: string;
+  images?: string[];
+  isFavorite?: boolean;
+};
 
 export default function Home({ userId }: { userId?: string | null }) {
   const searchParams = useSearchParams();
-  const [ads, setAds] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
   // États filtres
@@ -32,8 +42,8 @@ export default function Home({ userId }: { userId?: string | null }) {
     const urlCatId = searchParams.get('categoryId');
     if (!urlCatId) return;
 
-    let foundParent = null;
-    let foundChild = null;
+    let foundParent: Category | null = null;
+    let foundChild: Category | null = null;
 
     for (const cat of categories) {
       if (cat.id === urlCatId) {
@@ -41,7 +51,7 @@ export default function Home({ userId }: { userId?: string | null }) {
         break;
       }
       if (cat.children) {
-        const child = cat.children.find((sub: any) => sub.id === urlCatId);
+        const child = cat.children.find((sub) => sub.id === urlCatId);
         if (child) {
           foundParent = cat;
           foundChild = child;
@@ -57,11 +67,9 @@ export default function Home({ userId }: { userId?: string | null }) {
       setCategoryId(foundParent.id);
       setSubCategoryId('');
     } else {
-      // Si jamais c'est une sous-sous-catégorie (niveau 3+), tu peux ajouter une recherche plus profonde ici
       setCategoryId('');
       setSubCategoryId('');
     }
-    // Ajoute searchParams pour chaque changement d'URL
   }, [categories, searchParams]);
 
   const isDonParam = searchParams.get('isDon') === 'true';
@@ -69,6 +77,7 @@ export default function Home({ userId }: { userId?: string | null }) {
   useEffect(() => {
     setIsDon(isDonParam);
   }, [isDonParam]);
+
   const qParam = searchParams.get('q') || '';
   useEffect(() => {
     setSearch(qParam);
@@ -81,7 +90,7 @@ export default function Home({ userId }: { userId?: string | null }) {
 
   async function fetchCategories() {
     const res = await fetch('/api/categories');
-    const data = await res.json();
+    const data: Category[] = await res.json();
     setCategories(data);
   }
 
@@ -95,13 +104,13 @@ export default function Home({ userId }: { userId?: string | null }) {
     if (isDon) params.append('isDon', 'true');
     if (userId) params.append('userId', userId);
     const res = await fetch('/api/ad?' + params.toString());
-    const data = await res.json();
+    const data: Ad[] = await res.json();
     setAds(data);
     setLoading(false);
   }
 
   return (
-    <div className=" w-full mx-auto  ">
+    <div className="w-full mx-auto">
       {/* Filtres */}
       <FilterBar
         search={search}
@@ -121,22 +130,22 @@ export default function Home({ userId }: { userId?: string | null }) {
       {loading ? (
         <p>Chargement...</p>
       ) : ads.length === 0 ? (
-        <p className="shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10 ">
+        <p className="shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10">
           Aucune annonce trouvée.
         </p>
       ) : (
-        <div className="grid grid-cols-1 z-10 shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 z-10 shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {ads.map((ad) => (
-            <div key={ad.id} className="border-b  pb-2">
-              <div className="relative ">
-                <Link href={`/annonce/${ad.id}`} className="   transition">
+            <div key={ad.id} className="border-b pb-2">
+              <div className="relative">
+                <Link href={`/annonce/${ad.id}`} className="transition">
                   {ad.images?.[0] && (
                     <Image
                       src={ad.images[0]}
                       alt={ad.title}
                       width={300}
                       height={200}
-                      className="rounded-3xl aspect-square shadow-2xl shadow-[#0000010] border border-gray-100 w-full object-cover "
+                      className="rounded-3xl aspect-square shadow-2xl shadow-[#0000010] border border-gray-100 w-full object-cover"
                     />
                   )}
                 </Link>

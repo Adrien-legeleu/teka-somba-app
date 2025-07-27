@@ -18,6 +18,7 @@ import CategoryPicker from './CategoryPicker';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import DeleteAdButton from '../../Button/DeleteAdButton';
+import { DynamicField, DynamicFieldValues } from '@/types/ad';
 
 type Category = {
   id: string;
@@ -26,12 +27,19 @@ type Category = {
   fields?: DynamicField[];
   children: Category[];
 };
-type DynamicField = {
-  name: string;
-  label: string;
-  type: string;
-  required: boolean;
-  options?: string[];
+
+type Ad = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  images: string[];
+  location: string;
+  lat: number | null;
+  lng: number | null;
+  isDon?: boolean;
+  category?: { id: string };
+  dynamicFields?: DynamicFieldValues;
 };
 
 export default function EditAdForm({
@@ -39,7 +47,7 @@ export default function EditAdForm({
   categories,
   userId,
 }: {
-  ad: any;
+  ad: Ad;
   categories: Category[];
   userId: string;
 }) {
@@ -47,7 +55,7 @@ export default function EditAdForm({
   const [categoryId, setCategoryId] = useState<string | null>(
     ad.category?.id || null
   );
-  const [dynamicFields, setDynamicFields] = useState<any[]>([]);
+  const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [images, setImages] = useState<string[]>(ad.images || []);
   const [location, setLocation] = useState<string>(ad.location || '');
   const [lat, setLat] = useState<number | null>(ad.lat || null);
@@ -100,7 +108,7 @@ export default function EditAdForm({
     },
   });
 
-  const { handleSubmit, setValue, watch, formState } = methods;
+  const { handleSubmit, setValue, watch } = methods;
   // Synchronise dès que l'annonce est chargée et que les catégories sont dispo
   useEffect(() => {
     if (ad.category?.id && categories.length > 0) {
@@ -110,7 +118,7 @@ export default function EditAdForm({
   }, [ad.category?.id, categories, setValue]);
 
   // Submit PATCH
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: z.infer<typeof zodBase>) => {
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
       .find((cat) => cat.id === (categoryId ?? data.categoryId));
@@ -265,6 +273,7 @@ export default function EditAdForm({
               lat,
               lng,
               categoryId,
+              dynamicFields: watched.dynamicFields as DynamicFieldValues,
             }}
             dynamicFields={dynamicFields}
           />

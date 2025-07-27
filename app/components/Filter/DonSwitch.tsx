@@ -11,7 +11,7 @@ export function DonSection({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="don-filter" className="font-semibold text-sm">
+      <Label htmlFor="don-filter" className="font-semibold text-xs">
         Dons uniquement
       </Label>
 

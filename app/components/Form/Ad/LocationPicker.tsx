@@ -20,6 +20,13 @@ type LocationPickerProps = {
   setLng: (val: number) => void;
 };
 
+// Type pour les suggestions Mapbox
+type MapboxFeature = {
+  id: string;
+  place_name: string;
+  center: [number, number]; // [longitude, latitude]
+};
+
 export default function LocationPicker({
   location,
   setLocation,
@@ -29,7 +36,7 @@ export default function LocationPicker({
   setLng,
 }: LocationPickerProps) {
   const [search, setSearch] = useState(location || '');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
 
   useEffect(() => {
     setSearch(location);

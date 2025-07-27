@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 
 export async function GET(
   request: Request,
@@ -12,21 +13,29 @@ export async function GET(
     const city = searchParams.get('city');
     const isDon = searchParams.get('isDon') === 'true';
 
-    // Construction dynamique du filtre
-    const filters: any = { userId: params.userId };
+    // Type Prisma pour le filtre
+    const filters: Prisma.AdWhereInput = {
+      userId: params.userId,
+    };
 
-    if (categoryId) filters.categoryId = categoryId;
-    if (city) filters.location = { contains: city, mode: 'insensitive' };
+    if (categoryId) {
+      filters.categoryId = categoryId;
+    }
+
+    if (city) {
+      filters.location = { contains: city, mode: 'insensitive' };
+    }
+
     if (q) {
       filters.OR = [
         { title: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
         { location: { contains: q, mode: 'insensitive' } },
-        // Tu peux ajouter d'autres champs ici
       ];
-      if (isDon) {
-        filters.isDon = true; // Filtre pour les dons
-      }
+    }
+
+    if (isDon) {
+      filters.isDon = true;
     }
 
     const ads = await prisma.ad.findMany({
@@ -37,6 +46,7 @@ export async function GET(
       },
       orderBy: { createdAt: 'desc' },
     });
+
     return NextResponse.json(ads);
   } catch (error) {
     return NextResponse.json(

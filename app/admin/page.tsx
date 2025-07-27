@@ -1,18 +1,30 @@
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import AdminPanel from '../components/admin/AdminPanel';
 import { prisma } from '@/lib/prisma';
+
+type AuthPayload = JwtPayload & {
+  userId: string;
+};
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  if (!token) return;
-  let payload;
-  try {
-    payload = jwt.verify(token, process.env.JWT_SECRET!);
-  } catch {}
 
-  const userId = (payload as any).userId;
+  if (!token) return null;
+
+  let payload: AuthPayload;
+  try {
+    payload = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as AuthPayload;
+  } catch {
+    return null;
+  }
+
+  const userId = payload.userId;
+  if (!userId) return null;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -26,7 +38,8 @@ export default async function AdminPage() {
       isAdmin: true,
     },
   });
-  if (!user || !user.isAdmin) return;
+
+  if (!user || !user.isAdmin) return null;
 
   return <AdminPanel />;
 }

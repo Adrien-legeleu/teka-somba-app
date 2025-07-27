@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { AuroraBackground } from '@/components/ui/aurora-background';
 import {
   UserCircle,
   Heart,
@@ -16,19 +15,27 @@ import {
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import AnalyticsDashboard from '@/app/components/Fonctionnalities/DashboardAnalyticsClient';
+import Image from 'next/image';
+
+interface JWTPayload {
+  userId: string;
+  iat?: number;
+  exp?: number;
+}
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
   if (!token) redirect('/login');
-  let payload;
+
+  let payload: JWTPayload;
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET!);
+    payload = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
   } catch {
     redirect('/login');
   }
 
-  const userId = (payload as any).userId;
+  const userId = payload.userId;
   if (!userId) redirect('/login');
 
   // Récupération du vrai user
@@ -45,17 +52,20 @@ export default async function DashboardPage() {
       credit: true,
     },
   });
+
   if (!user) redirect('/login');
 
   return (
     <div>
       <div className="flex flex-col w-full min-h-screen items-center pb-14 px-2">
         <div className="w-full flex border-b items-center justify-center bg-neutral-50 pt-20 pb-5">
-          <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white  border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-black/10 border shadow-2xl">
+          <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-black/10 border shadow-2xl">
             <div className="flex items-center gap-5">
               <div className="w-20 h-20 rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
                 {user.avatar ? (
-                  <img
+                  <Image
+                    width={80}
+                    height={80}
                     src={user.avatar}
                     alt="Avatar"
                     className="rounded-full w-full h-full object-cover"
@@ -108,7 +118,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Grid Cards */}
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6  py-12">
+        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
           <DashboardCard
             title="Annonces"
             desc="Gérer mes annonces déposées"
@@ -189,7 +199,7 @@ function DashboardCard({
       href={href}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      className="group relative border rounded-3xl bg-white  border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
+      className="group relative border rounded-3xl bg-white border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
     >
       <div className="rounded-xl bg-[var(--color-primary)] text-white p-2 shadow">
         {icon}

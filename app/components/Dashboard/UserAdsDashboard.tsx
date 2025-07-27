@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import FilterBar from '../Filter/Filterbar';
 import DeleteAdButton from '../Button/DeleteAdButton';
 import EditAdButton from '../Button/EditAdButton';
@@ -13,11 +13,23 @@ import { AnimatedGradientText } from '@/components/magicui/animated-gradient-tex
 import { cn } from '@/lib/utils';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import DashboardPremiumOffers from '../Payment/DashboardPremiumOffers';
+import { Category } from '@/types/category';
+
+// Typage des annonces
+type Ad = {
+  id: string;
+  title: string;
+  description?: string;
+  price?: number;
+  location?: string;
+  images: string[];
+  boostUntil?: string | null;
+};
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
-  const [ads, setAds] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Filtres
@@ -45,7 +57,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
 
   async function fetchCategories() {
     const res = await fetch('/api/categories');
-    const data = await res.json();
+    const data: Category[] = await res.json();
     setCategories(data);
   }
 
@@ -58,10 +70,9 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
     if (city) params.append('city', city);
     if (search) params.append('q', search);
     if (isDon) params.append('isDon', 'true');
-    const res = await fetch(`/api/ad/user/${userId}?${params.toString()}`);
-    const data = await res.json();
-    console.log(data);
 
+    const res = await fetch(`/api/ad/user/${userId}?${params.toString()}`);
+    const data: Ad[] = await res.json();
     setAds(data);
     setLoading(false);
   }
@@ -69,8 +80,8 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   return (
     <div className="w-full mx-auto">
       {/* Header */}
-      <div className="z-30 relative  bg-neutral-50 backdrop-blur-xl py-5 flex items-center justify-center">
-        <div className="bg-white p-5  shadow-black/10  shadow-2xl border rounded-full flex items-center justify-between mx-auto max-w-5xl w-full">
+      <div className="z-30 relative bg-neutral-50 backdrop-blur-xl py-5 flex items-center justify-center">
+        <div className="bg-white p-5 shadow-black/10 shadow-2xl border rounded-full flex items-center justify-between mx-auto max-w-5xl w-full">
           <h1 className="text-3xl font-bold">Mes annonces</h1>
           <Button
             onClick={() => router.push('/dashboard/annonces/new')}
