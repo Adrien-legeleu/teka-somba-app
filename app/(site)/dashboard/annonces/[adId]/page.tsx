@@ -10,9 +10,11 @@ type AuthPayload = JwtPayload & {
 export default async function EditAdPage({
   params,
 }: {
-  params: { adId: string };
+  params: Promise<{ adId: string }>;
 }) {
-  // cookies() est synchrone dans l'app router, pas besoin de await
+  const { adId } = await params; // ✅ Corrige le problème Promise<any>
+
+  // cookies() est synchrone en standard, mais si tu as besoin de await
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
   if (!token) redirect('/login');
@@ -30,5 +32,5 @@ export default async function EditAdPage({
   const userId = payload?.userId;
   if (!userId) redirect('/login');
 
-  return <EditAdFormClient userId={userId} adId={params.adId} />;
+  return <EditAdFormClient userId={userId} adId={adId} />;
 }
