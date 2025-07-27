@@ -106,7 +106,7 @@ export default function Header() {
             alt="logo teka somba"
             width={200}
             height={200}
-            className="h-14 w-auto object-contain"
+            className="h-14  w-auto object-contain"
           />
         </Link>
 
