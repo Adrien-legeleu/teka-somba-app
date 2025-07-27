@@ -79,8 +79,7 @@ export default function AdDetailsPage() {
                 width={800}
                 height={800}
                 alt={`image-${activeImage}`}
-                className="object-cover rounded-3xl transition-transform duration-500 hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain rounded-3xl transition-transform duration-500 hover:scale-105"
                 priority
               />
               {ad.images?.length > 1 && (
@@ -118,9 +117,9 @@ export default function AdDetailsPage() {
                     <Image
                       src={img}
                       width={500}
+                      height={500}
                       alt={`miniature-${i}`}
-                      className="object-cover hover:scale-105 transition-transform"
-                      sizes="80px"
+                      className="object-contain hover:scale-105 transition-transform"
                     />
                   </div>
                 ))}

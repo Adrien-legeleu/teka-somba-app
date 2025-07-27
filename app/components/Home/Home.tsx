@@ -153,8 +153,8 @@ export default function Home({ userId }: { userId?: string | null }) {
                     <Image
                       src={ad.images[0]}
                       alt={ad.title}
-                      width={800}
-                      height={800}
+                      width={10000}
+                      height={8000}
                       className="w-full aspect-square rounded-3xl  object-cover"
                     />
                   )}
