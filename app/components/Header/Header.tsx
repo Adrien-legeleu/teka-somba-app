@@ -55,13 +55,11 @@ export default function Header() {
   useEffect(() => {
     setSearch(searchParams.get('q') || '');
   }, [searchParams]);
-
   function handleSearchSubmit(e?: React.FormEvent) {
     if (e) e.preventDefault();
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams();
     if (search.trim()) params.set('q', search);
-    else params.delete('q');
-    router.push('?' + params.toString());
+    router.push('/?' + params.toString()); // <-- Force toujours /
   }
 
   function handleCategoryClick(catId: string, e: React.MouseEvent) {
