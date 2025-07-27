@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
-import SignUp from '../components/Form/SignUp';
+import SignUp from '@/app/components/Form/SignUp';
 
 export default async function SignupPage() {
   const cookieStore = await cookies();

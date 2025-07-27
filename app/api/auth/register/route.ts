@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email';
-import { put } from '@vercel/blob'; // Pour l'upload cloud
+import { put } from '@vercel/blob';
 import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
   const prenom = formData.get('prenom')?.toString();
   const phone = formData.get('phone')?.toString();
   const city = formData.get('city')?.toString();
+  const birthdate = formData.get('birthdate')?.toString();
   const identityFile = formData.get('identityCard') as File;
 
   if (
@@ -29,6 +31,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Vérifie que l'email n'existe pas déjà
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return NextResponse.json({ error: 'Email déjà utilisé.' }, { status: 400 });
+  }
+
+  const existingPending = await prisma.pendingUser.findUnique({
+    where: { email },
+  });
+  if (existingPending) {
+    await prisma.pendingUser.delete({ where: { email } }); // Supprime l’ancien en attente
+  }
+
   const hash = await bcrypt.hash(password, 12);
 
   const upload = await put(
@@ -38,26 +53,24 @@ export async function POST(req: NextRequest) {
   );
 
   const identityCardUrl = upload.url;
+  const otp = crypto.randomInt(100000, 999999).toString(); // OTP à 6 chiffres
 
-  await prisma.user.create({
+  await prisma.pendingUser.create({
     data: {
       email,
-      password: hash,
+      passwordHash: hash,
       name,
       prenom,
       phone,
       city,
       identityCardUrl,
-      isVerified: false,
-      isRejected: false,
+      birthdate: birthdate ? new Date(birthdate) : null,
+      otp,
+      otpExpiry: new Date(Date.now() + 10 * 60 * 1000), // expire 10 min
     },
   });
 
-  await sendEmail(
-    email,
-    'Inscription en attente de validation',
-    `Bonjour, votre inscription est prise en compte. Votre compte sera validé après vérification manuelle de votre carte d'identité.`
-  );
+  await sendEmail(email, 'Code de vérification', `Votre code est : ${otp}`);
 
   return NextResponse.json({ success: true });
 }

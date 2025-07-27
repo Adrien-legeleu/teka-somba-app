@@ -7,12 +7,12 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import FilterBar from '../Filter/Filterbar';
-import PremiumModal from '../Payment/PremiumOffers';
 import DeleteAdButton from '../Button/DeleteAdButton';
 import EditAdButton from '../Button/EditAdButton';
 import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text';
 import { cn } from '@/lib/utils';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import PremiumModal from '../Payment/PremiumOffers';
 
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();

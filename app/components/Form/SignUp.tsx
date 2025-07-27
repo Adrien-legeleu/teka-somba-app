@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { AuroraBackground } from '@/components/ui/aurora-background';
 import { motion, AnimatePresence } from 'framer-motion';
+import OTPModal from './OTPModal';
 
 function calculateAge(dateString: string): number {
   const today = new Date();
@@ -23,6 +24,8 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [birthdate, setBirthdate] = useState('');
   const [errorAge, setErrorAge] = useState('');
+  const [showOTP, setShowOTP] = useState(false);
+  const [email, setEmail] = useState('');
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -31,6 +34,33 @@ export default function SignUp() {
       setErrorAge('Inscription interdite aux mineurs (-18 ans)');
     } else {
       setErrorAge('');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMsg(null);
+    if (!birthdate || calculateAge(birthdate) < 18) {
+      setErrorAge('Tu dois avoir au moins 18 ans pour t’inscrire.');
+      return;
+    }
+    setLoading(true);
+    const data = new FormData(formRef.current!);
+    data.set('age', String(calculateAge(birthdate)));
+    data.set('birthdate', birthdate);
+
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      body: data,
+    });
+
+    setLoading(false);
+    if (res.ok) {
+      setEmail(data.get('email') as string);
+      setShowOTP(true); // Affiche la modal OTP
+    } else {
+      const json = await res.json();
+      setMsg(json.error || 'Erreur lors de l’inscription.');
     }
   };
 
@@ -66,36 +96,7 @@ export default function SignUp() {
             ref={formRef}
             encType="multipart/form-data"
             className="flex flex-col gap-4 max-w-md mx-auto w-full"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setMsg(null);
-              if (!birthdate || calculateAge(birthdate) < 18) {
-                setErrorAge('Tu dois avoir au moins 18 ans pour t’inscrire.');
-                return;
-              }
-              setLoading(true);
-              const data = new FormData(formRef.current!);
-              data.set('age', String(calculateAge(birthdate))); // On passe l'âge à l'API, tu ajoutes age côté backend/prisma
-              data.set('birthdate', birthdate); // Si tu veux stocker la vraie date
-
-              const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                body: data,
-              });
-              setLoading(false);
-              if (res.ok) {
-                setMsg('Inscription envoyée ! Vérification admin requise.');
-                formRef.current?.reset();
-                setBirthdate('');
-                setTimeout(() => {
-                  window.location.href = '/login';
-                }, 2000);
-                return;
-              } else {
-                const json = await res.json();
-                setMsg(json.error || 'Erreur lors de l’inscription.');
-              }
-            }}
+            onSubmit={handleSubmit}
           >
             <div className="grid grid-cols-2 gap-4">
               <Input
@@ -110,7 +111,6 @@ export default function SignUp() {
                 required
                 disabled={loading}
               />
-
               <Input
                 name="phone"
                 placeholder="Téléphone"
@@ -146,7 +146,7 @@ export default function SignUp() {
                 name="birthdate"
                 type="date"
                 value={birthdate}
-                max={new Date().toISOString().split('T')[0]} // impossible future
+                max={new Date().toISOString().split('T')[0]}
                 onChange={handleDateChange}
                 required
                 disabled={loading}
@@ -176,12 +176,14 @@ export default function SignUp() {
               {loading ? 'Inscription...' : 'S’inscrire'}
             </Button>
           </form>
+
           <Link
             href="/login"
             className="text-sm font-semibold text-[#ec5d22] hover:text-[#ffbf00] underline self-center"
           >
             Déjà inscrit ? Se connecter
           </Link>
+
           <AnimatePresence>
             {msg && (
               <motion.div
@@ -196,6 +198,15 @@ export default function SignUp() {
           </AnimatePresence>
         </motion.div>
       </div>
+
+      {showOTP && (
+        <OTPModal
+          email={email}
+          onVerified={() => {
+            window.location.href = '/login';
+          }}
+        />
+      )}
     </AuroraBackground>
   );
 }

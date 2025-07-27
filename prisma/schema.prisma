@@ -41,6 +41,21 @@ credit Int @default(0)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
+model PendingUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  prenom       String
+  phone        String
+  city         String
+  identityCardUrl String
+  birthdate    DateTime?
+  otp          String
+  otpExpiry    DateTime
+  createdAt    DateTime @default(now())
+}
+
 
 model Ad {
   id          String    @id @default(uuid())
