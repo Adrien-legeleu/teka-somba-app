@@ -4,25 +4,29 @@ import { getUserIdFromRequest } from '@/lib/authUser';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { adId: string } }
+  context: { params: { adId: string } }
 ) {
+  const { adId } = context.params;
+
   const userId = await getUserIdFromRequest();
-  if (!userId)
+  if (!userId) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  }
 
   const ad = await prisma.ad.findUnique({
-    where: { id: params.adId },
+    where: { id: adId },
     select: { userId: true },
   });
 
-  if (!ad)
+  if (!ad) {
     return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
+  }
   if (ad.userId !== userId) {
     return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
   }
 
   const analytics = await prisma.adAnalytics.findUnique({
-    where: { adId: params.adId },
+    where: { adId },
   });
 
   return NextResponse.json(
