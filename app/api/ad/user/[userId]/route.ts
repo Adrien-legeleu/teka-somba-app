@@ -4,9 +4,10 @@ import { Prisma } from '@prisma/client';
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await context.params;
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q');
     const categoryId = searchParams.get('categoryId');
@@ -15,7 +16,7 @@ export async function GET(
 
     // Type Prisma pour le filtre
     const filters: Prisma.AdWhereInput = {
-      userId: params.userId,
+      userId,
     };
 
     if (categoryId) {

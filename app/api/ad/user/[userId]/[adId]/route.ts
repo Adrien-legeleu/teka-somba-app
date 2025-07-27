@@ -3,17 +3,17 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string; adId: string } }
+  context: { params: Promise<{ userId: string; adId: string }> }
 ) {
+  const { userId, adId } = await context.params;
+
   try {
     const ad = await prisma.ad.findUnique({
-      where: { id: params.adId },
+      where: { id: adId },
       include: {
         category: { select: { id: true, name: true, parentId: true } },
         user: { select: { id: true, name: true, avatar: true } },
-        fields: {
-          include: { categoryField: true },
-        },
+        fields: { include: { categoryField: true } },
         adAnalytics: true,
       },
     });
@@ -25,7 +25,7 @@ export async function GET(
       );
     }
 
-    if (ad.user.id !== params.userId) {
+    if (ad.user.id !== userId) {
       return NextResponse.json(
         {
           error:
@@ -50,17 +50,19 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { userId: string; adId: string } }
+  context: { params: Promise<{ userId: string; adId: string }> }
 ) {
+  const { userId, adId } = await context.params;
+
   try {
-    const ad = await prisma.ad.findUnique({ where: { id: params.adId } });
+    const ad = await prisma.ad.findUnique({ where: { id: adId } });
     if (!ad) {
       return NextResponse.json(
         { error: 'Annonce non trouvée.' },
         { status: 404 }
       );
     }
-    if (ad.userId !== params.userId) {
+    if (ad.userId !== userId) {
       return NextResponse.json(
         { error: "Accès interdit. Vous n'êtes pas le propriétaire." },
         { status: 403 }
@@ -68,39 +70,34 @@ export async function PATCH(
     }
 
     const data = await req.json();
-
-    // 1. On extrait les infos nécessaires
     const { categoryId, dynamicFields, ...baseData } = data;
 
-    // 2. Met à jour l'annonce (hors champs dynamiques)
-    const updatedAd = await prisma.ad.update({
-      where: { id: params.adId },
+    // Mise à jour des données principales
+    await prisma.ad.update({
+      where: { id: adId },
       data: {
         ...baseData,
-        category: {
-          connect: { id: categoryId },
-        },
+        category: { connect: { id: categoryId } },
       },
     });
 
-    // 3. Supprime les anciens champs dynamiques
-    await prisma.adField.deleteMany({ where: { adId: params.adId } });
+    // Suppression des anciens champs dynamiques
+    await prisma.adField.deleteMany({ where: { adId } });
 
-    // 4. Ajoute les nouveaux champs dynamiques
+    // Ajout des nouveaux champs dynamiques
     if (dynamicFields && typeof dynamicFields === 'object') {
       const category = await prisma.category.findUnique({
         where: { id: categoryId },
         include: { fields: true },
       });
 
-      // On fait correspondre les noms (clé/valeur) aux CategoryField existants
       if (category?.fields?.length) {
         for (const fieldDef of category.fields) {
           const value = dynamicFields[fieldDef.name];
           if (value !== undefined) {
             await prisma.adField.create({
               data: {
-                adId: params.adId,
+                adId,
                 categoryFieldId: fieldDef.id,
                 value,
               },
@@ -110,21 +107,16 @@ export async function PATCH(
       }
     }
 
-    // 5. Recharge l’annonce complète avec la catégorie, user, et les champs dynamiques
+    // Récupération de l'annonce mise à jour
     const finalAd = await prisma.ad.findUnique({
-      where: { id: params.adId },
+      where: { id: adId },
       include: {
         category: { select: { id: true, name: true, parentId: true } },
         user: { select: { id: true, name: true, avatar: true } },
-        fields: {
-          include: {
-            categoryField: true,
-          },
-        },
+        fields: { include: { categoryField: true } },
       },
     });
 
-    // 6. On retransforme pour le front
     const dynamicFieldsOut = Object.fromEntries(
       finalAd?.fields?.map((f) => [f.categoryField.name, f.value]) ?? []
     );
@@ -141,10 +133,9 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params?: { userId?: string; adId?: string } }
+  context: { params: Promise<{ userId: string; adId: string }> }
 ) {
-  const userId = context.params?.userId;
-  const adId = context.params?.adId;
+  const { userId, adId } = await context.params;
 
   if (!userId || !adId) {
     return NextResponse.json(
