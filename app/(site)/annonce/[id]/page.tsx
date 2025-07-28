@@ -79,7 +79,7 @@ export default function AdDetailsPage() {
                 width={800}
                 height={800}
                 alt={`image-${activeImage}`}
-                className="object-contain rounded-3xl transition-transform duration-500 hover:scale-105"
+                className="object-cover rounded-3xl transition-transform duration-500 hover:scale-105"
                 priority
               />
               {ad.images?.length > 1 && (
@@ -119,7 +119,7 @@ export default function AdDetailsPage() {
                       width={500}
                       height={500}
                       alt={`miniature-${i}`}
-                      className="object-contain hover:scale-105 transition-transform"
+                      className="object-cover hover:scale-105 transition-transform"
                     />
                   </div>
                 ))}
