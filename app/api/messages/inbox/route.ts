@@ -18,8 +18,10 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
     include: {
       ad: true,
-      sender: { select: { id: true, name: true, avatar: true } },
-      receiver: { select: { id: true, name: true, avatar: true } },
+      sender: { select: { id: true, name: true, prenom: true, avatar: true } },
+      receiver: {
+        select: { id: true, name: true, prenom: true, avatar: true },
+      },
     },
   });
 

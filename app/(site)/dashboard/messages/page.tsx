@@ -16,6 +16,8 @@ interface Ad {
 interface User {
   id: string;
   name: string;
+  prenom: string;
+  avatar?: string;
 }
 
 interface Message {
@@ -77,45 +79,49 @@ export default function InboxPage() {
           >
             <Link
               href={`/dashboard/messages/${thread.ad.id}_${thread.otherUser.id}`}
-              className="flex items-center gap-4 flex-1"
+              className="flex items-center w-full flex-col gap-4 "
             >
-              <div className="relative h-16 w-16">
-                {thread.ad.images?.[0] ? (
-                  <Image
-                    src={thread.ad.images[0]}
-                    fill
-                    alt="annonce"
-                    className="rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 rounded-xl" />
-                )}
+              <div className="w-full flex justify-between items-start">
+                <div className="relative h-16 w-16">
+                  {thread.ad.images?.[0] ? (
+                    <Image
+                      src={thread.ad.images[0]}
+                      fill
+                      alt="annonce"
+                      className="rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 rounded-xl" />
+                  )}
+                </div>
+                <Badge className="ml-2">{thread.otherUser.prenom}</Badge>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 flex-col items-start jusitfy-start">
                 <div className="flex items-center gap-2">
-                  <div className="font-semibold">{thread.ad.title}</div>
-                  <Badge className="ml-2">{thread.otherUser.name}</Badge>
+                  <div className="font-semibold max-wm:text-sm">
+                    {thread.ad.title}
+                  </div>
                 </div>
                 <div className="text-gray-600 text-sm line-clamp-1">
                   {thread.lastMessage.content}
                 </div>
-              </div>
-              <div className="text-xs text-gray-400 min-w-[90px] text-right">
-                {new Date(thread.lastMessage.createdAt).toLocaleString(
-                  'fr-FR',
-                  {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: '2-digit',
-                  }
-                )}
+                <div className="text-xs text-gray-400 min-w-[90px] text-left">
+                  {new Date(thread.lastMessage.createdAt).toLocaleString(
+                    'fr-FR',
+                    {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: '2-digit',
+                    }
+                  )}
+                </div>
               </div>
             </Link>
             <button
               onClick={() => handleDelete(thread.ad.id, thread.otherUser.id)}
-              className="text-gray-400 hover:text-red-500 p-2"
+              className="text-gray-400  hover:text-red-500 p-2"
               title="Supprimer"
             >
               <Trash2 className="w-5 h-5" />

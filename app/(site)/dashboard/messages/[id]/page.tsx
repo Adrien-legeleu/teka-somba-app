@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
+import Link from 'next/link';
 
 interface User {
   id: string;
@@ -133,7 +134,9 @@ export default function ConversationPage() {
           <div className="w-[52px] h-[52px] bg-gray-200 rounded-xl" />
         )}
         <div>
-          <div className="font-bold">{ad?.title}</div>
+          <Link href={`/annonce/${adId}`} className="font-bold">
+            {ad?.title}
+          </Link>
           <div className="text-sm text-gray-500">{otherUser?.name}</div>
         </div>
       </div>
@@ -162,18 +165,18 @@ export default function ConversationPage() {
         ))}
         <div ref={bottomRef} />
       </div>
-      <div className="flex gap-2">
+      <div className="flex max-sm:flex-col px-4 gap-2">
         <Textarea
           rows={2}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Écrire un message…"
-          className="flex-1"
+          className="flex-1 rounded-3xl"
         />
         <Button
           onClick={sendMessage}
           disabled={sending || !message.trim()}
-          className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-6"
+          className="bg-orange-500 hover:bg-orange-600 text-white rounded-3xl px-6"
         >
           Envoyer
         </Button>

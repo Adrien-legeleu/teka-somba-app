@@ -73,13 +73,13 @@ export default function AdDetailsPage() {
         <div className="flex flex-col md:flex-row gap-8">
           {/* Bloc images (slider) */}
           <div className="md:w-1/2 flex flex-col gap-4">
-            <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-md">
+            <div className="relative w-full  rounded-3xl overflow-hidden shadow-md">
               <Image
                 src={ad.images?.[activeImage]}
                 width={800}
                 height={800}
                 alt={`image-${activeImage}`}
-                className="object-cover rounded-3xl transition-transform duration-500 hover:scale-105"
+                className="object-cover h-full w-full rounded-3xl transition-transform duration-500 hover:scale-105"
                 priority
               />
               {ad.images?.length > 1 && (
@@ -119,7 +119,7 @@ export default function AdDetailsPage() {
                       width={500}
                       height={500}
                       alt={`miniature-${i}`}
-                      className="object-cover hover:scale-105 transition-transform"
+                      className="object-cover h-full w-full hover:scale-105 transition-transform"
                     />
                   </div>
                 ))}
