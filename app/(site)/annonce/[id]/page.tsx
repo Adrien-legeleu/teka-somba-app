@@ -10,7 +10,7 @@ import { useMe } from '@/hooks/useMe';
 import ContactSellerModal from '@/app/components/Contact/ContactSellerModal';
 import TrackAdView from '@/app/components/Fonctionnalities/TrackAdView';
 import SellerProfile from '@/app/components/Profil/SellerProfileDialog';
-import { Ad } from '@/types/ad';
+import { Ad, DynamicFieldValue } from '@/types/ad';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ReportAdDialog from '@/app/components/Fonctionnalities/ReportDialog';
 
-function formatDynamicValue(key: string, value: any) {
+function formatDynamicValue(key: string, value: DynamicFieldValue) {
   if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
   if (typeof value === 'number') {
     if (

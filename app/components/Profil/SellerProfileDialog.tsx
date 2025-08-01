@@ -117,7 +117,7 @@ export default function SellerProfile({ user, ad }: SellerProfileProps) {
       {ad.location && (
         <div className="bg-neutral-50 rounded-3xl p-4 shadow-sm">
           <div className="text-xs uppercase text-gray-400 mb-1">
-            Localisation de l'annonce
+            Localisation de l&apos;annonce
           </div>
           <div className="font-medium text-gray-800">{ad.location}</div>
           <p className="text-xs text-gray-500 mt-1">
