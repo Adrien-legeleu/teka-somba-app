@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getUserIdFromRequest } from '@/lib/authUser';
 
 export async function POST(req: NextRequest) {
-  const adminId = await getUserIdFromRequest(req);
+  const adminId = await getUserIdFromRequest();
   if (!adminId) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
