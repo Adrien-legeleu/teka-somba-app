@@ -13,7 +13,6 @@ export async function GET() {
         },
       },
     },
-    orderBy: { name: 'asc' },
   });
   console.log(categories, '🔵 Catégories récupérées depuis la DB');
 
