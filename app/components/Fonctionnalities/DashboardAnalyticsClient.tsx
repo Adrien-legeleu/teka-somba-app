@@ -139,7 +139,7 @@ export default function AnalyticsDashboard() {
       </Card>
 
       {/* Totaux en dessous */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         <Card className="rounded-3xl shadow-lg text-center py-6">
           <CardTitle className="text-gray-500 text-sm">TOTAL VUES</CardTitle>
           <p className="text-4xl font-bold text-orange-500">{totalViews}</p>

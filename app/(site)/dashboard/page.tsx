@@ -51,9 +51,17 @@ export default async function DashboardPage() {
     <div>
       <div className="flex flex-col w-full min-h-screen items-center pb-14 px-2">
         <div className="w-full flex border-b items-center justify-center bg-neutral-50 md:pt-20 md:pb-5">
-          <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-end justify-between backdrop-blur-xl bg-white border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-black/10 border shadow-2xl">
-            <div className="flex items-center gap-5">
-              <div className="w-20 h-20 aspect-square rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
+          <div className="px-10 max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white w-fit min-w-xl border rounded-3xl p-7 mb-10 shadow-black/10  shadow-2xl">
+            {user.isAdmin && (
+              <Link
+                href={'/admin'}
+                className="bg-[#ffbf00]/20 px-2 py-0.5 text-sm absolute top-2 right-2 rounded-full text-[#ec5d22] font-semibold"
+              >
+                admin★
+              </Link>
+            )}
+            <div className="flex md:items-center items-center max-md:flex-col gap-5">
+              <div className="w-32 h-32 aspect-square rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-2 border-white shadow-xl">
                 {user.avatar ? (
                   <Image
                     width={80}
@@ -66,19 +74,12 @@ export default async function DashboardPage() {
                   user.prenom?.[0]?.toUpperCase() || '?'
                 )}
               </div>
-              <div>
+              <div className="flex flex-col items-center md:items-start">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-xl">
                     {user.prenom} {user.name}
                   </span>
-                  {user.isAdmin && (
-                    <Link
-                      href={'/admin'}
-                      className="bg-[#ffbf00]/20 px-2 py-0.5 text-xs rounded-full text-[#ec5d22] font-semibold"
-                    >
-                      admin★
-                    </Link>
-                  )}
+
                   {user.age && (
                     <span className="text-gray-500 text-sm">
                       {user.age} ans
@@ -110,9 +111,9 @@ export default async function DashboardPage() {
               </div>
             </div>
             {/* Porte-monnaie */}
-            <div className="flex flex-col pt-5 items-end gap-1">
-              <div className="text-gray-600 text-sm">Porte-monnaie</div>
-              <div className="text-3xl font-bold text-[var(--color-secondary)]">
+            <div className="flex flex-col pt-5 md:items-end items-center gap-1">
+              <div className="text-gray-600 text-md">Porte-monnaie</div>
+              <div className="text-4xl font-bold text-[var(--color-secondary)]">
                 {user.credit} crédits
               </div>
               <div className="text-xs text-gray-400">Solde disponible</div>
@@ -130,7 +131,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Grid Cards */}
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
+        <div className="w-full max-w-5xl bg-white grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
           <DashboardCard
             title="Annonces"
             desc="Gérer mes annonces déposées"
@@ -210,7 +211,7 @@ function DashboardCard({
       href={href}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      className="group relative border rounded-3xl bg-white border-[#ffbf00]/10 p-6  flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
+      className="group relative border rounded-3xl bg-white  p-6  flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
     >
       <div className="rounded-2xl shadow-xl shadow-black/5 bg-[#ffbf00]/20 aspect-square flex items-center justify-center text-3xl p-2">
         {emoji}
