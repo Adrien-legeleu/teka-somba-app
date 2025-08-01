@@ -41,24 +41,15 @@ export default function FilterDrawerMobile() {
 
   return (
     <Drawer open={isFilterModalOpen} onOpenChange={setFilterModalOpen}>
-      <DrawerTrigger asChild>
-        <Button
-          variant="outline"
-          className="md:hidden rounded-full text-sm px-4 py-2 ml-4 mt-4 flex items-center gap-2"
-        >
-          <IconAdjustmentsHorizontal size={18} />
-          Filtres
-        </Button>
-      </DrawerTrigger>
-
-      <DrawerContent className="max-h-[90vh]">
+      <DrawerContent className="max-h-[90vh] h-[90vh]">
         <div className="mx-auto w-full max-w-sm flex flex-col h-full">
+          {/* Header */}
           <DrawerHeader>
             <DrawerTitle className="text-base">Filtres avancés</DrawerTitle>
           </DrawerHeader>
 
-          {/* Contenu scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 space-y-4">
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-4">
             <CitySection city={city} setCity={setCity} />
 
             <CategorySection
@@ -98,14 +89,14 @@ export default function FilterDrawerMobile() {
             </select>
           </div>
 
-          {/* Footer fixé */}
+          {/* Footer fixe */}
           <DrawerFooter className="border-t bg-white p-4 space-y-2">
             <Button variant="outline" onClick={resetFilters} className="w-full">
               Réinitialiser
             </Button>
             <DrawerClose asChild>
               <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
-                Appliquer
+                Appliquer les filtres
               </Button>
             </DrawerClose>
           </DrawerFooter>

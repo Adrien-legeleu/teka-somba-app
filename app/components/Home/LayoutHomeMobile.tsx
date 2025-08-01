@@ -5,9 +5,11 @@ import { usePathname } from 'next/navigation';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import SearchBarMobile from './SearchBarMobile';
 import CategoryIconList from './CategoryIconList';
-import FilterModalMobile from './FilterModalMobile';
-import { FilterProvider } from './FilterContext';
+import { FilterProvider, useFilter } from './FilterContext';
 import FilterBar from '../Filter/Filterbar';
+import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
+import { Button } from '@/components/ui/button';
+import FilterDrawerMobile from './FilterModalMobile';
 // Desktop FilterBar component
 
 export default function LayoutHomeMobile({
@@ -22,6 +24,7 @@ export default function LayoutHomeMobile({
   if (pathname !== '/') {
     return <>{children}</>;
   }
+  const { setFilterModalOpen } = useFilter();
 
   return (
     <FilterProvider>
@@ -32,16 +35,22 @@ export default function LayoutHomeMobile({
               <SearchBarMobile />
               <CategoryIconList />
             </div>
+            <Button
+              variant="outline"
+              className="rounded-full relative left-6 text-sm px-4 py-2 mt-2 flex items-center gap-2"
+              onClick={() => setFilterModalOpen(true)}
+            >
+              <IconAdjustmentsHorizontal size={18} />
+              Filtres
+            </Button>
 
-            <FilterModalMobile />
-            <main className="px-4  relative">{children}</main>
+            {/* Drawer uniquement, sans trigger interne */}
+            <FilterDrawerMobile />
+            <main className="px-4 relative">{children}</main>
           </>
         ) : (
-          /* --- Desktop Layout: Show horizontal FilterBar and then content --- */
           <>
-            <FilterBar /* FilterBar now reads context internally, no props needed */
-            />
-
+            <FilterBar />
             {children}
           </>
         )}

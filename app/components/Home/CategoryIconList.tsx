@@ -37,7 +37,7 @@ export default function CategoryIconList() {
             href={'/service-bagage'}
             className="flex flex-col items-center cursor-pointer w-16 shrink-0"
           >
-            <div className="p-3 bg-orange-200/70 !aspect-square flex shadow-lg shadow-black/7 items-center justify-center rounded-3xl text-orange-600">
+            <div className="p-3 bg-orange-200/70 w-[54px] h-[54px] !aspect-square flex shadow-lg shadow-black/7 items-center justify-center rounded-3xl text-orange-600">
               <span className="text-2xl">📦</span>
             </div>
             <span className="text-xs text-center mt-1 font-medium">
@@ -60,7 +60,7 @@ export default function CategoryIconList() {
             }}
             className="flex flex-col items-center cursor-pointer w-16 shrink-0"
           >
-            <div className="p-3 bg-orange-200/70 shadow-lg shadow-black/7 !aspect-square flex items-center justify-center rounded-3xl text-orange-800">
+            <div className="p-3 bg-orange-200/70 w-[54px] h-[54px] shadow-lg shadow-black/7 !aspect-square flex items-center justify-center rounded-3xl text-orange-800">
               <CategoryIcon name={cat.icon} />
             </div>
             <span className="text-xs text-center mt-1 font-medium">
