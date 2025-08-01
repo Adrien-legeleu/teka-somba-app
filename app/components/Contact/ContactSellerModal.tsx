@@ -90,7 +90,7 @@ export default function ContactSellerModal({
           Contacter
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md z-[1000000] rounded-3xl">
+      <DialogContent className="max-w-md z-[1000000000] rounded-3xl">
         <DialogHeader>
           <DialogTitle>Contacter le vendeur</DialogTitle>
           <DialogDescription>
