@@ -7,6 +7,7 @@ import { IconMapPin } from '@tabler/icons-react';
 import { useFilter } from './FilterContext';
 import { FavoriteButton } from '../Favorite/FavoriteButton';
 import FilterBarDesktop from './FilterBarDesktop';
+import Loader from '../Fonctionnalities/Loader';
 
 type Ad = {
   id: string;
@@ -82,7 +83,7 @@ export default function Home({ userId }: { userId?: string | null }) {
     >
       <FilterBarDesktop />
       {loading ? (
-        <p className="text-center text-gray-500 py-10">Chargement...</p>
+        <Loader />
       ) : ads.length === 0 ? (
         <p className="text-center rounded-2xl mt-4 shadow-md bg-white p-10 text-gray-600">
           Aucune annonce trouvée.

@@ -468,3 +468,72 @@ h6 {
     transform: rotate(360deg);
   }
 }
+
+.grid-loader {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  transform: rotate(45deg);
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.cube {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(90deg, #ff7a00, #ff3c00);
+  animation: cubeScale 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow: 0 0 15px rgba(255, 122, 0, 0.4);
+  transform: scale(0);
+  opacity: 0;
+}
+
+@keyframes cubeScale {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Délais décalés */
+.cube:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.cube:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.cube:nth-child(3) {
+  animation-delay: 0.6s;
+}
+.cube:nth-child(4) {
+  animation-delay: 0.8s;
+}
+.cube:nth-child(5) {
+  animation-delay: 1s;
+}
+.cube:nth-child(6) {
+  animation-delay: 1.2s;
+}
+.cube:nth-child(7) {
+  animation-delay: 1.4s;
+}
+.cube:nth-child(8) {
+  animation-delay: 1.6s;
+}
+.cube:nth-child(9) {
+  animation-delay: 1.8s;
+}

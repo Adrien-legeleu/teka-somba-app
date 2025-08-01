@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FavoriteButton } from './FavoriteButton';
 import { IconMapPin } from '@tabler/icons-react';
+import Loader from '../Fonctionnalities/Loader';
 
 type Favorite = {
   id: string;
@@ -32,8 +33,7 @@ export default function FavoriteDashboard({ userId }: { userId: string }) {
     fetchFavorites();
   }, [userId]);
 
-  if (loading) return <div>Chargement...</div>;
-
+  if (loading) return <Loader />;
   if (!favorites.length)
     return (
       <div className="text-gray-500 h-screen flex text-center items-center justify-center p-8">

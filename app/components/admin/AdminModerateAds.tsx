@@ -14,6 +14,7 @@ import { SearchSection } from '../Filter/SearchBar';
 import { DonSection } from '../Filter/DonSwitch';
 import { Ad } from '@/types/ad';
 import { Category } from '@/types/category';
+import Loader from '../Fonctionnalities/Loader';
 
 export default function AdminModerateAds({
   userId,
@@ -134,7 +135,7 @@ export default function AdminModerateAds({
 
       {/* Résultats */}
       {loading ? (
-        <p>Chargement...</p>
+        <Loader />
       ) : ads.length === 0 ? (
         <p className="rounded-[3rem] shadow-2xl shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10 ">
           Aucune annonce trouvée.

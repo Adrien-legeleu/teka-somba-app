@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import { PasswordChangeBlock } from '@/app/components/Profil/MDProfil';
+import Loader from '@/app/components/Fonctionnalities/Loader';
 
 // Interface pour l'utilisateur
 interface UserProfile {
@@ -69,7 +70,7 @@ export default function ProfilPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center">Chargement…</div>;
+  if (loading) return <Loader />;
   if (!user) return <div className="p-8 text-center">Profil introuvable.</div>;
 
   return (

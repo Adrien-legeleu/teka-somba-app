@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
 import Link from 'next/link';
 import socket from '@/lib/socket';
+import Loader from '@/app/components/Fonctionnalities/Loader';
 
 interface User {
   id: string;
@@ -126,7 +127,7 @@ export default function ConversationPage() {
     return <div className="text-center p-4">Conversation invalide.</div>;
   }
 
-  if (loading) return <div className="p-8 text-center">Chargement…</div>;
+  if (loading) return <Loader />;
 
   return (
     <div className="max-w-2xl mx-auto py-8 flex flex-col h-[90vh]">

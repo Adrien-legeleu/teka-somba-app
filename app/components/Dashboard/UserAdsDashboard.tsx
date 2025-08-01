@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import DashboardPremiumOffers from '../Payment/DashboardPremiumOffers';
 import { Category } from '@/types/category';
+import Loader from '../Fonctionnalities/Loader';
 
 type Ad = {
   id: string;
@@ -89,7 +90,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         </div>
 
         {loading ? (
-          <p className="p-10 text-center">Chargement...</p>
+          <Loader />
         ) : ads.length === 0 ? (
           <p className="text-gray-500 h-screen flex text-center items-center justify-center p-8">
             Aucune annonce publiée.

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { User, BaggageRequest, Report } from '@prisma/client';
 import Link from 'next/link';
+import Loader from '../Fonctionnalities/Loader';
 function formatPhoneNumber(phone: string): string {
   // Supprimer tout sauf les chiffres
   const cleaned = phone.replace(/\D/g, '');
@@ -155,7 +156,7 @@ function UserModeration() {
     }
   }
 
-  if (loading) return <div>Chargement…</div>;
+  if (loading) return <Loader />;
   if (!users.length) return <div>Aucun utilisateur à valider.</div>;
 
   return (
@@ -241,7 +242,7 @@ function BaggageRequests() {
     }
   }
 
-  if (loading) return <div>Chargement…</div>;
+  if (loading) return <Loader />;
   if (!requests.length) return <div>Aucune demande de service bagage.</div>;
 
   return (
@@ -335,7 +336,7 @@ function ReportsList() {
     }
   }
 
-  if (loading) return <div>Chargement…</div>;
+  if (loading) return <Loader />;
   if (!reports.length) return <div>Aucun signalement en cours.</div>;
 
   // Helper to translate report reason enum to French for display
@@ -423,7 +424,7 @@ function SupportRequests() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Chargement…</div>;
+  if (loading) return <Loader />;
   if (!requests.length) return <div>Aucune demande de support.</div>;
 
   return (

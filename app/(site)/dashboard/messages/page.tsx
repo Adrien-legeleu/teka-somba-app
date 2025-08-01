@@ -63,7 +63,7 @@ export default function InboxPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center">Chargement…</div>;
+  if (loading) return <Loader />;
 
   if (threads.length === 0)
     return (
