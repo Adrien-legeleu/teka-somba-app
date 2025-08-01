@@ -159,7 +159,7 @@ export default async function DashboardPage() {
           <DashboardCard
             title="Votre Wallet"
             desc="Les fonctionnalités Premiums"
-            emoji="💰"
+            emoji="💳"
             href="/dashboard/wallet"
           />
           <DashboardCard
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
           <DashboardCard
             title="Aide"
             desc="Questions fréquentes, support"
-            emoji="🆘"
+            emoji="❓"
             href="/dashboard/support"
             external
           />
