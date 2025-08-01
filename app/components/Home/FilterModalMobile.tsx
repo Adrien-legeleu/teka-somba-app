@@ -1,24 +1,24 @@
 'use client';
 
-import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
-import { Button } from '@/components/ui/button';
-import { useFilter } from './FilterContext';
-
 import {
   Drawer,
   DrawerContent,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
+  DrawerFooter,
+  DrawerTrigger,
+  DrawerClose,
 } from '@/components/ui/drawer';
+import { Button } from '@/components/ui/button';
+import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
+import { useFilter } from './FilterContext';
+
 import { CitySection } from '../Filter/cityPicker';
 import { CategorySection } from '../Filter/Categorypicker';
 import { DonSection } from '../Filter/DonSwitch';
 
 export default function FilterDrawerMobile() {
   const {
-    isFilterModalOpen,
-    setFilterModalOpen,
     city,
     setCity,
     categories,
@@ -35,27 +35,30 @@ export default function FilterDrawerMobile() {
     sortOrder,
     setSortOrder,
     resetFilters,
+    isFilterModalOpen,
+    setFilterModalOpen,
   } = useFilter();
 
   return (
-    <>
-      <Button
-        variant="outline"
-        className="md:hidden rounded-full text-sm px-4 py-2 ml-4 mt-4 flex items-center gap-2"
-        onClick={() => setFilterModalOpen(true)}
-      >
-        <IconAdjustmentsHorizontal size={18} />
-        Filtres
-      </Button>
+    <Drawer open={isFilterModalOpen} onOpenChange={setFilterModalOpen}>
+      <DrawerTrigger asChild>
+        <Button
+          variant="outline"
+          className="md:hidden rounded-full text-sm px-4 py-2 ml-4 mt-4 flex items-center gap-2"
+        >
+          <IconAdjustmentsHorizontal size={18} />
+          Filtres
+        </Button>
+      </DrawerTrigger>
 
-      <Drawer open={isFilterModalOpen} onOpenChange={setFilterModalOpen}>
-        <DrawerContent className="h-[90vh] z-[10000000000] flex flex-col p-0">
+      <DrawerContent className="max-h-[90vh]">
+        <div className="mx-auto w-full max-w-sm flex flex-col h-full">
+          <DrawerHeader>
+            <DrawerTitle className="text-base">Filtres avancés</DrawerTitle>
+          </DrawerHeader>
+
           {/* Contenu scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <DrawerHeader>
-              <DrawerTitle className="text-base">Filtres avancés</DrawerTitle>
-            </DrawerHeader>
-
+          <div className="flex-1 overflow-y-auto px-4 space-y-4">
             <CitySection city={city} setCity={setCity} />
 
             <CategorySection
@@ -68,7 +71,6 @@ export default function FilterDrawerMobile() {
 
             <DonSection isDon={isDon} setIsDon={setIsDon} />
 
-            {/* Price */}
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -86,7 +88,6 @@ export default function FilterDrawerMobile() {
               />
             </div>
 
-            {/* Tri */}
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
@@ -97,20 +98,19 @@ export default function FilterDrawerMobile() {
             </select>
           </div>
 
-          {/* Footer fixé en bas */}
-          <DrawerFooter className="border-t bg-white p-4 space-y-2 rounded-b-2xl">
+          {/* Footer fixé */}
+          <DrawerFooter className="border-t bg-white p-4 space-y-2">
             <Button variant="outline" onClick={resetFilters} className="w-full">
               Réinitialiser
             </Button>
-            <Button
-              onClick={() => setFilterModalOpen(false)}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-            >
-              Appliquer
-            </Button>
+            <DrawerClose asChild>
+              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+                Appliquer
+              </Button>
+            </DrawerClose>
           </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    </>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }
