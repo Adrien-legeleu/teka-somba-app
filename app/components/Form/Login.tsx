@@ -31,7 +31,7 @@ export default function Login() {
     setLoading(false);
 
     if (res.ok) {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } else {
       let error = 'Erreur de connexion.';
       try {

@@ -26,13 +26,13 @@ export async function POST(req: NextRequest) {
     { expiresIn: '2h' }
   );
 
-  const res = NextResponse.json({ success: true });
+  const res = NextResponse.json({ success: true, redirect: true });
   res.cookies.set('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 2, // 2h
+    maxAge: 60 * 60 * 10,
   });
   return res;
 }
