@@ -8,27 +8,16 @@ async function main() {
   await prisma.categoryField.deleteMany();
   await prisma.category.deleteMany();
 
-  // Création des catégories
   await prisma.category.create({
     data: {
       id: 'vehicules',
       name: 'Véhicules',
-      icon: 'IconCar',
+      icon: '🚗',
       allowRent: true,
       children: {
         create: [
-          {
-            id: 'voitures',
-            name: 'Voitures',
-            icon: 'IconCar',
-            allowRent: true,
-          },
-          {
-            id: 'motos',
-            name: 'Motos',
-            icon: 'IconMotorbike',
-            allowRent: false,
-          },
+          { id: 'voitures', name: 'Voitures', icon: '🚙', allowRent: true },
+          { id: 'motos', name: 'Motos', icon: '🏍️', allowRent: false },
         ],
       },
     },
@@ -38,22 +27,17 @@ async function main() {
     data: {
       id: 'immobilier',
       name: 'Immobilier',
-      icon: 'IconHome',
+      icon: '🏠',
       allowRent: true,
       children: {
         create: [
           {
             id: 'appartements',
             name: 'Appartements',
-            icon: 'IconBuildingApartment',
+            icon: '🏢',
             allowRent: true,
           },
-          {
-            id: 'maisons',
-            name: 'Maisons',
-            icon: 'IconHome2',
-            allowRent: true,
-          },
+          { id: 'maisons', name: 'Maisons', icon: '🏡', allowRent: true },
         ],
       },
     },
@@ -63,20 +47,20 @@ async function main() {
     data: {
       id: 'electronique',
       name: 'Électronique',
-      icon: 'IconDeviceMobile',
+      icon: '💻',
       allowRent: false,
       children: {
         create: [
           {
             id: 'smartphones',
             name: 'Smartphones',
-            icon: 'IconDeviceMobile',
+            icon: '📱',
             allowRent: false,
           },
           {
             id: 'ordinateurs',
             name: 'Ordinateurs',
-            icon: 'IconDeviceLaptop',
+            icon: '🖥️',
             allowRent: false,
           },
         ],
@@ -88,20 +72,15 @@ async function main() {
     data: {
       id: 'mode',
       name: 'Mode',
-      icon: 'IconShirt',
+      icon: '👕',
       allowRent: false,
       children: {
         create: [
-          {
-            id: 'vetements',
-            name: 'Vêtements',
-            icon: 'IconShirt',
-            allowRent: false,
-          },
+          { id: 'vetements', name: 'Vêtements', icon: '👚', allowRent: false },
           {
             id: 'chaussures',
             name: 'Chaussures',
-            icon: 'IconShoe',
+            icon: '👟',
             allowRent: false,
           },
         ],

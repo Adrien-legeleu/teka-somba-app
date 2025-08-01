@@ -25,7 +25,7 @@ export default function CategoryIconList() {
         className="flex flex-col items-center cursor-pointer w-16 shrink-0"
       >
         <div className="p-3 bg-orange-200/70 rounded-2xl text-orange-600">
-          <IconBriefcase2 size={18} />
+          <span className="text-xl">📦</span>
         </div>
         <span className="text-xs text-center mt-1 font-medium">Bagages</span>
       </Link>

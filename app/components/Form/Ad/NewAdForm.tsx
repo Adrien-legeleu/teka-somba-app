@@ -170,7 +170,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       data.durationValue ?? watched.durationValue ?? undefined;
     const finalDurationUnit =
       data.durationUnit ?? watched.durationUnit ?? undefined;
-    const finalCategoryId = subCategoryId ?? categoryId;
     console.log('📤 Payload envoyé à /api/ad :', {
       ...data,
       images,

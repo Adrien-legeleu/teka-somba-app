@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +14,6 @@ import {
   IconHeart,
   IconMessage,
   IconUser,
-  IconBriefcase2,
 } from '@tabler/icons-react';
 import DashboardNav from './DashboardNav';
 import CategoryIcon from '../Fonctionnalities/CategoryIcon';
@@ -188,7 +187,7 @@ export default function Header() {
                 text-gray-700 hover:text-orange-500
             }`}
           >
-            <IconBriefcase2 size={18} className="text-orange-400" />
+            <span className="text-xl">📦</span>
             Services bagages
           </Link>
           {categories.map((cat) => (

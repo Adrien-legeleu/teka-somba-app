@@ -8,14 +8,23 @@ export default async function LoginPage() {
   const token = cookieStore.get('token')?.value;
 
   if (token) {
-    console.log(token, ' 0000000000 ', process.env.JWT_SECRET);
-    console.log(jwt.verify(token, process.env.JWT_SECRET!));
-
     try {
-      jwt.verify(token, process.env.JWT_SECRET!);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+      console.log('Token décodé ✅', decoded);
       redirect('/dashboard');
-    } catch {
-      // token non valide → on affiche la page login normalement
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        console.error('⚠️ Token expiré');
+      } else if (error instanceof jwt.JsonWebTokenError) {
+        console.error('❌ Token invalide :', error.message);
+      } else if (error instanceof Error) {
+        console.error('❌ Erreur inconnue :', error.message);
+      } else {
+        console.error('❌ Erreur inconnue de type inconnu');
+      }
+
+      // Supprimer le cookie expiré si nécessaire
+      // cookies().delete('token');
     }
   }
 
