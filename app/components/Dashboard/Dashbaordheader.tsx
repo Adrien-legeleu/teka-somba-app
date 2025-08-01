@@ -19,7 +19,7 @@ function DashboardHeader({ user }: { user: DashboardUser }) {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="px-10 flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white w-full max-md:max-w-xl max-w-5xl border rounded-3xl p-7 mb-10 shadow-black/10 shadow-2xl relative"
+      className="px-10 flex mt-8 flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white w-full max-md:max-w-xl max-w-5xl border rounded-3xl p-7 mb-10 shadow-black/10 shadow-2xl relative"
     >
       {user.isAdmin && (
         <Link

@@ -3,11 +3,9 @@ import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
 import AnalyticsDashboard from '@/app/components/Fonctionnalities/DashboardAnalyticsClient';
-import Image from 'next/image';
 import DashboardCard from '@/app/components/Dashboard/DashboardCard';
 import DashboardHeader from '@/app/components/Dashboard/Dashbaordheader';
 export const runtime = 'nodejs';
@@ -52,12 +50,12 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="flex flex-col w-full min-h-screen items-center pb-14 px-2">
-        <div className="w-full flex border-b items-center justify-center bg-neutral-50 md:pt-20 md:pb-5">
+      <div className="flex flex-col w-full min-h-screen items-center pb-14 ">
+        <div className="w-full flex border-b px-2 items-center justify-center bg-neutral-50 md:pt-20 md:pb-5">
           <DashboardHeader user={user} />
         </div>
 
-        <div className="w-full max-w-5xl bg-white grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
+        <div className="w-full max-w-5xl px-2 bg-white grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
           {[
             {
               title: 'Annonces',

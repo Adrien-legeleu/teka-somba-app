@@ -30,10 +30,10 @@ export default function DashboardCard({
         rel={external ? 'noopener noreferrer' : undefined}
         className="group relative border rounded-3xl bg-white p-6 flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
       >
-        <div className="rounded-2xl shadow-xl shadow-black/5 bg-[#ffbf00]/20 aspect-square flex items-center justify-center text-3xl p-2">
+        <div className="rounded-3xl shadow-xl shadow-black/5 bg-[#ffbf00]/20 aspect-square flex items-center justify-center text-3xl p-3">
           {emoji}
         </div>
-        <div className="font-semibold text-lg text-[var(--color-secondary)]">
+        <div className="font-semibold text-xl text-[var(--color-secondary)]">
           {title}
         </div>
         <div className="text-gray-500 text-sm">{desc}</div>
