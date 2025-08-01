@@ -388,7 +388,7 @@ function ReportsList() {
                 variant="destructive"
                 onClick={() => handleDeleteAd(r.ad.id, r.id)}
               >
-                <Trash2 className="w-4 h-4 mr-1" /> Supprimer l'annonce
+                <Trash2 className="w-4 h-4 mr-1" /> Supprimer l&apos;annonce
               </Button>
             </div>
           </Card>
@@ -575,7 +575,9 @@ function AdminPromotion() {
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-orange-500" />
               <div>
-                <div className="font-semibold">{admin.name || admin.email}</div>
+                <div className="font-semibold">
+                  .{admin.prenom} {admin.name || admin.email}
+                </div>
                 <div className="text-xs text-gray-500">{admin.email}</div>
               </div>
             </div>

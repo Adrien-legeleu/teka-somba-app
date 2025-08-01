@@ -52,6 +52,7 @@ type Ad = {
   category?: { id: string; parentId: string };
   dynamicFields?: DynamicFieldValues;
 };
+type DurationUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
 
 export default function EditAdForm({
   ad,
@@ -262,7 +263,9 @@ export default function EditAdForm({
               />
               <Select
                 value={watched.durationUnit ?? undefined}
-                onValueChange={(val) => setValue('durationUnit', val as any)}
+                onValueChange={(val: DurationUnit) =>
+                  setValue('durationUnit', val)
+                }
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Unité de durée" />
@@ -333,7 +336,7 @@ export default function EditAdForm({
                     disabled={!isFormValid}
                     className="mt-4 text-white w-full md:w-auto"
                   >
-                    Modifier l'annonce
+                    Modifier l&apos;annonce
                   </Button>
                   <DeleteAdButton
                     userId={userId}

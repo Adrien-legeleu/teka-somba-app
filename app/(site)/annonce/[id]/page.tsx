@@ -192,7 +192,7 @@ export default function AdDetailsPage() {
                   <Button
                     onClick={() => router.push(`/dashboard/annonces/${ad.id}`)}
                   >
-                    Modifier l'annonce
+                    Modifier l&apos;annonce
                   </Button>
                 ) : (
                   <ContactSellerModal

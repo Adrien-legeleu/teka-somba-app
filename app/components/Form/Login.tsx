@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,11 +13,36 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (document.cookie.includes('token=')) {
-      router.replace('/dashboard');
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setMsg(null);
+
+    const data = new FormData(e.currentTarget);
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: data.get('email'),
+        password: data.get('password'),
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    setLoading(false);
+
+    if (res.ok) {
+      router.push('/dashboard');
+    } else {
+      let error = 'Erreur de connexion.';
+      try {
+        const json = await res.json();
+        error = json.error || error;
+      } catch {
+        // JSON invalide, on garde le message par défaut
+      }
+      setMsg(error);
     }
-  }, [router]);
+  };
 
   return (
     <AuroraBackground>
@@ -38,6 +64,7 @@ export default function Login() {
               TEKA-SOMBA
             </span>
           </motion.h1>
+
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -46,37 +73,13 @@ export default function Login() {
           >
             Connecte-toi pour retrouver tes annonces, messages et favoris.
           </motion.p>
+
           <motion.form
             className="flex flex-col gap-4 max-w-sm mx-auto w-full"
             initial={false}
             animate={msg ? { scale: 1.04 } : { scale: 1 }}
             transition={{ type: 'spring', stiffness: 250, damping: 12 }}
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              setMsg(null);
-              const data = new FormData(e.target as HTMLFormElement);
-              const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({
-                  email: data.get('email'),
-                  password: data.get('password'),
-                }),
-                headers: { 'Content-Type': 'application/json' },
-              });
-              setLoading(false);
-              if (res.ok) router.push('/dashboard');
-              else {
-                let err = 'Erreur';
-                try {
-                  const data = await res.json();
-                  err = data.error || err;
-                } catch {
-                  // Erreur de parsing, on laisse 'Erreur'
-                }
-                setMsg(err);
-              }
-            }}
+            onSubmit={handleSubmit}
           >
             <Input
               name="email"
@@ -102,18 +105,21 @@ export default function Login() {
               )}
             </Button>
           </motion.form>
+
           <Link
             href="/forgot-password"
             className="mt-1 text-sm text-[#085e54] hover:text-[#ffbf00] transition-colors underline"
           >
             Mot de passe oublié ?
           </Link>
+
           <Link
             href="/signup"
             className="text-sm font-semibold text-[#ec5d22] hover:text-[#ffbf00] underline self-center"
           >
             Pas encore inscrit ? Créer un compte
           </Link>
+
           <AnimatePresence>
             {msg && (
               <motion.div
