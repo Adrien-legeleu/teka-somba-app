@@ -74,7 +74,14 @@ export default function ResetPasswordContent() {
               required
               disabled={loading}
             />
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              style={{
+                background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+              }}
+              disabled={loading}
+              className="text-white"
+            >
               {loading ? 'Validation...' : 'Valider'}
             </Button>
           </form>

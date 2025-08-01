@@ -66,7 +66,14 @@ export default function ForgotPasswordPage() {
               required
               disabled={loading}
             />
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading}
+              style={{
+                background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+              }}
+              className="text-white"
+            >
               {loading ? 'Envoi...' : 'Envoyer le lien'}
             </Button>
           </form>

@@ -63,7 +63,7 @@ export function CategorySection({
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="mt-4 w-full bg-white border rounded-2xl shadow-lg z-50"
+            className="mt-4 w-full bg-white border rounded-3xl shadow-lg z-50"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}

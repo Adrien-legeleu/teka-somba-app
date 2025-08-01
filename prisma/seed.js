@@ -1,132 +1,69 @@
-// prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type DynamicField = {
-  categoryId: string;
-  name: string;
-  type: 'TEXT' | 'NUMBER' | 'SELECT' | 'BOOLEAN';
-  options?: string[];
-  required: boolean;
-};
-
 async function main() {
-  // Liste des catégories principales et sous-catégories
+  // Liste des catégories principales avec leurs enfants
   const categories = [
     {
-      id: 'vehicules', name: 'Véhicules', icon: '🚗', allowRent: true,
+      id: 'vehicules',
+      name: 'Véhicules',
+      icon: '🚗',
+      allowRent: true,
       children: [
         { id: 'voitures', name: 'Voitures', icon: '🚙', allowRent: true },
         { id: 'motos', name: 'Motos', icon: '🏍️', allowRent: false },
-        { id: 'caravaning', name: 'Caravaning', icon: '🏕️', allowRent: true },
-        { id: 'utilitaires', name: 'Utilitaires', icon: '🚐', allowRent: true },
-        { id: 'camions', name: 'Camions', icon: '🚛', allowRent: false },
-        { id: 'nautisme', name: 'Nautisme', icon: '🛥️', allowRent: true },
       ],
     },
     {
-      id: 'immobilier', name: 'Immobilier', icon: '🏠', allowRent: true,
+      id: 'immobilier',
+      name: 'Immobilier',
+      icon: '🏠',
+      allowRent: true,
       children: [
-        { id: 'ventes', name: 'Ventes immobilières', icon: '🔑', allowRent: false },
-        { id: 'locations', name: 'Locations', icon: '📃', allowRent: true },
-        { id: 'colocations', name: 'Colocations', icon: '👥', allowRent: true },
-        { id: 'bureaux', name: 'Bureaux & Commerces', icon: '🏬', allowRent: true },
+        {
+          id: 'appartements',
+          name: 'Appartements',
+          icon: '🏢',
+          allowRent: true,
+        },
+        { id: 'maisons', name: 'Maisons', icon: '🏡', allowRent: true },
       ],
     },
     {
-      id: 'vacances', name: 'Vacances', icon: '🏖️', allowRent: true,
+      id: 'electronique',
+      name: 'Électronique',
+      icon: '💻',
+      allowRent: false,
       children: [
-        { id: 'locations_saisonnieres', name: 'Locations saisonnières', icon: '🏡', allowRent: true },
+        {
+          id: 'smartphones',
+          name: 'Smartphones',
+          icon: '📱',
+          allowRent: false,
+        },
+        {
+          id: 'ordinateurs',
+          name: 'Ordinateurs',
+          icon: '🖥️',
+          allowRent: false,
+        },
       ],
     },
     {
-      id: 'emploi', name: 'Emploi', icon: '💼', allowRent: false,
-      children: [
-        { id: 'offres', name: 'Offres d’emploi', icon: '📢', allowRent: false },
-        { id: 'demandes', name: 'Demandes d’emploi', icon: '📩', allowRent: false },
-      ],
-    },
-    {
-      id: 'mode', name: 'Mode', icon: '👗', allowRent: false,
+      id: 'mode',
+      name: 'Mode',
+      icon: '👕',
+      allowRent: false,
       children: [
         { id: 'vetements', name: 'Vêtements', icon: '👚', allowRent: false },
         { id: 'chaussures', name: 'Chaussures', icon: '👟', allowRent: false },
-        { id: 'accessoires', name: 'Accessoires & Bagagerie', icon: '👜', allowRent: false },
-        { id: 'bijoux', name: 'Montres & Bijoux', icon: '💍', allowRent: false },
-      ],
-    },
-    {
-      id: 'maison_jardin', name: 'Maison & Jardin', icon: '🏡', allowRent: false,
-      children: [
-        { id: 'ameublement', name: 'Ameublement', icon: '🛋️', allowRent: false },
-        { id: 'electromenager', name: 'Électroménager', icon: '🍳', allowRent: false },
-        { id: 'decoration', name: 'Décoration', icon: '🖼️', allowRent: false },
-        { id: 'jardin', name: 'Jardin & Plantes', icon: '🌱', allowRent: false },
-        { id: 'bricolage', name: 'Bricolage', icon: '🔨', allowRent: false },
-      ],
-    },
-    {
-      id: 'famille', name: 'Famille (Puériculture)', icon: '🍼', allowRent: false,
-      children: [
-        { id: 'equipement_bebe', name: 'Équipement bébé', icon: '👶', allowRent: false },
-        { id: 'mobilier_enfant', name: 'Mobilier enfant', icon: '🛏️', allowRent: false },
-        { id: 'vetements_bebe', name: 'Vêtements bébé', icon: '🧸', allowRent: false },
-      ],
-    },
-    {
-      id: 'electronique', name: 'Électronique', icon: '📱', allowRent: false,
-      children: [
-        { id: 'smartphones', name: 'Smartphones', icon: '📱', allowRent: false },
-        { id: 'ordinateurs', name: 'Ordinateurs', icon: '💻', allowRent: false },
-        { id: 'photo_audio_video', name: 'Photo/Audio/Vidéo', icon: '📷', allowRent: false },
-        { id: 'tablettes', name: 'Tablettes & Liseuses', icon: '📚', allowRent: false },
-        { id: 'consoles', name: 'Consoles & Jeux vidéo', icon: '🎮', allowRent: false },
-      ],
-    },
-    {
-      id: 'loisirs', name: 'Loisirs', icon: '🎉', allowRent: false,
-      children: [
-        { id: 'antiques', name: 'Antiquités & Collections', icon: '🏺', allowRent: false },
-        { id: 'instruments', name: 'Instruments de musique', icon: '🎵', allowRent: false },
-        { id: 'livres', name: 'Livres', icon: '📚', allowRent: false },
-        { id: 'sport', name: 'Sport & Plein air', icon: '🏀', allowRent: false },
-        { id: 'jeux', name: 'Jeux & Jouets', icon: '🧩', allowRent: false },
-      ],
-    },
-    {
-      id: 'animaux', name: 'Animaux', icon: '🐾', allowRent: false,
-      children: [
-        { id: 'animaux_vivants', name: 'Animaux vivants', icon: '🐶', allowRent: false },
-        { id: 'accessoires_animaux', name: 'Accessoires animaux', icon: '🐱', allowRent: false },
-      ],
-    },
-    {
-      id: 'materiel_pro', name: 'Matériel professionnel', icon: '🏭', allowRent: false,
-      children: [
-        { id: 'agricole', name: 'Matériel agricole', icon: '🚜', allowRent: false },
-        { id: 'medical', name: 'Matériel médical', icon: '🩺', allowRent: false },
-        { id: 'industriel', name: 'Équipements industriels', icon: '⚙️', allowRent: false },
-      ],
-    },
-    {
-      id: 'services', name: 'Services', icon: '🛎️', allowRent: false,
-      children: [
-        { id: 'baby_sitting', name: 'Baby-Sitting', icon: '👶', allowRent: false },
-        { id: 'cours_particuliers', name: 'Cours particuliers', icon: '📖', allowRent: false },
-        { id: 'jardinage', name: 'Jardinage & Bricolage', icon: '🌿', allowRent: false },
-      ],
-    },
-    {
-      id: 'autres', name: 'Autres/Divers', icon: '🔄', allowRent: false,
-      children: [
-        { id: 'divers', name: 'Divers', icon: '❓', allowRent: false },
       ],
     },
   ];
 
-  // Upsert catégories et sous-catégories
   for (const parent of categories) {
+    // Upsert de la catégorie parent
     await prisma.category.upsert({
       where: { id: parent.id },
       update: {},
@@ -137,6 +74,7 @@ async function main() {
         allowRent: parent.allowRent,
       },
     });
+
     for (const child of parent.children) {
       await prisma.category.upsert({
         where: { id: child.id },
@@ -152,20 +90,96 @@ async function main() {
     }
   }
 
-  // Champs dynamiques pour chaque sous-catégorie
-  const fields: DynamicField[] = [
-    // Voitures
+  // Champs dynamiques à ajouter
+  const fields = [
     { categoryId: 'voitures', name: 'Marque', type: 'TEXT', required: true },
-    { categoryId: 'voitures', name: 'Modèle', type: 'TEXT', required: true },
-    { categoryId: 'voitures', name: 'Kilométrage', type: 'NUMBER', required: true },
+    {
+      categoryId: 'voitures',
+      name: 'Kilométrage',
+      type: 'NUMBER',
+      required: true,
+    },
     { categoryId: 'voitures', name: 'Année', type: 'NUMBER', required: true },
-    { categoryId: 'voitures', name: 'Carburant', type: 'SELECT', options: ['Essence','Diesel','Hybride','Électrique'], required: true },
-    { categoryId: 'voitures', name: 'Boîte de vitesses', type: 'SELECT', options: ['Manuelle','Automatique'], required: true },
-    ...
-    // (Poursuivre pour chaque sous-catégorie avec 3-5 champs appropriés)
+    {
+      categoryId: 'voitures',
+      name: 'Boîte de vitesses',
+      type: 'SELECT',
+      options: ['Manuelle', 'Automatique'],
+      required: false,
+    },
+    {
+      categoryId: 'appartements',
+      name: 'Nombre de pièces',
+      type: 'NUMBER',
+      required: true,
+    },
+    {
+      categoryId: 'appartements',
+      name: 'Surface (m²)',
+      type: 'NUMBER',
+      required: true,
+    },
+    {
+      categoryId: 'appartements',
+      name: 'Meublé',
+      type: 'SELECT',
+      options: ['Oui', 'Non'],
+      required: false,
+    },
+    { categoryId: 'vetements', name: 'Taille', type: 'TEXT', required: true },
+    { categoryId: 'vetements', name: 'Marque', type: 'TEXT', required: false },
+    {
+      categoryId: 'vetements',
+      name: 'État',
+      type: 'SELECT',
+      options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
+      required: true,
+    },
+    {
+      categoryId: 'chaussures',
+      name: 'Pointure',
+      type: 'TEXT',
+      required: true,
+    },
+    { categoryId: 'chaussures', name: 'Marque', type: 'TEXT', required: false },
+    {
+      categoryId: 'chaussures',
+      name: 'État',
+      type: 'SELECT',
+      options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
+      required: true,
+    },
+    { categoryId: 'smartphones', name: 'Modèle', type: 'TEXT', required: true },
+    {
+      categoryId: 'smartphones',
+      name: 'Stockage',
+      type: 'SELECT',
+      options: ['64 Go', '128 Go', '256 Go'],
+      required: true,
+    },
+    {
+      categoryId: 'smartphones',
+      name: 'État',
+      type: 'SELECT',
+      options: ['Neuf', 'Reconditionné', 'Occasion'],
+      required: true,
+    },
+    { categoryId: 'ordinateurs', name: 'Modèle', type: 'TEXT', required: true },
+    {
+      categoryId: 'ordinateurs',
+      name: 'Mémoire RAM',
+      type: 'TEXT',
+      required: true,
+    },
+    {
+      categoryId: 'ordinateurs',
+      name: 'Type de disque',
+      type: 'SELECT',
+      options: ['SSD', 'HDD'],
+      required: true,
+    },
   ];
 
-  // Création des champs dynamiques
   for (const field of fields) {
     const exists = await prisma.categoryField.findFirst({
       where: { categoryId: field.categoryId, name: field.name },
@@ -177,6 +191,11 @@ async function main() {
 }
 
 main()
-  .then(() => console.log('✅ Seed complet Leboncoin terminé'))
-  .catch((e) => console.error(e))
+  .then(() => {
+    console.log('✅ Seed sécurisé terminé (aucune suppression)');
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
   .finally(() => prisma.$disconnect());

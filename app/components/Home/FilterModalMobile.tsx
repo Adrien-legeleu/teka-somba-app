@@ -6,18 +6,18 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerFooter,
-  DrawerTrigger,
   DrawerClose,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
 import { useFilter } from './FilterContext';
-
 import { CitySection } from '../Filter/cityPicker';
 import { CategorySection } from '../Filter/Categorypicker';
 import { DonSection } from '../Filter/DonSwitch';
+import { useState } from 'react';
+import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
 
 export default function FilterDrawerMobile() {
+  const [open, setOpen] = useState(false);
   const {
     city,
     setCity,
@@ -35,73 +35,84 @@ export default function FilterDrawerMobile() {
     sortOrder,
     setSortOrder,
     resetFilters,
-    isFilterModalOpen,
-    setFilterModalOpen,
   } = useFilter();
 
   return (
-    <Drawer open={isFilterModalOpen} onOpenChange={setFilterModalOpen}>
-      <DrawerContent className="max-h-[90vh] h-[90vh]">
-        <div className="mx-auto w-full max-w-sm flex flex-col h-full">
-          {/* Header */}
-          <DrawerHeader>
-            <DrawerTitle className="text-base">Filtres avancés</DrawerTitle>
-          </DrawerHeader>
+    <>
+      <Button
+        variant="outline"
+        className="rounded-full relative left-6 text-sm px-4 py-2 mt-2 flex items-center gap-2"
+        onClick={() => setOpen(true)}
+      >
+        <IconAdjustmentsHorizontal size={18} />
+        Filtres
+      </Button>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="w-full max-w-md mx-auto p-0 bg-white rounded-t-3xl  flex flex-col">
+          <div className="flex-1 flex pb-4 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4">
+            {/* Header */}
+            <DrawerHeader className="px-0 pt-0">
+              <DrawerTitle className="text-base text-center">
+                Filtres avancés
+              </DrawerTitle>
+            </DrawerHeader>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-4">
-            <CitySection city={city} setCity={setCity} />
-
-            <CategorySection
-              categories={categories}
-              categoryId={categoryId}
-              setCategoryId={setCategoryId}
-              subCategoryId={subCategoryId}
-              setSubCategoryId={setSubCategoryId}
-            />
-
-            <DonSection isDon={isDon} setIsDon={setIsDon} />
-
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                placeholder="Min (FCFA)"
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-                className="flex-1 border rounded-xl px-3 py-2 text-sm"
+            {/* Contenu scrollable */}
+            <div className="flex-1 flex flex-col gap-4">
+              <CitySection city={city} setCity={setCity} />
+              <CategorySection
+                categories={categories}
+                categoryId={categoryId}
+                setCategoryId={setCategoryId}
+                subCategoryId={subCategoryId}
+                setSubCategoryId={setSubCategoryId}
               />
-              <input
-                type="number"
-                placeholder="Max (FCFA)"
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-                className="flex-1 border rounded-xl px-3 py-2 text-sm"
-              />
+              <DonSection isDon={isDon} setIsDon={setIsDon} />
+              <div className="flex max-xs:flex-col xs:items-center gap-2">
+                <input
+                  type="number"
+                  placeholder="Min (FCFA)"
+                  value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value)}
+                  className=" border rounded-xl px-3 py-2 text-sm"
+                />
+                <input
+                  type="number"
+                  placeholder="Max (FCFA)"
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value)}
+                  className=" border rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                className="w-full border rounded-xl px-3 py-2 text-sm bg-white"
+              >
+                <option value="desc">Prix décroissant</option>
+                <option value="asc">Prix croissant</option>
+              </select>
             </div>
-
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-              className="w-full border rounded-xl px-3 py-2 text-sm bg-white"
-            >
-              <option value="desc">Prix décroissant</option>
-              <option value="asc">Prix croissant</option>
-            </select>
           </div>
-
-          {/* Footer fixe */}
-          <DrawerFooter className="border-t bg-white p-4 space-y-2">
+          {/* Footer fixé */}
+          <DrawerFooter className="border-t flex bg-white p-4 space-y-2 flex-col">
             <Button variant="outline" onClick={resetFilters} className="w-full">
               Réinitialiser
             </Button>
             <DrawerClose asChild>
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+              <Button
+                onClick={() => setOpen(false)}
+                style={{
+                  background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                }}
+                className="w-full  text-white font-semibold"
+              >
                 Appliquer les filtres
               </Button>
             </DrawerClose>
           </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }

@@ -170,7 +170,10 @@ export default function SignUp() {
             </div>
             <Button
               type="submit"
-              className="mt-4"
+              className="mt-4 text-white"
+              style={{
+                background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+              }}
               disabled={loading || !!errorAge}
             >
               {loading ? 'Inscription...' : 'S’inscrire'}

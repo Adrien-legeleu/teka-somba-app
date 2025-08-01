@@ -95,7 +95,14 @@ export default function Login() {
               required
               disabled={loading}
             />
-            <Button type="submit" disabled={loading} className="mt-4">
+            <Button
+              type="submit"
+              style={{
+                background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+              }}
+              disabled={loading}
+              className="mt-4 text-white"
+            >
               {loading ? (
                 <span className="animate-pulse">Connexion…</span>
               ) : (
