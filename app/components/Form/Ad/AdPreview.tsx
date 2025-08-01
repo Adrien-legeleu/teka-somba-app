@@ -14,8 +14,26 @@ type AdPreviewProps = {
     lng?: number | null;
     categoryId?: string | null;
     dynamicFields?: DynamicFieldValues;
+    type?: 'FOR_SALE' | 'FOR_RENT';
+    durationValue?: number;
+    durationUnit?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
   };
   dynamicFields?: DynamicField[];
+};
+
+const getFrenchDurationUnit = (unit: string) => {
+  switch (unit) {
+    case 'DAY':
+      return 'jour';
+    case 'WEEK':
+      return 'semaine';
+    case 'MONTH':
+      return 'mois';
+    case 'YEAR':
+      return 'an';
+    default:
+      return unit?.toLowerCase?.() ?? '';
+  }
 };
 
 export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
@@ -25,6 +43,9 @@ export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
     price,
     location,
     images = [],
+    type,
+    durationUnit,
+    durationValue,
     dynamicFields: values = {},
   } = ad ?? {};
 
@@ -39,13 +60,29 @@ export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
     <div className="border bg-white rounded-3xl p-6 shadow-md space-y-4">
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
 
+      {/* Type de l'annonce */}
+      {type && (
+        <div className="inline-block px-2 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-600">
+          {type === 'FOR_SALE' ? 'À vendre' : 'À louer'}
+        </div>
+      )}
+
+      {/* Durée si location */}
+      {type === 'FOR_RENT' && durationValue && durationUnit && (
+        <div className="text-xs text-muted-foreground italic">
+          Durée de location : {durationValue}{' '}
+          {getFrenchDurationUnit(durationUnit)}
+        </div>
+      )}
+
+      {/* Images */}
       {images.length > 0 && (
         <div className="flex gap-2 overflow-x-auto">
           {images.map((img, i) => (
             <Image
               key={i}
               src={img}
-              alt={`Aperçu image ${i + 1}`}
+              alt={`Image ${i + 1}`}
               width={56}
               height={56}
               className="w-14 h-14 object-cover rounded-md"
@@ -54,22 +91,26 @@ export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
         </div>
       )}
 
+      {/* Description */}
       {description && (
-        <div className="text-sm text-gray-700 whitespace-pre-line">
+        <p className="text-sm text-gray-700 whitespace-pre-line">
           {description}
-        </div>
+        </p>
       )}
 
+      {/* Prix */}
       {typeof price === 'number' && !isNaN(price) && (
         <div className="font-bold text-base text-foreground">
-          {price.toLocaleString('fr-FR')} FCFA
+          {price === 0 ? 'Gratuit' : `${price.toLocaleString('fr-FR')} FCFA`}
         </div>
       )}
 
+      {/* Localisation */}
       {location && (
         <div className="text-xs text-muted-foreground">{location}</div>
       )}
 
+      {/* Champs dynamiques */}
       {dynamicFields.length > 0 && (
         <ul className="mt-2 space-y-1 text-sm">
           {dynamicFields.map((f) => {

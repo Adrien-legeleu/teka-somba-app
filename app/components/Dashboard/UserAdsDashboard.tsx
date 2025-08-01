@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
-import FilterBar from '../Filter/Filterbar';
+import { PlusCircle, LayoutGrid, Rows } from 'lucide-react';
 import DeleteAdButton from '../Button/DeleteAdButton';
 import EditAdButton from '../Button/EditAdButton';
 import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text';
@@ -15,7 +14,6 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 import DashboardPremiumOffers from '../Payment/DashboardPremiumOffers';
 import { Category } from '@/types/category';
 
-// Typage des annonces
 type Ad = {
   id: string;
   title: string;
@@ -25,74 +23,27 @@ type Ad = {
   images: string[];
   boostUntil?: string | null;
 };
+
 type SortOrder = 'asc' | 'desc';
+
 export default function UserAdsDashboard({ userId }: { userId: string }) {
   const router = useRouter();
   const [ads, setAds] = useState<Ad[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [priceMin, setPriceMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-
-  const [categoryId, setCategoryId] = useState('');
-  const [subCategoryId, setSubCategoryId] = useState('');
-  const [city, setCity] = useState('');
-  const [search, setSearch] = useState('');
-  const [isDon, setIsDon] = useState(false);
-
-  // Modal Premium
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
-  // ...
+  const [isCompact, setIsCompact] = useState(false);
   useEffect(() => {
     const timeout = setTimeout(fetchUserAds, 300);
     return () => clearTimeout(timeout);
-  }, [
-    search,
-    categoryId,
-    subCategoryId,
-    city,
-    isDon,
-    priceMin,
-    priceMax,
-    sortOrder,
-  ]);
+  }, [sortOrder]);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const timeout = setTimeout(fetchUserAds, 300); // debounce
-    return () => clearTimeout(timeout);
-  }, [search, categoryId, subCategoryId, city]);
-
-  useEffect(() => {
-    fetchUserAds();
-  }, [categoryId, subCategoryId, city]);
-
-  async function fetchCategories() {
-    const res = await fetch('/api/categories');
-    const data: Category[] = await res.json();
-    setCategories(data);
-  }
   async function fetchUserAds() {
     setLoading(true);
     const params = new URLSearchParams();
-    if (subCategoryId) params.append('categoryId', subCategoryId);
-    else if (categoryId) params.append('categoryId', categoryId);
-    if (city) params.append('city', city);
-    if (search) params.append('q', search);
-    if (isDon) params.append('isDon', 'true');
-
-    // ⇩⇩⇩ AJOUTE
-    if (priceMin) params.append('priceMin', priceMin);
-    if (priceMax) params.append('priceMax', priceMax);
-    params.append('sortBy', 'price'); // ou 'createdAt' si tu veux trier par date
-    params.append('sortOrder', sortOrder); // 'asc' | 'desc'
-    // ⇧⇧⇧
-
+    params.append('sortBy', 'createdAt');
+    params.append('sortOrder', sortOrder);
     const res = await fetch(`/api/ad/user/${userId}?${params.toString()}`);
     const data: Ad[] = await res.json();
     setAds(data);
@@ -104,7 +55,9 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
       {/* Header */}
       <div className="z-30 relative bg-neutral-50 backdrop-blur-xl py-5 flex items-center justify-center">
         <div className="bg-white p-5 shadow-black/10 shadow-2xl border rounded-full flex items-center justify-between mx-auto max-w-5xl w-full">
-          <h1 className="text-3xl font-bold">Mes annonces</h1>
+          <h1 className="md:text-3xl sm:text-2xl text-lg max-sm:text-center font-bold">
+            Mes annonces
+          </h1>
           <Button
             onClick={() => router.push('/dashboard/annonces/new')}
             className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 transition rounded-full px-6 py-3 text-lg shadow-xl"
@@ -115,115 +68,116 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         </div>
       </div>
 
-      <FilterBar
-        search={search}
-        setSearch={setSearch}
-        city={city}
-        setCity={setCity}
-        categories={categories}
-        categoryId={categoryId}
-        setCategoryId={setCategoryId}
-        subCategoryId={subCategoryId}
-        setSubCategoryId={setSubCategoryId}
-        isDon={isDon}
-        setIsDon={setIsDon}
-        // ⇩⇩⇩ AJOUTE
-        priceMin={priceMin}
-        setPriceMin={setPriceMin}
-        priceMax={priceMax}
-        setPriceMax={setPriceMax}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        // ⇧⇧⇧
-      />
-      {/* Résultats */}
-      {loading ? (
-        <p>Chargement...</p>
-      ) : ads.length === 0 ? (
-        <p className="shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10 rounded-[3rem]">
-          Aucune annonce publiée.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 rounded-[3rem]">
-          {ads.map((ad) => (
-            <div key={ad.id} className="relative pb-4">
-              <div className="relative">
-                <Link
-                  href={`/annonce/${ad.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {ad.images?.[0] && (
-                    <Image
-                      src={ad.images[0]}
-                      alt={ad.title}
-                      width={300}
-                      height={200}
-                      className="rounded-3xl aspect-square shadow-2xl shadow-[#00000010] border border-gray-100 w-full object-cover"
-                    />
-                  )}
-                </Link>
-
-                {ad.boostUntil && new Date(ad.boostUntil) > new Date() && (
-                  <div className="group absolute top-2 left-2 bg-white/90 backdrop-blur-xl mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f] ">
-                    <span
-                      className={cn(
-                        'absolute inset-0 block h-full w-full animate-gradient rounded-[inherit] bg-gradient-to-r from-[#ffaa40]/50 via-[#9c40ff]/50 to-[#ffaa40]/50 bg-[length:300%_100%] p-[1px]'
-                      )}
-                      style={{
-                        WebkitMask:
-                          'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                        WebkitMaskComposite: 'destination-out',
-                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                        maskComposite: 'subtract',
-                        WebkitClipPath: 'padding-box',
-                      }}
-                    />
-
-                    <AnimatedGradientText className="text-sm font-medium">
-                      Boosté
-                    </AnimatedGradientText>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-2">
-                <h2 className="font-semibold text-lg line-clamp-1">
-                  {ad.title}
-                </h2>
-                <div className="text-primary font-bold mt-1">
-                  {ad.price?.toLocaleString()} FCFA
-                </div>
-                {ad.location && (
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {ad.location}
-                  </div>
-                )}
-              </div>
-
-              {/* Boutons d'action */}
-              <div className="flex items-center justify-between gap-3 mt-3">
-                <div className="flex items-center justify-center gap-0">
-                  <EditAdButton adId={ad.id} />
-                  <DeleteAdButton
-                    userId={userId}
-                    adId={ad.id}
-                    onDeleted={() =>
-                      setAds((ads) => ads.filter((a) => a.id !== ad.id))
-                    }
-                  />
-                </div>
-                {!ad.boostUntil ||
-                  (new Date(ad.boostUntil) < new Date() && (
-                    <div onClick={() => setSelectedAdId(ad.id)}>
-                      <InteractiveHoverButton text="Booster" />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
+      <div className="mt-8 relative">
+        {/* Filtre flottant */}
+        <div className=" sticky w-fit  rounded-3xl top-2 p-2 left-2 flex items-center  gap-2 bg-white/90 backdrop-blur-xl shadow-xl border z-50">
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+            className="rounded-3xl p-2 border shadow bg-white text-gray-700 text-xs md:text-sm hover:border-gray-400 transition"
+          >
+            <option value="desc">Plus récentes</option>
+            <option value="asc">Plus anciennes</option>
+          </select>
+          <button
+            onClick={() => setIsCompact(!isCompact)}
+            className="rounded-2xl border bg-white p-2 shadow hover:bg-gray-50 transition"
+            title="Changer la vue"
+          >
+            {isCompact ? <Rows size={18} /> : <LayoutGrid size={18} />}
+          </button>
         </div>
-      )}
+
+        {loading ? (
+          <p className="p-10 text-center">Chargement...</p>
+        ) : ads.length === 0 ? (
+          <p className="text-gray-500 h-screen flex text-center items-center justify-center p-8">
+            Aucune annonce publiée.
+          </p>
+        ) : (
+          <div
+            className={cn(
+              'grid gap-5 mt-16  p-6 transition-all',
+              isCompact
+                ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5'
+                : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
+            )}
+          >
+            {ads.map((ad) => (
+              <div key={ad.id} className="relative pb-4">
+                <div className="relative">
+                  <Link href={`/annonce/${ad.id}`} target="_blank">
+                    {ad.images?.[0] && (
+                      <Image
+                        src={ad.images[0]}
+                        alt={ad.title}
+                        width={300}
+                        height={200}
+                        className="rounded-3xl aspect-square shadow-2xl shadow-[#00000010] border border-gray-100 w-full object-cover"
+                      />
+                    )}
+                  </Link>
+
+                  {ad.boostUntil && new Date(ad.boostUntil) > new Date() && (
+                    <div className="group absolute top-2 left-2 bg-white/90 backdrop-blur-xl mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] hover:shadow-[inset_0_-5px_10px_#8fdfff3f]">
+                      <span
+                        className={cn(
+                          'absolute inset-0 block h-full w-full animate-gradient rounded-[inherit] bg-gradient-to-r from-[#ffaa40]/50 via-[#9c40ff]/50 to-[#ffaa40]/50 bg-[length:300%_100%] p-[1px]'
+                        )}
+                        style={{
+                          WebkitMask:
+                            'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                          WebkitMaskComposite: 'destination-out',
+                          mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                          maskComposite: 'subtract',
+                          WebkitClipPath: 'padding-box',
+                        }}
+                      />
+                      <AnimatedGradientText className="text-sm font-medium">
+                        Boosté
+                      </AnimatedGradientText>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-2">
+                  <h2 className="font-semibold text-lg line-clamp-1">
+                    {ad.title}
+                  </h2>
+                  <div className="text-primary font-bold mt-1">
+                    {ad.price?.toLocaleString()} FCFA
+                  </div>
+                  {ad.location && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {ad.location}
+                    </div>
+                  )}
+                </div>
+
+                {/* Boutons */}
+                <div className="flex items-center justify-between gap-3 mt-3">
+                  <div className="flex items-center justify-center gap-0">
+                    <EditAdButton adId={ad.id} />
+                    <DeleteAdButton
+                      userId={userId}
+                      adId={ad.id}
+                      onDeleted={() =>
+                        setAds((prev) => prev.filter((a) => a.id !== ad.id))
+                      }
+                    />
+                  </div>
+                  {!ad.boostUntil ||
+                    (new Date(ad.boostUntil) < new Date() && (
+                      <div onClick={() => setSelectedAdId(ad.id)}>
+                        <InteractiveHoverButton text="Booster" />
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Modal Premium */}
       {selectedAdId && (

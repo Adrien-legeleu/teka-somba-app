@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FavoriteButton } from './FavoriteButton';
+import { IconMapPin } from '@tabler/icons-react';
 
 type Favorite = {
   id: string;
@@ -34,40 +35,46 @@ export default function FavoriteDashboard({ userId }: { userId: string }) {
   if (loading) return <div>Chargement...</div>;
 
   if (!favorites.length)
-    return <div className="text-gray-500 p-8">Aucune annonce en favori.</div>;
+    return (
+      <div className="text-gray-500 h-screen flex text-center items-center justify-center p-8">
+        Aucune annonce en favori.
+      </div>
+    );
 
   return (
     <div className="grid grid-cols-1 z-10 shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-      {favorites.map((fav) => (
-        <div key={fav.id} className="border-b  pb-2">
-          <div className="relative ">
-            <Link href={`/annonce/${fav.id}`} className="   transition">
-              {fav.images?.[0] && (
+      {favorites.map((ad) => (
+        <div key={ad.id} className="overflow-hidden relative">
+          <div className="relative">
+            <Link href={`/annonce/${ad.id}`}>
+              {ad.images?.[0] && (
                 <Image
-                  src={fav.images[0]}
-                  alt={fav.title}
-                  width={300}
-                  height={200}
-                  className="rounded-3xl aspect-square shadow-2xl shadow-[#0000010] border border-gray-100 w-full object-cover "
+                  src={ad.images[0]}
+                  alt={ad.title}
+                  width={1000}
+                  height={800}
+                  className="w-full aspect-square rounded-3xl object-cover"
                 />
               )}
             </Link>
             <FavoriteButton
               userId={userId}
-              adId={fav.id}
-              isFavoriteInitial={fav.isFavorite}
+              adId={ad.id}
+              isFavoriteInitial={ad.isFavorite}
             />
           </div>
-          <Link href={`/annonce/${fav.id}`} className="transition">
-            <h2 className="font-semibold text-lg line-clamp-1">{fav.title}</h2>
-            <div className="text-primary font-bold mt-1">
-              {fav.price.toLocaleString()} FCFA
-            </div>
-            {fav.location && (
-              <div className="text-sm text-muted-foreground mt-1">
-                {fav.location}
+          <Link href={`/annonce/${ad.id}`} className="block pl-1 py-4">
+            <h2 className="font-semibold text-sm md:text-base line-clamp-1">
+              {ad.title}
+            </h2>
+            {ad.location && (
+              <div className="flex items-center text-xs text-gray-500 mt-1">
+                <IconMapPin size={14} className="mr-1" /> {ad.location}
               </div>
             )}
+            <p className="font-semibold mt-2 text-sm md:text-base">
+              {ad.price.toLocaleString()} FCFA
+            </p>
           </Link>
         </div>
       ))}

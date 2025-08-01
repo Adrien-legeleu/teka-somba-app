@@ -27,7 +27,7 @@ export default async function Page() {
   }
 
   return (
-    <div className="min-h-screen flex justify-start">
+    <div className=" w-full flex justify-start">
       <Suspense fallback={<div>Chargement...</div>}>
         <Home userId={userId} />
       </Suspense>

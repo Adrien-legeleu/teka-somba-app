@@ -7,7 +7,11 @@ export function useMe() {
   useEffect(() => {
     fetch('/api/me')
       .then((res) => res.json())
-      .then((data) => setMe(data))
+      .then((data) => {
+        console.log('Données utilisateur reçues :', data);
+        setMe(data);
+      })
+
       .finally(() => setLoading(false));
   }, []);
 

@@ -77,21 +77,57 @@ export default function ProfilPage() {
       <Card className="bg-white/90 backdrop-blur-xl shadow-black/10 rounded-3xl shadow-2xl mb-8">
         <CardContent className="p-8">
           <form onSubmit={handleSave} className="space-y-6">
-            <div className="flex gap-4 items-center">
-              {form.avatar ? (
-                <Image
-                  src={form.avatar}
-                  alt="Avatar"
-                  width={72}
-                  height={72}
-                  className="rounded-full border"
+            <div className="flex flex-col items-start gap-2">
+              <label className="font-medium text-sm">Photo de profil</label>
+
+              <div className="relative group">
+                <label
+                  htmlFor="avatar-upload"
+                  className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100 text-gray-500 cursor-pointer hover:ring-2 hover:ring-orange-400 transition"
+                >
+                  {form.avatar ? (
+                    <Image
+                      src={form.avatar}
+                      alt="Photo de profil"
+                      width={96}
+                      height={96}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <span className="text-xs text-center px-2">
+                      Ajouter une photo
+                    </span>
+                  )}
+
+                  <div className="absolute bottom-0 right-0 p-1 bg-white rounded-full shadow-md border group-hover:scale-105 transition">
+                    📷
+                  </div>
+                </label>
+
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const res = await fetch('/api/upload', {
+                      method: 'POST',
+                      body: formData,
+                    });
+
+                    const data = await res.json();
+                    setForm((prev) => ({ ...prev, avatar: data.url }));
+                  }}
                 />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
-                  A
-                </div>
-              )}
+              </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 name="prenom"

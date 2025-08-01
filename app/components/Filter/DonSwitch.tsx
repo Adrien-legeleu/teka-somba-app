@@ -11,11 +11,11 @@ export function DonSection({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="don-filter" className="font-semibold text-xs">
+      <Label htmlFor="don-filter" className="font-semibold text-sm">
         Dons uniquement
       </Label>
 
-      <label className="relative inline-block w-[46px] h-[24px] cursor-pointer">
+      <label className="relative inline-block  w-[69px] h-[36px] cursor-pointer">
         <input
           type="checkbox"
           id="don-filter"
@@ -25,18 +25,18 @@ export function DonSection({
         />
         {/* Slider */}
         <div
-          className={`w-full h-full rounded-full transition-colors duration-300 ${
+          className={`w-full h-full  rounded-full transition-colors duration-300 ${
             isDon ? 'bg-green-500' : 'bg-gray-400'
           }`}
         >
           <div
-            className={`absolute top-[3px] left-[3px] w-[18px] h-[18px] bg-white rounded-full shadow transition-all duration-300 flex items-center justify-center ${
-              isDon ? 'translate-x-[22px]' : 'translate-x-0'
+            className={`absolute top-1/2 -translate-y-1/2 left-[4px] aspect-square  h-[80%] bg-white rounded-full shadow transition-all duration-300 flex items-center justify-center ${
+              isDon ? 'translate-x-[32px]' : 'translate-x-0'
             }`}
           >
             {/* Cross */}
             <svg
-              className={`w-[6px] text-gray-400 absolute transition-transform duration-200 ${
+              className={`w-[12px] text-gray-400 absolute transition-transform duration-200 ${
                 isDon
                   ? 'opacity-0 scale-0 animate-switch-cross-to-check'
                   : 'opacity-100 scale-100'
@@ -51,7 +51,7 @@ export function DonSection({
 
             {/* Checkmark */}
             <svg
-              className={`w-[10px] text-green-500 absolute transition-transform duration-200 ${
+              className={`w-[20px] text-green-500 absolute transition-transform duration-200 ${
                 isDon
                   ? 'opacity-100 scale-100 animate-switch-check-to-cross'
                   : 'opacity-0 scale-0'

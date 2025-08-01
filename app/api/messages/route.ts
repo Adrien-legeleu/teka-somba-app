@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { encryptMessage, decryptMessage } from '@/lib/cryptoMessage';
 import { getUserIdFromRequest } from '@/lib/authUser';
-
 // POST : envoyer un message
 export async function POST(req: Request) {
   const userId = await getUserIdFromRequest();

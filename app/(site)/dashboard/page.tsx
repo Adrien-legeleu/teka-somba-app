@@ -59,10 +59,10 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="flex flex-col w-full min-h-screen items-center pb-14 px-2">
-        <div className="w-full flex border-b items-center justify-center bg-neutral-50 pt-20 pb-5">
-          <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-black/10 border shadow-2xl">
+        <div className="w-full flex border-b items-center justify-center bg-neutral-50 md:pt-20 md:pb-5">
+          <div className="w-full max-w-3xl flex flex-col md:flex-row gap-4 items-end justify-between backdrop-blur-xl bg-white border-[#ffbf00]/30 rounded-3xl p-7 mb-10 shadow-black/10 border shadow-2xl">
             <div className="flex items-center gap-5">
-              <div className="w-20 h-20 rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
+              <div className="w-20 h-20 aspect-square rounded-full bg-[#ffbf00] flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-xl">
                 {user.avatar ? (
                   <Image
                     width={80}
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
                     className="rounded-full w-full h-full object-cover"
                   />
                 ) : (
-                  user.name?.[0]?.toUpperCase() || '?'
+                  user.prenom?.[0]?.toUpperCase() || '?'
                 )}
               </div>
               <div>
@@ -91,31 +91,45 @@ export default async function DashboardPage() {
                   <span className="text-gray-500 text-sm">{user.age}</span>
                 </div>
                 <div className="text-sm text-gray-500">{user.city}</div>
-                <Button
-                  className="mt-2 bg-[var(--color-accent)] text-white hover:bg-[var(--color-primary)] px-4 py-1"
-                  variant="ghost"
-                  size="sm"
-                  asChild
+
+                <div
+                  className="glowing-box glowing-box-active  mt-5"
+                  style={{ '--animation-speed': '2s' } as React.CSSProperties}
                 >
-                  <Link href="/dashboard/profil">Modifier mon profil</Link>
-                </Button>
+                  <div className="glowing-box-animations">
+                    <div className="glowing-box-glow"></div>
+                    <div className="glowing-box-stars-masker">
+                      <div className="glowing-box-stars"></div>
+                    </div>
+                  </div>
+                  <div className="glowing-box-borders-masker">
+                    <div className="glowing-box-borders"></div>
+                  </div>
+
+                  <Link href="/dashboard/profil">
+                    <button className="glowing-box-button shadow-xl  ">
+                      <span className="glowing-span">Modifier mon profil</span>
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
             {/* Porte-monnaie */}
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-col pt-5 items-end gap-1">
               <div className="text-gray-600 text-sm">Porte-monnaie</div>
               <div className="text-3xl font-bold text-[var(--color-secondary)]">
                 {user.credit} crédits
               </div>
               <div className="text-xs text-gray-400">Solde disponible</div>
-              <Button
+              {/* <Button
                 className="mt-2 text-[var(--color-accent)] border-[var(--color-accent)] bg-white/90 hover:bg-[var(--color-primary)] hover:text-white transition-all"
                 variant="outline"
                 size="sm"
                 asChild
               >
                 <Link href="/dashboard/wallet">Ajouter de l’argent</Link>
-              </Button>
+              </Button> */}
+              <p className="text-xs">Porte-Monnaie bientot disponible</p>
             </div>
           </div>
         </div>
@@ -125,43 +139,43 @@ export default async function DashboardPage() {
           <DashboardCard
             title="Annonces"
             desc="Gérer mes annonces déposées"
-            icon={<List size={36} />}
+            emoji="📢"
             href="/dashboard/annonces"
           />
           <DashboardCard
             title="Favoris"
             desc="Retrouver tous mes favoris"
-            icon={<Heart size={36} />}
+            emoji="❤️"
             href="/dashboard/favoris"
           />
           <DashboardCard
             title="Messages"
             desc="Mes échanges avec la communauté"
-            icon={<MessageCircle size={36} />}
+            emoji="💬"
             href="/dashboard/messages"
           />
           <DashboardCard
             title="Profil & Espaces"
             desc="Modifier mon profil, voir mes avis"
-            icon={<UserCircle size={36} />}
+            emoji="🙋‍♂️"
             href="/dashboard/profil"
           />
           <DashboardCard
             title="Votre Wallet"
             desc="Les fonctionnalités Premiums"
-            icon={<Settings size={36} />}
+            emoji="💰"
             href="/dashboard/wallet"
           />
           <DashboardCard
             title="Factures"
             desc="Consulter mes factures"
-            icon={<FileText size={36} />}
+            emoji="🧾"
             href="/dashboard/factures"
           />
           <DashboardCard
             title="Aide"
             desc="Questions fréquentes, support"
-            icon={<HelpCircle size={36} />}
+            emoji="🆘"
             href="/dashboard/support"
             external
           />
@@ -183,17 +197,16 @@ export default async function DashboardPage() {
   );
 }
 
-// Composant Card Réutilisable
 function DashboardCard({
   title,
   desc,
-  icon,
+  emoji,
   href,
   external = false,
 }: {
   title: string;
   desc: string;
-  icon: React.ReactNode;
+  emoji: string;
   href: string;
   external?: boolean;
 }) {
@@ -202,10 +215,10 @@ function DashboardCard({
       href={href}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      className="group relative border rounded-3xl bg-white border-[#ffbf00]/10 p-7 flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
+      className="group relative border rounded-3xl bg-white border-[#ffbf00]/10 p-6  flex flex-col items-start gap-2 shadow-2xl shadow-black/10 hover:scale-[1.03] transition-all min-h-[150px] focus:ring-2 ring-[var(--color-primary)]"
     >
-      <div className="rounded-xl bg-[var(--color-primary)] text-white p-2 shadow">
-        {icon}
+      <div className="rounded-2xl shadow-xl shadow-black/5 bg-[#ffbf00]/20 aspect-square flex items-center justify-center text-3xl p-2">
+        {emoji}
       </div>
       <div className="font-semibold text-lg text-[var(--color-secondary)]">
         {title}

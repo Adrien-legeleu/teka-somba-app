@@ -10,7 +10,7 @@ const icons = [
   { href: '/dashboard', Icon: UserCircle },
 ];
 
-export default function DashboardNav() {
+export default function DashboardNav({ hasUnread }: { hasUnread: boolean }) {
   const pathname = usePathname();
   const activeIndex = icons.findIndex((i) => i.href === pathname);
 
@@ -34,8 +34,11 @@ export default function DashboardNav() {
                 <Icon
                   className={`lg:w-6 lg:h-6 h-5 w-5 transition-transform duration-200 ${
                     isActive ? 'scale-110 text-orange-500' : 'text-orange-500'
-                  }`}
+                  } ${x.href === '/dashboard/messages' && hasUnread ? 'animate-bounce' : ''}`}
                 />
+                {x.href === '/dashboard/messages' && hasUnread && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
               </div>
             </Link>
           );

@@ -14,6 +14,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Ad } from '@/types/ad';
 import Image from 'next/image';
+import socket from '@/lib/socket';
+
 import { useState } from 'react';
 
 interface ContactSellerModalProps {
@@ -56,6 +58,14 @@ export default function ContactSellerModal({
         }),
       });
       if (!res.ok) throw new Error('Erreur lors de l’envoi du message.');
+      socket.emit('send_message', {
+        adId: ad.id,
+        receiverId: ad.user.id,
+        senderName: 'Un utilisateur',
+        content: message,
+        createdAt: new Date().toISOString(),
+      });
+
       setOpen(false);
       onSent?.();
     } catch (err) {
@@ -74,7 +84,7 @@ export default function ContactSellerModal({
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="rounded-2xl px-8 py-3 text-lg shadow-xl bg-orange-500 hover:bg-orange-600 transition"
+          className="rounded-3xl px-8 py-3 sm:text-lg text-md shadow-xl bg-orange-500 hover:bg-orange-600 transition"
           disabled={disabled}
         >
           Contacter

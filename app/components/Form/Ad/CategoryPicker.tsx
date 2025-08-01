@@ -1,130 +1,122 @@
-import { useEffect, useState } from 'react';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select';
+'use client';
 
-type Category = {
-  id: string;
-  name: string;
-  parentId: string | null;
+import { useEffect, useState } from 'react';
+import { Category } from '@prisma/client';
+import clsx from 'clsx';
+
+type Props = {
+  categoryId: string | null;
+  setCategoryId: (value: string) => void;
+  subCategoryId: string | null;
+  setSubCategoryId: (value: string) => void;
+};
+
+type CategoryWithChildren = Category & {
   children: Category[];
 };
 
-export default function CategoryPicker({
-  categories,
+const emojiMap: Record<string, string> = {
+  Véhicules: '🚗',
+  Immobilier: '🏠',
+  Mode: '👕',
+  'High-Tech': '💻',
+  'Maison & Jardin': '🏡',
+  Loisirs: '🎮',
+  Emploi: '💼',
+  Services: '🔧',
+  Animaux: '🐕',
+  Autres: '📦',
+};
+
+export const CategoryPicker = ({
   categoryId,
   setCategoryId,
-  onSelect,
-}: {
-  categories: Category[];
-  categoryId?: string;
-  setCategoryId?: (id: string) => void;
-  onSelect: (id: string) => void;
-}) {
-  // Racines
-  const rootCats = categories.filter((cat) => !cat.parentId);
+  subCategoryId,
+  setSubCategoryId,
+}: Props) => {
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
 
-  function findParentAndSub(categoryId: string | undefined): {
-    parent: string;
-    sub: string;
-  } {
-    if (!categoryId) return { parent: '', sub: '' };
+  useEffect(() => {
+    fetch('/api/categories')
+      .then((res) => res.json())
+      .then((data) => setCategories(data));
+  }, []);
+  useEffect(() => {
+    console.log('[DEBUG] subCategoryId:', subCategoryId);
+    console.log('[DEBUG] current categoryId:', categoryId);
+    console.log('[DEBUG] categories:', categories);
 
-    let parent = '';
-    let sub = '';
-
-    function search(categories: Category[]) {
-      for (const cat of categories) {
-        if (cat.id === categoryId) {
-          if (cat.parentId) {
-            parent = cat.parentId;
-            sub = cat.id;
-          } else {
-            parent = cat.id;
-            sub = '';
-          }
-          return true;
-        }
-
-        if (cat.children.length > 0) {
-          if (search(cat.children)) return true;
+    if (!categoryId && subCategoryId) {
+      for (const parent of categories) {
+        const match = parent.children.find(
+          (child) => child.id === subCategoryId
+        );
+        if (match) {
+          console.log(
+            '[DEBUG] FOUND parent category for subCategoryId:',
+            parent.id
+          );
+          setCategoryId(parent.id);
+          break;
         }
       }
-      return false;
     }
+  }, [subCategoryId, categoryId, categories]);
 
-    search(categories);
-    return { parent, sub };
-  }
-
-  const { parent: initialParent, sub: initialSub } =
-    findParentAndSub(categoryId);
-
-  const [parent, setParent] = useState<string>(initialParent);
-  const [sub, setSub] = useState<string>(initialSub);
-
-  // Pour suivre les changements venant du parent (utile pour édition/préremplissage)
-  useEffect(() => {
-    console.log(categoryId);
-    const { parent: newParent, sub: newSub } = findParentAndSub(categoryId);
-    console.log(newParent, newSub);
-
-    setParent(newParent);
-    setSub(newSub);
-  }, [categoryId, categories]);
-
-  // Sous-catégories du parent sélectionné
-  const subCats = parent
-    ? (categories.find((cat) => cat.id === parent)?.children ?? [])
-    : [];
+  const selectedCategory = categories.find((cat) => cat.id === categoryId);
 
   return (
-    <div className="flex gap-4">
-      {/* Sélecteur catégorie racine */}
-      <Select
-        onValueChange={(id) => {
-          setParent(id);
-          setSub('');
-          onSelect(''); // Reset, rien n'est sélectionné tant que pas de sous-catégorie
-        }}
-        value={parent || ''}
-      >
-        <SelectTrigger className="w-[180px]">
-          {parent ? categories.find((c) => c.id === parent)?.name : 'Catégorie'}
-        </SelectTrigger>
-        <SelectContent>
-          {rootCats.map((cat) => (
-            <SelectItem key={cat.id} value={cat.id}>
-              {cat.name}
-            </SelectItem>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold mb-3">Informations générales</h2>
+        <p className="text-sm text-gray-600 mb-2">Choisissez une catégorie *</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => {
+                setCategoryId(cat.id);
+                setSubCategoryId('');
+              }}
+              className={clsx(
+                'border rounded-3xl px-4 py-3 text-center hover:border-black transition',
+                categoryId === cat.id
+                  ? 'border-black shadow'
+                  : 'border-gray-300'
+              )}
+            >
+              <div className="text-2xl mb-1">{emojiMap[cat.name] || '📁'}</div>
+              <div className="text-sm font-medium">{cat.name}</div>
+            </button>
           ))}
-        </SelectContent>
-      </Select>
-      {/* Sélecteur sous-catégorie */}
-      {subCats.length > 0 && (
-        <Select
-          onValueChange={(id) => {
-            setSub(id);
-            onSelect(id);
-            setCategoryId?.(id);
-          }}
-          value={sub || ''}
-        >
-          <SelectTrigger className="w-[180px]">
-            {sub ? subCats.find((c) => c.id === sub)?.name : 'Sous-catégorie'}
-          </SelectTrigger>
-          <SelectContent>
-            {subCats.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
-              </SelectItem>
+        </div>
+      </div>
+
+      {selectedCategory && selectedCategory.children.length > 0 && (
+        <div>
+          <p className="text-sm text-gray-600 mb-2">
+            Choisissez une sous-catégorie *
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {selectedCategory.children.map((sub) => (
+              <button
+                key={sub.id}
+                type="button"
+                onClick={() => setSubCategoryId(sub.id)}
+                className={clsx(
+                  'border rounded-3xl px-4 py-3 text-center hover:border-black transition',
+                  subCategoryId === sub.id
+                    ? 'border-black shadow'
+                    : 'border-gray-300'
+                )}
+              >
+                <div className="text-sm font-medium">{sub.name}</div>
+              </button>
             ))}
-          </SelectContent>
-        </Select>
+          </div>
+        </div>
       )}
     </div>
   );
-}
+};

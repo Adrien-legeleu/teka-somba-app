@@ -14,26 +14,27 @@ import {
   IconHeart,
   IconMessage,
   IconUser,
+  IconBriefcase2,
 } from '@tabler/icons-react';
-import { Gift, Luggage } from 'lucide-react';
 import DashboardNav from './DashboardNav';
+import CategoryIcon from '../Fonctionnalities/CategoryIcon';
+import socket from '@/lib/socket';
+import { toast } from 'sonner';
 
 type Category = {
   id: string;
   name: string;
+  icon: string;
   children?: Category[];
 };
 
 export default function Header() {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [expanded, setExpanded] = useState(false);
-
-  // Sous-catégories
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [dropdownPos, setDropdownPos] = useState({
     left: 0,
@@ -42,8 +43,6 @@ export default function Header() {
   });
   const catRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const selectedCatId = searchParams.get('categoryId');
-
-  // Lien "Dons"
   const isDonActive = searchParams.get('isDon') === 'true';
 
   useEffect(() => {
@@ -55,11 +54,14 @@ export default function Header() {
   useEffect(() => {
     setSearch(searchParams.get('q') || '');
   }, [searchParams]);
+
+  const gradient = 'linear-gradient(90deg, #ff7a00, #ff3c00)';
+
   function handleSearchSubmit(e?: React.FormEvent) {
     if (e) e.preventDefault();
     const params = new URLSearchParams();
     if (search.trim()) params.set('q', search);
-    router.push('/?' + params.toString()); // <-- Force toujours /
+    router.push('/?' + params.toString());
   }
 
   function handleCategoryClick(catId: string, e: React.MouseEvent) {
@@ -92,25 +94,38 @@ export default function Header() {
   function closeDropdown() {
     setActiveCat(null);
   }
+  const [hasUnread, setHasUnread] = useState(false);
 
-  const gradient = 'linear-gradient(90deg, #ff7a00, #ff3c00)';
+  useEffect(() => {
+    socket.on('new_message', (message) => {
+      setHasUnread(true);
+      toast('💬 Nouveau message reçu : ' + message.content);
+    });
+    fetch('/api/messages/unread')
+      .then((res) => res.json())
+      .then((data) => {
+        setHasUnread(data.unread);
+      })
+      .catch(() => {});
+
+    return () => {
+      socket.off('new_message');
+    };
+  }, []);
 
   return (
     <header className="w-full bg-neutral-50 max-md:rounded-b-3xl max-md:shadow-xl max-md:shadow-black/5 border-b border-gray-100 z-[1000] sticky top-0">
-      {/* TOP BAR DESKTOP */}
-      <div className="max-w-7xl hidden md:flex mx-auto relative px-4  justify-between items-center h-20 gap-4">
-        {/* Logo */}
+      <div className="max-w-7xl hidden md:flex mx-auto relative px-4 justify-between items-center h-20 gap-4">
         <Link href="/">
           <Image
             src={'/logo teka somba.png'}
             alt="logo teka somba"
             width={200}
             height={200}
-            className="h-14  w-auto object-contain"
+            className="h-14 w-auto object-contain"
           />
         </Link>
 
-        {/* Search (Desktop) */}
         <form
           onMouseEnter={() => setExpanded(true)}
           onMouseLeave={() => setExpanded(false)}
@@ -149,7 +164,6 @@ export default function Header() {
           </motion.button>
         </form>
 
-        {/* Déposer Annonce (Desktop) */}
         <Link
           href="/dashboard/annonces/new"
           style={{ background: gradient }}
@@ -161,47 +175,22 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* DashboardNav (Desktop) */}
         <div className="hidden md:flex flex-1 justify-end">
-          <DashboardNav />
+          <DashboardNav hasUnread={hasUnread} />
         </div>
       </div>
 
-      {/* SEARCH MOBILE */}
-      <div className="px-4 py-2 flex w-full gap-5  items-center justify-between md:hidden">
-        <Link href="/">
-          <Image
-            src={'/logo teka somba.png'}
-            alt="logo teka somba"
-            width={200}
-            height={200}
-            className="h-14 w-auto object-contain"
-          />
-        </Link>
-        <form
-          onSubmit={handleSearchSubmit}
-          className="flex items-center justify-between bg-white border border-gray-200 rounded-full w-fit shadow-sm overflow-hidden h-12  px-1"
-        >
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher..."
-            className="  text-gray-700 placeholder-gray-400 text-xs bg-transparent outline-none"
-          />
-          <button
-            type="submit"
-            className="flex items-center justify-center w-10 h-10 rounded-full text-white"
-            style={{ background: gradient }}
-          >
-            <IconSearch size={20} className="text-white" />
-          </button>
-        </form>
-      </div>
-
-      {/* CATEGORIES (Desktop only) */}
       <nav className="w-full z-50 relative border-t border-gray-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto no-scrollbar">
+          <Link
+            href={`/service-bagage`}
+            className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition flex items-center gap-2 
+                text-gray-700 hover:text-orange-500
+            }`}
+          >
+            <IconBriefcase2 size={18} className="text-orange-400" />
+            Services bagages
+          </Link>
           {categories.map((cat) => (
             <div
               key={cat.id}
@@ -215,19 +204,19 @@ export default function Header() {
               <Link
                 href={`/?categoryId=${cat.id}`}
                 onClick={(e) => handleCategoryClick(cat.id, e)}
-                className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition ${
+                className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition flex items-center gap-2 ${
                   selectedCatId === cat.id
                     ? 'text-orange-600 border-b-2 border-orange-500'
                     : 'text-gray-700 hover:text-orange-500'
                 }`}
               >
+                <CategoryIcon name={cat.icon} />
                 {cat.name}
               </Link>
             </div>
           ))}
         </div>
 
-        {/* Sous-catégories (Portal) */}
         {activeCat &&
           categories.find((c) => c.id === activeCat)?.children?.length &&
           createPortal(
@@ -268,64 +257,43 @@ export default function Header() {
           )}
       </nav>
 
-      {/* LINKS Dons & Services */}
-      <div className="hidden md:flex max-w-7xl mx-auto px-4 items-center gap-4 h-12">
-        <Link
-          href="/?isDon=true"
-          onClick={handleDonClick}
-          className={`flex items-center gap-2 px-4 py-1 rounded-full transition ${
-            isDonActive
-              ? 'bg-orange-100 text-orange-600 font-semibold'
-              : 'text-gray-700 hover:text-orange-500'
-          }`}
-        >
-          <Gift size={18} /> Dons
-        </Link>
-
-        <Link
-          href="/services-bagages"
-          className={`flex items-center gap-2 px-4 py-1 rounded-full transition ${
-            pathname?.includes('services-bagages')
-              ? 'bg-orange-100 text-orange-600 font-semibold'
-              : 'text-gray-700 hover:text-orange-500'
-          }`}
-        >
-          <Luggage size={18} /> Services bagages
-        </Link>
-      </div>
-
-      {/* BOTTOM NAV (Mobile) */}
-      <div className="fixed xs:bottom-1 bottom-0 xs:left-1/2 left-0 xs:-translate-x-1/2 sm:w-1/2 xs:w-2/3 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 flex items-center justify-around md:hidden h-16 shadow-lg z-[999]">
+      <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0 xs:-translate-x-1/2 sm:w-1/2 xs:w-2/3 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 flex items-center justify-around md:hidden h-16 shadow-lg z-[999]">
         <Link
           href="/"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
-          <IconHome size={24} />
+          <IconHome size={28} />
         </Link>
         <Link
           href="/dashboard/favoris"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
-          <IconHeart size={24} />
+          <IconHeart size={28} />
         </Link>
         <Link
-          href="/dashboard/annonces/new"
-          style={{ background: gradient }}
-          className="w-14 h-14 -mt-6  text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+          href="/dashboard/messages"
+          className="relative flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
-          <IconPlus size={26} />
+          <IconMessage
+            size={28}
+            className={hasUnread ? 'animate-bounce text-orange-500' : ''}
+          />
+          {hasUnread && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          )}
         </Link>
+
         <Link
           href="/dashboard/messages"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
-          <IconMessage size={24} />
+          <IconMessage size={28} />
         </Link>
         <Link
           href="/dashboard"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
-          <IconUser size={24} />
+          <IconUser size={28} />
         </Link>
       </div>
     </header>

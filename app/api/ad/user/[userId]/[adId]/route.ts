@@ -70,14 +70,19 @@ export async function PATCH(
     }
 
     const data = await req.json();
-    const { categoryId, dynamicFields, ...baseData } = data;
+    const {
+      subCategoryId,
+      categoryId, // ← à exclure aussi pour éviter qu'il rentre dans baseData
+      dynamicFields,
+      ...baseData
+    } = data;
 
     // Mise à jour des données principales
     await prisma.ad.update({
       where: { id: adId },
       data: {
         ...baseData,
-        category: { connect: { id: categoryId } },
+        category: { connect: { id: subCategoryId } },
       },
     });
 
@@ -87,7 +92,7 @@ export async function PATCH(
     // Ajout des nouveaux champs dynamiques
     if (dynamicFields && typeof dynamicFields === 'object') {
       const category = await prisma.category.findUnique({
-        where: { id: categoryId },
+        where: { id: subCategoryId },
         include: { fields: true },
       });
 

@@ -141,20 +141,21 @@ export default function SupportPage() {
               disabled={loading}
             />
             {success && (
-              <div className="bg-green-100 text-green-700 rounded-xl p-3 text-sm">
+              <div className="bg-green-100 text-green-700 rounded-3xl p-3 text-sm">
                 Votre demande a bien été envoyée ! Un membre de notre équipe
                 vous répondra rapidement par mail.
               </div>
             )}
             {error && (
-              <div className="bg-red-100 text-red-700 rounded-xl p-3 text-sm">
+              <div className="bg-red-100 text-red-700 rounded-3xl p-3 text-sm">
                 {error}
               </div>
             )}
             <Button
               type="submit"
               disabled={loading || !form.subject.trim() || !form.message.trim()}
-              className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-8"
+              style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
+              className="rounded-3xl hover:bg-orange-600 text-white  px-8"
             >
               {loading ? 'Envoi…' : 'Envoyer'}
             </Button>

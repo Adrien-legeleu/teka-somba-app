@@ -17,6 +17,7 @@ export async function GET() {
       city: true,
       age: true,
       isAdmin: true,
+      isSuperAdmin: true,
     },
   });
 

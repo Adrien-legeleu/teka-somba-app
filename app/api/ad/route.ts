@@ -164,6 +164,7 @@ export async function POST(req: NextRequest) {
   let body: unknown;
   try {
     body = await req.json();
+    console.log('📥 Payload reçu côté serveur :', body);
   } catch {
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
   }
@@ -177,13 +178,18 @@ export async function POST(req: NextRequest) {
     lng: z.number().optional(),
     isDon: z.boolean().optional(),
     images: z.array(z.string().url()).min(1).max(10),
-    categoryId: z.string().uuid(),
-    dynamicFields: z.record(z.string(), z.unknown()), // Fixe le problème de .record
+    categoryId: z.string(),
+    dynamicFields: z.record(z.string(), z.unknown()),
+    type: z.enum(['FOR_SALE', 'FOR_RENT']),
+    durationValue: z.number().optional(),
+    durationUnit: z.enum(['DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
   });
 
   let parsed: z.infer<typeof baseSchema>;
+
   try {
     parsed = baseSchema.parse(body);
+    console.log('✅ Données validées (base) :', parsed);
   } catch (err) {
     return NextResponse.json(
       { error: 'Erreur de validation', details: (err as z.ZodError).issues },
@@ -199,6 +205,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Catégorie invalide' }, { status: 400 });
 
   const dynamicSchema = buildDynamicSchema(category.fields);
+  console.log(
+    '⛔ Champs dynamiques reçus côté serveur :',
+    parsed.dynamicFields
+  );
+  console.log('🧩 Schéma attendu :', category.fields);
+
   let dynamicParsed: Record<string, unknown>;
   try {
     dynamicParsed = dynamicSchema.parse(parsed.dynamicFields);
@@ -225,6 +237,9 @@ export async function POST(req: NextRequest) {
         isDon: parsed.isDon ?? false,
         userId,
         categoryId: parsed.categoryId,
+        type: parsed.type,
+        durationValue: parsed.durationValue,
+        durationUnit: parsed.durationUnit,
       },
     });
 
@@ -233,6 +248,7 @@ export async function POST(req: NextRequest) {
       if (value === undefined || value === '' || value === null) continue;
       if (fieldDef.type === 'number' && typeof value === 'string')
         value = Number(value);
+      console.log('📌 Champs dynamiques parsés :', dynamicParsed);
 
       await prisma.adField.create({
         data: {

@@ -12,8 +12,9 @@ export async function POST(req: NextRequest) {
   const name = formData.get('name')?.toString();
   const prenom = formData.get('prenom')?.toString();
   const phone = formData.get('phone')?.toString();
+  const age = formData.get('age')?.toString();
+
   const city = formData.get('city')?.toString();
-  const birthdate = formData.get('birthdate')?.toString();
   const identityFile = formData.get('identityCard') as File;
 
   if (
@@ -64,7 +65,8 @@ export async function POST(req: NextRequest) {
       phone,
       city,
       identityCardUrl,
-      birthdate: birthdate ? new Date(birthdate) : null,
+
+      age: age ? parseInt(age) : null,
       otp,
       otpExpiry: new Date(Date.now() + 10 * 60 * 1000), // expire 10 min
     },

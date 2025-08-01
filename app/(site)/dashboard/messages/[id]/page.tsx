@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
 import Link from 'next/link';
+import socket from '@/lib/socket';
 
 interface User {
   id: string;
@@ -103,6 +104,14 @@ export default function ConversationPage() {
       if (!res.ok) throw new Error("Erreur lors de l'envoi");
 
       setMessage('');
+      socket.emit('send_message', {
+        adId,
+        receiverId: otherUserId,
+        senderName: me?.prenom || me?.name || 'Quelqu’un',
+        content: message,
+        createdAt: new Date().toISOString(),
+      });
+
       const updated = await fetch(
         `/api/messages?adId=${adId}&otherUserId=${otherUserId}`
       );

@@ -28,9 +28,10 @@ export async function POST(req: Request) {
       name: pending.name,
       prenom: pending.prenom,
       phone: pending.phone,
+      age: pending.age,
       city: pending.city,
       identityCardUrl: pending.identityCardUrl,
-      isVerified: true,
+      isVerified: false,
       isRejected: false,
     },
   });

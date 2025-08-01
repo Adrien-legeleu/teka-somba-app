@@ -66,7 +66,11 @@ export default function InboxPage() {
   if (loading) return <div className="p-8 text-center">Chargement…</div>;
 
   if (threads.length === 0)
-    return <div className="p-8 text-center">Aucune conversation.</div>;
+    return (
+      <div className="text-gray-500 h-screen flex text-center items-center justify-center p-8">
+        Aucune conversation.
+      </div>
+    );
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">

@@ -2,16 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AuroraBackground } from '@/components/ui/aurora-background';
-import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
 import ContactSellerModal from '@/app/components/Contact/ContactSellerModal';
 import TrackAdView from '@/app/components/Fonctionnalities/TrackAdView';
 import SellerProfile from '@/app/components/Profil/SellerProfileDialog';
 import { Ad } from '@/types/ad';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import ReportAdDialog from '@/app/components/Fonctionnalities/ReportDialog';
 
 export default function AdDetailsPage() {
   const { id } = useParams();
@@ -20,6 +30,7 @@ export default function AdDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const { me, loading: loadingMe } = useMe();
+  const [showAdminDeleteModal, setShowAdminDeleteModal] = useState(false);
 
   useEffect(() => {
     async function fetchAd() {
@@ -38,53 +49,55 @@ export default function AdDetailsPage() {
 
   if (loading || loadingMe) {
     return (
-      <AuroraBackground className="min-h-screen flex items-start justify-start py-10">
-        <div className="max-w-5xl w-full mx-auto p-10 bg-white rounded-3xl shadow-2xl">
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-1/2" />
-            <Skeleton className="h-96 w-full rounded-2xl" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-1/3" />
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-white">
+        <div className="max-w-4xl w-full mx-auto p-10 bg-white rounded-3xl shadow-2xl">
+          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-96 w-full rounded-2xl mt-6" />
         </div>
-      </AuroraBackground>
+      </div>
     );
   }
 
   if (!ad) {
     return (
-      <AuroraBackground className="min-h-screen flex items-center justify-center">
-        <div className="max-w-xl w-full mx-auto p-10 bg-white rounded-3xl shadow-2xl text-center text-xl font-semibold">
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <div className="p-10 bg-white rounded-3xl shadow-xl text-xl font-semibold">
           Annonce introuvable.
         </div>
-      </AuroraBackground>
+      </div>
     );
   }
 
   const isSeller = me?.id === ad.user?.id;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
-      {ad && <TrackAdView adId={ad.id} />}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="min-h-screen bg-gradient-to-b from-white to-orange-50 py-10 px-4"
+    >
+      <TrackAdView adId={ad.id} />
 
-      {/* Conteneur principal */}
-      <div className="max-w-6xl w-full mx-auto p-6 bg-white rounded-3xl shadow-xl border border-gray-100">
-        {/* Bloc principal : images + infos */}
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Bloc images (slider) */}
-          <div className="md:w-1/2 flex flex-col gap-4">
-            <div className="relative w-full  rounded-3xl overflow-hidden shadow-md">
+      <motion.div
+        className="max-w-6xl mx-auto p-6 bg-white rounded-3xl shadow-xl border border-gray-100"
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <div className="relative w-full rounded-3xl overflow-hidden shadow-md">
               <Image
                 src={ad.images?.[activeImage]}
                 width={800}
                 height={800}
                 alt={`image-${activeImage}`}
                 className="object-cover h-full w-full rounded-3xl transition-transform duration-500 hover:scale-105"
-                priority
               />
               {ad.images?.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                  {ad.images.map((_: string, i: number) => (
+                  {ad.images.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setActiveImage(i)}
@@ -93,26 +106,23 @@ export default function AdDetailsPage() {
                           ? 'bg-orange-500 border-orange-600'
                           : 'bg-white border-gray-300'
                       } transition`}
-                      aria-label={`Voir image ${i + 1}`}
                     />
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Thumbnails */}
             {ad.images?.length > 1 && (
-              <div className="flex gap-3 mt-2">
-                {ad.images.map((img: string, i: number) => (
+              <div className="flex gap-3 mt-4 overflow-x-auto">
+                {ad.images.map((img, i) => (
                   <div
                     key={i}
-                    className={`relative h-16 w-20 rounded-2xl overflow-hidden border-2 cursor-pointer transition-all duration-300 ${
+                    className={`h-16 w-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 ${
                       activeImage === i
                         ? 'border-orange-500 shadow-md'
                         : 'border-transparent'
                     }`}
                     onClick={() => setActiveImage(i)}
-                    style={{ minWidth: 80, minHeight: 64 }}
                   >
                     <Image
                       src={img}
@@ -127,90 +137,62 @@ export default function AdDetailsPage() {
             )}
           </div>
 
-          {/* Bloc infos */}
-          <div className="flex-1 flex flex-col justify-between">
+          <div className="flex flex-col justify-between">
             <div>
-              <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2 mb-3">
-                <h1 className="text-3xl font-bold text-gray-900">{ad.title}</h1>
-                <Badge
-                  variant="outline"
-                  className="text-base px-4 rounded-2xl py-1.5 border-gray-300 text-gray-600"
-                >
-                  {ad.category?.name}
-                </Badge>
-              </div>
-              <div className="text-2xl font-semibold text-orange-600 mb-4">
-                {ad.price} FCFA
-              </div>
-
-              {ad.location && (
-                <div className="flex items-center gap-2 text-gray-500 text-md mb-3">
-                  <svg
-                    width="20"
-                    height="20"
-                    fill="none"
-                    className="text-orange-400"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      d="M10 17.8c4.2-4.2 6.3-7.3 6.3-9.8A6.3 6.3 0 0 0 10 1.7a6.3 6.3 0 0 0-6.3 6.3c0 2.5 2.1 5.6 6.3 9.8Z"
-                    />
-                    <circle
-                      cx="10"
-                      cy="8.2"
-                      r="2.2"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                    />
-                  </svg>
-                  {ad.location}
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-cnter gap-3">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {ad.title}
+                  </h1>
+                  <Badge className="px-4 py-1 text-sm rounded-2xl bg-orange-100 text-orange-800">
+                    {ad.category?.name}
+                  </Badge>
                 </div>
-              )}
-
-              <div className="mb-5 text-gray-700 whitespace-pre-line text-lg leading-relaxed">
-                {ad.description}
+                <ReportAdDialog adId={ad.id} />
               </div>
+              <p className="text-2xl text-orange-600 font-semibold mb-2">
+                {ad.price?.toLocaleString()} FCFA
+              </p>
+              <p className="text-md text-gray-600 mb-3">{ad.location}</p>
+              {ad.durationValue && ad.durationUnit && (
+                <p className="text-sm text-gray-500 mb-4">
+                  Durée : {ad.durationValue} {ad.durationUnit.toLowerCase()}
+                </p>
+              )}
+              <p className="whitespace-pre-line text-gray-700 text-base leading-relaxed">
+                {ad.description}
+              </p>
             </div>
 
-            {/* Boutons */}
-            <div className="mt-6 border-t pt-5 flex items-center gap-4">
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 {ad.user?.avatar && (
                   <Image
                     src={ad.user.avatar}
-                    width={100}
-                    height={100}
+                    width={60}
+                    height={60}
                     alt="avatar"
                     className="rounded-full object-cover shadow-md"
                   />
                 )}
-                <div className="text-left">
-                  <div className="font-medium text-lg text-gray-800">
-                    <span>{ad.user?.prenom || 'Utilisateur'} </span>
-                    {ad.user?.name || 'Utilisateur'}
-                  </div>
-                  <div className="text-xs text-gray-500">Vendeur</div>
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {ad.user?.prenom || 'Utilisateur'} {ad.user?.name || ''}
+                  </p>
+                  <p className="text-xs text-gray-500">Vendeur</p>
                 </div>
               </div>
 
-              <div className="ml-auto">
+              <div>
                 {!me ? (
-                  <Button
-                    size="lg"
-                    className="rounded-xl px-8 py-3 text-lg shadow-lg bg-orange-500 hover:bg-orange-600 transition"
-                    onClick={() => router.push('/login')}
-                  >
+                  <Button onClick={() => router.push('/login')}>
                     Se connecter pour contacter
                   </Button>
                 ) : isSeller ? (
                   <Button
-                    size="lg"
-                    className="rounded-xl px-8 py-3 text-lg shadow-lg bg-orange-400 hover:bg-orange-600 transition"
                     onClick={() => router.push(`/dashboard/annonces/${ad.id}`)}
                   >
-                    Modifier l’annonce
+                    Modifier l'annonce
                   </Button>
                 ) : (
                   <ContactSellerModal
@@ -223,12 +205,65 @@ export default function AdDetailsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Bloc profil vendeur */}
-      <div className="max-w-6xl w-full mt-6">
+      <div className="max-w-6xl mx-auto mt-8">
         <SellerProfile user={ad.user} ad={ad} />
       </div>
-    </div>
+
+      {me?.isAdmin && (
+        <div className="mt-10 text-center">
+          <Button
+            variant="destructive"
+            onClick={() => setShowAdminDeleteModal(true)}
+          >
+            Supprimer en tant qu’admin
+          </Button>
+        </div>
+      )}
+
+      <Dialog
+        open={showAdminDeleteModal}
+        onOpenChange={setShowAdminDeleteModal}
+      >
+        <DialogContent className="max-w-md w-[90%] rounded-3xl z-[1000000000]">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">
+              Supprimer cette annonce ?
+            </DialogTitle>
+            <DialogDescription>
+              Cette action est irréversible. L’annonce sera supprimée et un
+              email sera envoyé à l’utilisateur.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex max-sm:flex-col justify-end gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => setShowAdminDeleteModal(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                const res = await fetch('/api/admin/moderate-ad', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ adId: ad.id, action: 'delete' }),
+                });
+                if (res.ok) {
+                  toast.success('Annonce supprimée.');
+                  router.push('/dashboard');
+                } else {
+                  toast.error('Erreur lors de la suppression.');
+                }
+              }}
+            >
+              Confirmer la suppression
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
   );
 }

@@ -1,3 +1,4 @@
+// ✅ 1. CitySection.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -44,7 +45,6 @@ export function CitySection({ city, setCity }: CitySectionProps) {
     }
   }
 
-  // Fermer au clic hors du composant
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -56,19 +56,17 @@ export function CitySection({ city, setCity }: CitySectionProps) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="relative flex flex-col gap-1 w-full">
-      <Label htmlFor="city" className="font-semibold text-xs">
+    <div ref={wrapRef} className="relative w-full">
+      <Label htmlFor="city" className="text-sm font-medium text-gray-700">
         Ville
       </Label>
-
       <input
         id="city"
-        placeholder="Paris, Lyon, Marseille..."
+        placeholder="Kinshasa, Mbujimayi, Lubumbashi..."
         value={search}
         onFocus={() => search && suggestions.length > 0 && setOpen(true)}
         onChange={(e) => handleSearch(e.target.value)}
-        className="rounded-full text-sm bg-transparent border-none shadow-none
-                 focus:outline-none focus:ring-0 focus:border-none "
+        className="w-full mt-1 px-4 py-2 rounded-3xl border bg-white shadow-sm border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
       />
 
       {createPortal(
@@ -76,9 +74,9 @@ export function CitySection({ city, setCity }: CitySectionProps) {
           {open && suggestions.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute bg-white shadow-md rounded-3xl p-5 z-[9999]"
+              className="absolute bg-white shadow-lg rounded-2xl mt-2 p-4 z-[9999]"
               style={{
                 position: 'absolute',
                 top:
@@ -93,7 +91,7 @@ export function CitySection({ city, setCity }: CitySectionProps) {
               {suggestions.map((place) => (
                 <div
                   key={place.id}
-                  className="p-2 hover:bg-gray-100 cursor-pointer rounded-3xl transition"
+                  className="px-3 py-2 hover:bg-gray-100 rounded-xl cursor-pointer text-sm"
                   onClick={() => {
                     setCity(place.text);
                     setSearch(place.text);

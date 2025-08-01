@@ -25,6 +25,7 @@ credit Int @default(0)
   city        String
   age         Int? 
   isAdmin     Boolean     @default(false)
+  isSuperAdmin Boolean  @default(false)
   notifications Notification[]
   favorites   Favorite[]
   // wallet   Wallet[]
@@ -50,7 +51,7 @@ model PendingUser {
   phone        String
   city         String
   identityCardUrl String
-  birthdate    DateTime?
+  age         Int? 
   otp          String
   otpExpiry    DateTime
   createdAt    DateTime @default(now())
@@ -67,9 +68,13 @@ model Ad {
   lng         Float?                                    // Longitude GPS
   images      Json? 
   boostType   String? 
+  reports     Report[]
 boostUntil  DateTime?
 isVip Boolean @default(false) 
     premiumPurchase PremiumPurchase[]
+    type AdType
+    durationValue Int? // <-- durée en valeur, ex: 3
+  durationUnit  DurationUnit?
   isDon  Boolean @default(false)
   createdAt   DateTime  @default(now())
   userId      String
@@ -80,6 +85,17 @@ isVip Boolean @default(false)
   favorites   Favorite[]         
   messages    Message[]   
   adAnalytics AdAnalytics? 
+}
+
+enum AdType {
+  FOR_SALE
+  FOR_RENT
+}
+enum DurationUnit {
+  DAY
+  WEEK
+  MONTH
+  YEAR
 }
 model AdAnalytics {
   id             String   @id @default(uuid())
@@ -111,12 +127,14 @@ enum AdStatus {
 }
 
 model Category {
-  id        String      @id @default(uuid())
+  id        String      @id @default(cuid())
   name      String
   parentId  String?
   parent    Category?   @relation("CategoryParent", fields: [parentId], references: [id])
   children  Category[]  @relation("CategoryParent")
   fields    CategoryField[]
+  icon String
+  allowRent Boolean @default(false) 
   ads       Ad[]        @relation("AdCategory")
 }
 
@@ -201,21 +219,16 @@ enum OfferType {
 }
 
 model HelpRequest {
-  id        String   @id @default(uuid())
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    String?
+  id        String   @id @default(cuid())
+  userId    String
   name      String
-  subject String
   email     String
+  subject   String
   message   String
-  status    HelpStatus @default(PENDING)
   createdAt DateTime @default(now())
-}
+  resolved  Boolean  @default(false)
 
-enum HelpStatus {
-  PENDING
-  TRAITED
-  CLOSED
+  user User @relation(fields: [userId], references: [id])
 }
 
 model PremiumPurchase {
@@ -227,4 +240,32 @@ model PremiumPurchase {
   ad        Ad       @relation(fields: [adId], references: [id])
   adId      String
   createdAt DateTime @default(now())
+}
+
+model BaggageRequest {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  message   String
+  quantity  Int
+  createdAt DateTime @default(now())
+}
+
+
+model Report {
+  id        String   @id @default(uuid())
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId      String
+  reason    ReportReason
+  message   String?
+  createdAt DateTime @default(now())
+}
+
+enum ReportReason {
+  INAPPROPRIATE
+  SCAM
+  SPAM
+  VIOLENCE
+  OTHER
 }
