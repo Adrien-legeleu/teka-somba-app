@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
+import Loader from '@/app/components/Fonctionnalities/Loader';
 
 interface Ad {
   id: string;

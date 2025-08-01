@@ -22,6 +22,7 @@ import {
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ReportAdDialog from '@/app/components/Fonctionnalities/ReportDialog';
+import Loader from '@/app/components/Fonctionnalities/Loader';
 
 function formatDynamicValue(key: string, value: DynamicFieldValue) {
   if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
@@ -67,14 +68,7 @@ export default function AdDetailsPage() {
   }, [id]);
 
   if (loading || loadingMe) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50">
-        <div className="max-w-4xl w-full mx-auto p-10 bg-white rounded-3xl shadow-2xl">
-          <Skeleton className="h-8 w-1/2" />
-          <Skeleton className="h-96 w-full rounded-2xl mt-6" />
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!ad) {

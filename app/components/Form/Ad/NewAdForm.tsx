@@ -170,17 +170,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       data.durationValue ?? watched.durationValue ?? undefined;
     const finalDurationUnit =
       data.durationUnit ?? watched.durationUnit ?? undefined;
-    console.log('📤 Payload envoyé à /api/ad :', {
-      ...data,
-      images,
-      location,
-      lat,
-      lng,
-      categoryId: subCategoryId ?? categoryId,
-      durationValue: finalDurationValue,
-      durationUnit: finalDurationUnit,
-      dynamicFields: filteredDynamicFields,
-    });
 
     try {
       const res = await fetch('/api/ad', {
@@ -226,7 +215,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     <FormProvider {...methods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-4xl mx-auto space-y-8"
+        className="w-full max-w-4xl  mx-auto space-y-8"
       >
         <StepProgressBar step={step} />
 
@@ -317,6 +306,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
 
               <div className="flex justify-end">
                 <Button
+                  style={{
+                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                  }}
+                  className="text-white"
                   onClick={() => {
                     if (
                       !categoryId ||
@@ -381,7 +374,14 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 >
                   Retour
                 </Button>
-                <Button type="button" onClick={() => setStep(3)}>
+                <Button
+                  style={{
+                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                  }}
+                  className="text-white"
+                  type="button"
+                  onClick={() => setStep(3)}
+                >
                   Suivant
                 </Button>
               </div>
@@ -415,6 +415,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   Retour
                 </Button>
                 <Button
+                  style={{
+                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                  }}
+                  className="text-white"
                   type="button"
                   disabled={isUploading}
                   onClick={() => {
@@ -453,7 +457,14 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 >
                   Retour
                 </Button>
-                <Button type="button" onClick={() => setStep(5)}>
+                <Button
+                  style={{
+                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                  }}
+                  className="text-white"
+                  type="button"
+                  onClick={() => setStep(5)}
+                >
                   Suivant
                 </Button>
               </div>
@@ -488,7 +499,14 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 <Button variant="outline" onClick={() => setStep(4)}>
                   Retour
                 </Button>
-                <Button type="submit" disabled={!isFormValid}>
+                <Button
+                  style={{
+                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                  }}
+                  className="text-white"
+                  type="submit"
+                  disabled={!isFormValid}
+                >
                   Créer l’annonce
                 </Button>
               </div>

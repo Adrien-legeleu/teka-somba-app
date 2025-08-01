@@ -54,14 +54,15 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
   return (
     <div className="w-full mx-auto">
       {/* Header */}
-      <div className="z-30 relative bg-neutral-50 backdrop-blur-xl py-5 flex items-center justify-center">
-        <div className="bg-white p-5 shadow-black/10 shadow-2xl border rounded-full flex items-center justify-between mx-auto max-w-5xl w-full">
+      <div className="z-30 relative bg-neutral-50  backdrop-blur-xl py-5 flex items-center justify-center">
+        <div className="bg-white p-5 shadow-black/10 shadow-2xl border rounded-[1.7rem] flex items-center justify-between mx-auto max-w-7xl w-full">
           <h1 className="md:text-3xl sm:text-2xl text-lg max-sm:text-center font-bold">
             Mes annonces
           </h1>
           <Button
             onClick={() => router.push('/dashboard/annonces/new')}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 transition rounded-full px-6 py-3 text-lg shadow-xl"
+            style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
+            className="flex items-center gap-2 text-white transition rounded-3xl px-6 py-3 text-lg shadow-xl"
           >
             <PlusCircle className="w-5 h-5" />
             Nouvelle annonce
@@ -69,7 +70,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         </div>
       </div>
 
-      <div className="mt-8 relative">
+      <div className="mt-8 max-w-7xl mx-auto relative">
         {/* Filtre flottant */}
         <div className=" sticky w-fit  rounded-3xl top-2 p-2 left-2 flex items-center  gap-2 bg-white/90 backdrop-blur-xl shadow-xl border z-50">
           <select
@@ -98,7 +99,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
         ) : (
           <div
             className={cn(
-              'grid gap-5 mt-16  p-6 transition-all',
+              'grid gap-5 mt-8  p-6 transition-all',
               isCompact
                 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5'
                 : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'

@@ -53,7 +53,6 @@ export default function StepProgressBar({ step }: { step: number }) {
                 ref={isCurrent ? activeStepRef : null}
                 className="flex flex-col items-center flex-1 min-w-[100px] relative"
               >
-                {/* Ligne gauche */}
                 {i > 0 && (
                   <div
                     className={cn(
@@ -62,7 +61,6 @@ export default function StepProgressBar({ step }: { step: number }) {
                     )}
                   />
                 )}
-                {/* Ligne droite */}
                 {i < steps.length - 1 && (
                   <div
                     className={cn(
@@ -71,16 +69,25 @@ export default function StepProgressBar({ step }: { step: number }) {
                     )}
                   />
                 )}
-                {/* Pastille */}
+
+                {/* ✅ PASTILLE MODIFIÉE */}
                 <div
                   className={cn(
                     'z-10 flex items-center justify-center h-10 w-10 rounded-full font-bold shadow',
                     isCompleted
                       ? 'bg-green-500 text-white'
-                      : isCurrent
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-200 text-gray-500'
+                      : !isCurrent
+                        ? 'bg-gray-200 text-gray-500'
+                        : 'text-white'
                   )}
+                  style={
+                    isCurrent
+                      ? {
+                          background:
+                            'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                        }
+                      : undefined
+                  }
                 >
                   {isCompleted ? <Check size={18} /> : index}
                 </div>

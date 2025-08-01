@@ -113,8 +113,8 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="w-full bg-neutral-50 max-md:rounded-b-3xl max-md:shadow-xl max-md:shadow-black/5 border-b border-gray-100 z-[1000] sticky top-0">
-      <div className="max-w-7xl hidden md:flex mx-auto relative px-4 justify-between items-center h-20 gap-4">
+    <header className="w-full bg-[#F9F9F9] max-md:rounded-b-3xl max-md:shadow-xl max-md:shadow-black/5 border-b border-gray-100 z-[1000] sticky top-0">
+      <div className="w-full max-w-7xl hidden md:flex mx-auto relative px-4 justify-between items-center h-20 gap-4">
         <Link href="/">
           <Image
             src={'/logo teka somba.png'}

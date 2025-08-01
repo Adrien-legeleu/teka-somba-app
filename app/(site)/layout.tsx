@@ -23,7 +23,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const showMobileHomeLayout = isMobile && isHome;
 
   return (
-    <>
+    <div>
       <Suspense fallback={<div>Chargement du header...</div>}>
         <Header />
       </Suspense>
@@ -31,7 +31,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       {isHome ? (
         <Suspense fallback={<div>Chargement des filtres...</div>}>
           <FilterProvider>
-            <main>
+            <main className="max-w-7xl mx-auto">
               {showMobileHomeLayout ? (
                 <LayoutHomeMobile>{children}</LayoutHomeMobile>
               ) : (
@@ -45,6 +45,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       )}
 
       <Toaster />
-    </>
+    </div>
   );
 }
