@@ -13,7 +13,23 @@ export async function GET(request: Request, { params }: Ctx) {
       where: { id: adId },
       include: {
         category: { select: { id: true, name: true } },
-        user: { select: { id: true, name: true, prenom: true, avatar: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            prenom: true,
+            avatar: true,
+            email: true,
+            phone: true,
+            age: true,
+            city: true,
+          },
+        },
+        fields: {
+          include: {
+            categoryField: { select: { name: true } },
+          },
+        },
       },
     });
 

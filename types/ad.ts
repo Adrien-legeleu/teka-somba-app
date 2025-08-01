@@ -26,6 +26,7 @@ export interface Ad {
   images: string[];
   location: string;
   lat: number | null;
+  fields?: AdField[];
   lng: number | null;
   isDon?: boolean;
   category?: { id: string; name?: string; parentId: string };
@@ -50,8 +51,16 @@ export interface User {
   name: string;
   prenom?: string | null;
   avatar?: string | null;
+  email: string | null;
   phone?: string | null;
   city?: string | null;
   age?: number | null;
   isVerified?: boolean;
+}
+
+export interface AdField {
+  value: string | number | boolean | null;
+  categoryField: {
+    name: string;
+  };
 }

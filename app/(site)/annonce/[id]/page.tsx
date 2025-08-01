@@ -23,6 +23,24 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ReportAdDialog from '@/app/components/Fonctionnalities/ReportDialog';
 
+function formatDynamicValue(key: string, value: any) {
+  if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
+  if (typeof value === 'number') {
+    if (
+      key.toLowerCase().includes('km') ||
+      key.toLowerCase().includes('kilométrage')
+    )
+      return `${value.toLocaleString()} km`;
+    if (
+      key.toLowerCase().includes('kilo') ||
+      key.toLowerCase().includes('poids')
+    )
+      return `${value} kg`;
+    return value.toLocaleString();
+  }
+  return String(value);
+}
+
 export default function AdDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -38,6 +56,7 @@ export default function AdDetailsPage() {
         const res = await fetch(`/api/ad/${id}`);
         const data = await res.json();
         setAd(data);
+        console.log(data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -49,7 +68,7 @@ export default function AdDetailsPage() {
 
   if (loading || loadingMe) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
         <div className="max-w-4xl w-full mx-auto p-10 bg-white rounded-3xl shadow-2xl">
           <Skeleton className="h-8 w-1/2" />
           <Skeleton className="h-96 w-full rounded-2xl mt-6" />
@@ -69,23 +88,29 @@ export default function AdDetailsPage() {
   }
 
   const isSeller = me?.id === ad.user?.id;
+  const dynamicFields =
+    ad.fields?.map((field) => ({
+      name: field.categoryField?.name || '',
+      value: field.value,
+    })) || [];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="min-h-screen bg-gradient-to-b from-white to-orange-50 py-10 px-4"
+      className="min-h-screen bg-white py-10 px-4"
     >
       <TrackAdView adId={ad.id} />
 
       <motion.div
-        className="max-w-6xl mx-auto p-6 bg-white rounded-3xl shadow-xl border border-gray-100"
+        className="max-w-6xl mx-auto p-6 bg-white rounded-3xl shadow-2xl border border-gray-100"
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-10">
+          {/* IMAGE */}
           <div>
             <div className="relative w-full rounded-3xl overflow-hidden shadow-md">
               <Image
@@ -112,6 +137,7 @@ export default function AdDetailsPage() {
               )}
             </div>
 
+            {/* MINIATURES */}
             {ad.images?.length > 1 && (
               <div className="flex gap-3 mt-4 overflow-x-auto">
                 {ad.images.map((img, i) => (
@@ -137,23 +163,37 @@ export default function AdDetailsPage() {
             )}
           </div>
 
+          {/* INFOS */}
           <div className="flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-cnter gap-3">
+              <div className="flex items-start justify-between mb-3">
+                <div>
                   <h1 className="text-3xl font-bold text-gray-900">
                     {ad.title}
                   </h1>
-                  <Badge className="px-4 py-1 text-sm rounded-2xl bg-orange-100 text-orange-800">
+                  <Badge
+                    className="mt-2 px-4 py-1 text-sm rounded-2xl text-white"
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                  >
                     {ad.category?.name}
                   </Badge>
                 </div>
                 <ReportAdDialog adId={ad.id} />
               </div>
-              <p className="text-2xl text-orange-600 font-semibold mb-2">
+
+              {/* PRIX AVEC GRADIENT */}
+              <h2
+                className="text-3xl font-extrabold mb-2 bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                }}
+              >
                 {ad.price?.toLocaleString()} FCFA
-              </p>
-              <p className="text-md text-gray-600 mb-3">{ad.location}</p>
+              </h2>
+
+              <p className="text-md text-gray-600 mb-1">{ad.location}</p>
               {ad.durationValue && ad.durationUnit && (
                 <p className="text-sm text-gray-500 mb-4">
                   Durée : {ad.durationValue} {ad.durationUnit.toLowerCase()}
@@ -164,7 +204,8 @@ export default function AdDetailsPage() {
               </p>
             </div>
 
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* VENDEUR + CTA */}
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 {ad.user?.avatar && (
                   <Image
@@ -172,7 +213,7 @@ export default function AdDetailsPage() {
                     width={60}
                     height={60}
                     alt="avatar"
-                    className="rounded-full object-cover shadow-md"
+                    className="object-cover shadow-md rounded-3xl aspect-square"
                   />
                 )}
                 <div>
@@ -185,7 +226,13 @@ export default function AdDetailsPage() {
 
               <div>
                 {!me ? (
-                  <Button onClick={() => router.push('/login')}>
+                  <Button
+                    className="text-white font-semibold"
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                    onClick={() => router.push('/login')}
+                  >
                     Se connecter pour contacter
                   </Button>
                 ) : isSeller ? (
@@ -206,6 +253,23 @@ export default function AdDetailsPage() {
           </div>
         </div>
       </motion.div>
+      {dynamicFields.length > 0 && (
+        <div className=" mt-10 grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto p-6 bg-white rounded-3xl shadow-2xl border border-gray-100">
+          {dynamicFields.map((field, i) => (
+            <div
+              key={i}
+              className="bg-neutral-50 rounded-3xl p-4 shadow-sm border border-gray-100"
+            >
+              <div className="text-xs uppercase text-gray-400 mb-1">
+                {field.name}
+              </div>
+              <div className="font-medium text-gray-800">
+                {formatDynamicValue(field.name, field.value)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto mt-8">
         <SellerProfile user={ad.user} ad={ad} />
