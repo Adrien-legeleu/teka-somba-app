@@ -84,7 +84,10 @@ export default function ContactSellerModal({
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="rounded-3xl px-8 py-3 sm:text-lg text-md shadow-xl bg-orange-500 hover:bg-orange-600 transition"
+          style={{
+            background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+          }}
+          className="rounded-3xl px-8 py-3 sm:text-lg text-md shadow-xl  text-white transition"
           disabled={disabled}
         >
           Contacter

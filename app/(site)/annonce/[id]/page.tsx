@@ -237,6 +237,10 @@ export default function AdDetailsPage() {
                   </Button>
                 ) : isSeller ? (
                   <Button
+                    className="text-white font-semibold"
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
                     onClick={() => router.push(`/dashboard/annonces/${ad.id}`)}
                   >
                     Modifier l&apos;annonce

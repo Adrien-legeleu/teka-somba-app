@@ -61,7 +61,7 @@ export default function SellerProfile({ user, ad }: SellerProfileProps) {
               alt="avatar"
               width={70}
               height={70}
-              className="object-cover rounded-xl shadow-md aspect-square"
+              className="object-cover rounded-3xl shadow-md aspect-square"
             />
           )}
           <div>
