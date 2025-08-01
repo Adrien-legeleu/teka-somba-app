@@ -29,7 +29,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       </Suspense>
 
       {isHome ? (
-        <Suspense fallback={<div>Chargement des filtres...</div>}>
+        <Suspense>
           <FilterProvider>
             <main className="max-w-7xl mx-auto">
               {showMobileHomeLayout ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { IconMapPin } from '@tabler/icons-react';
@@ -8,6 +8,7 @@ import { useFilter } from './FilterContext';
 import { FavoriteButton } from '../Favorite/FavoriteButton';
 import FilterBarDesktop from './FilterBarDesktop';
 import Loader from '../Fonctionnalities/Loader';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type Ad = {
   id: string;
@@ -81,7 +82,15 @@ export default function Home({ userId }: { userId?: string | null }) {
       className=" w-full flex min-h-[60vh] relative
      flex-col items-center gap-10 "
     >
-      <FilterBarDesktop />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="w-full "
+      >
+        <FilterBarDesktop />
+      </motion.div>
+
       {loading ? (
         <Loader />
       ) : ads.length === 0 ? (
@@ -90,41 +99,60 @@ export default function Home({ userId }: { userId?: string | null }) {
         </p>
       ) : (
         <div className="grid grid-cols-1 w-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 px-4 md:px-10">
-          {ads.map((ad) => (
-            <div key={ad.id} className="overflow-hidden relative">
-              <div className="relative">
-                <Link href={`/annonce/${ad.id}`}>
-                  {ad.images?.[0] && (
-                    <Image
-                      src={ad.images[0]}
-                      alt={ad.title}
-                      width={1000}
-                      height={800}
-                      className="w-full aspect-square rounded-3xl object-cover"
-                    />
+          <AnimatePresence mode="wait">
+            {ads.map((ad) => (
+              <motion.div
+                key={ad.id}
+                initial={{
+                  opacity: 0,
+                  y: 30,
+                  scale: 0.85,
+                  filter: 'blur(10px)',
+                }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: 30, scale: 0.85, filter: 'blur(10px)' }}
+                transition={{
+                  type: 'spring',
+                  damping: 15,
+                  stiffness: 130,
+                  mass: 1.5,
+                }}
+                className="overflow-hidden relative"
+              >
+                <div className="relative">
+                  <Link href={`/annonce/${ad.id}`}>
+                    {ad.images?.[0] && (
+                      <Image
+                        src={ad.images[0]}
+                        alt={ad.title}
+                        width={1000}
+                        height={800}
+                        className="w-full aspect-square rounded-3xl object-cover"
+                      />
+                    )}
+                  </Link>
+                  <FavoriteButton
+                    userId={userId}
+                    adId={ad.id}
+                    isFavoriteInitial={ad.isFavorite}
+                  />
+                </div>
+                <Link href={`/annonce/${ad.id}`} className="block pl-1 py-4">
+                  <h2 className="font-semibold text-sm md:text-base line-clamp-1">
+                    {ad.title}
+                  </h2>
+                  {ad.location && (
+                    <div className="flex items-center text-xs text-gray-500 mt-1">
+                      <IconMapPin size={14} className="mr-1" /> {ad.location}
+                    </div>
                   )}
+                  <p className="font-semibold mt-2 text-sm md:text-base">
+                    {ad.price.toLocaleString()} FCFA
+                  </p>
                 </Link>
-                <FavoriteButton
-                  userId={userId}
-                  adId={ad.id}
-                  isFavoriteInitial={ad.isFavorite}
-                />
-              </div>
-              <Link href={`/annonce/${ad.id}`} className="block pl-1 py-4">
-                <h2 className="font-semibold text-sm md:text-base line-clamp-1">
-                  {ad.title}
-                </h2>
-                {ad.location && (
-                  <div className="flex items-center text-xs text-gray-500 mt-1">
-                    <IconMapPin size={14} className="mr-1" /> {ad.location}
-                  </div>
-                )}
-                <p className="font-semibold mt-2 text-sm md:text-base">
-                  {ad.price.toLocaleString()} FCFA
-                </p>
-              </Link>
-            </div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>

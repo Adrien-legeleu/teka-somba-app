@@ -72,7 +72,7 @@ export default function UserAdsDashboard({ userId }: { userId: string }) {
 
       <div className="mt-8 max-w-7xl mx-auto relative">
         {/* Filtre flottant */}
-        <div className=" sticky w-fit  rounded-3xl top-2 p-2 left-2 flex items-center  gap-2 bg-white/90 backdrop-blur-xl shadow-xl border z-50">
+        <div className=" sticky w-fit  rounded-3xl top-2 p-2 left-6 flex items-center  gap-2 bg-white/90 backdrop-blur-xl shadow-xl border z-50">
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as SortOrder)}

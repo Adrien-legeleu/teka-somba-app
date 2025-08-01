@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import AdminPanel from '../components/admin/AdminPanel';
 import { prisma } from '@/lib/prisma';
 import { Suspense } from 'react';
+import Loader from '../components/Fonctionnalities/Loader';
 export const runtime = 'nodejs';
 type AuthPayload = JwtPayload & {
   userId: string;
@@ -44,7 +45,7 @@ export default async function AdminPage() {
     return null;
   }
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={<Loader />}>
       <AdminPanel />
     </Suspense>
   );

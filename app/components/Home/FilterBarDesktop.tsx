@@ -38,7 +38,7 @@ export default function FilterBarDesktop() {
   } = useFilter();
 
   return (
-    <div className="hidden md:flex flex-col gap-4 p-4 items-center justify-center rounded-3xl bg-neutral-50 absolute top-5 right-5 z-30 border-b border-gray-200">
+    <div className="hidden md:flex flex-col gap-4 p-4 items-center justify-center rounded-3xl shadow-2xl shadow-black/10 border bg-neutral-50/60 backdrop-blur-xl absolute top-5 right-5 z-30 border-b border-gray-200">
       <div className="flex items-end justify-between max-w-7xl mx-auto gap-4">
         <div className="w-full max-w-xs">
           <CitySection city={city} setCity={setCity} />

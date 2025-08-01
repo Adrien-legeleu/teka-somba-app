@@ -181,24 +181,44 @@ export default function Header() {
 
       <nav className="w-full z-50 relative border-t border-gray-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto no-scrollbar">
-          <Link
-            href={`/service-bagage`}
-            className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition flex items-center gap-2 
-                text-gray-700 hover:text-orange-500
-            }`}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            transition={{
+              type: 'spring',
+              damping: 8,
+              stiffness: 130,
+              mass: 0.7,
+            }}
           >
-            <span className="text-xl">📦</span>
-            Services bagages
-          </Link>
+            <Link
+              href={`/service-bagage`}
+              className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition flex items-center gap-2 
+        text-gray-700 hover:text-orange-500
+    }`}
+            >
+              <span className="text-xl">📦</span>
+              Services bagages
+            </Link>
+          </motion.div>
+
           {categories.map((cat) => (
-            <div
+            <motion.div
               key={cat.id}
               ref={(el) => {
                 catRefs.current[cat.id] = el;
               }}
-              className="relative group"
               onMouseEnter={() => showDropdown(cat.id)}
               onMouseLeave={closeDropdown}
+              initial={{ opacity: 0, scale: 0.8, filter: 'blur(6px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              transition={{
+                type: 'spring',
+                damping: 8,
+                stiffness: 130,
+                mass: 0.7,
+              }}
+              className="relative group"
             >
               <Link
                 href={`/?categoryId=${cat.id}`}
@@ -212,7 +232,7 @@ export default function Header() {
                 <CategoryIcon name={cat.icon} />
                 {cat.name}
               </Link>
-            </div>
+            </motion.div>
           ))}
         </div>
 
