@@ -42,7 +42,7 @@ export default function FavoriteDashboard({ userId }: { userId: string }) {
     );
 
   return (
-    <div className="grid grid-cols-1 z-10 shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+    <div className="grid grid-cols-1 max-w-7xl mx-auto z-10 shadow-[#0000001c]  bg-white/90 backdrop-blur-xl p-10  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
       {favorites.map((ad) => (
         <div key={ad.id} className="overflow-hidden relative">
           <div className="relative">
