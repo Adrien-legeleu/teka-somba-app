@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Mousewheel, Keyboard } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useMe } from '@/hooks/useMe';
@@ -103,58 +107,69 @@ export default function AdDetailsPage() {
         animate={{ scale: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="grid md:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* IMAGE */}
-          <div>
-            <div className="relative w-full rounded-3xl overflow-hidden shadow-md">
-              <Image
-                src={ad.images?.[activeImage]}
-                width={800}
-                height={800}
-                alt={`image-${activeImage}`}
-                className="object-cover h-full w-full rounded-3xl transition-transform duration-500 hover:scale-105"
-              />
-              {ad.images?.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                  {ad.images.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveImage(i)}
-                      className={`w-3 h-3 rounded-full border-2 ${
-                        activeImage === i
-                          ? 'bg-orange-500 border-orange-600'
-                          : 'bg-white border-gray-300'
-                      } transition`}
+
+          <div className="w-full max-w-[450px] mx-auto flex flex-col gap-4">
+            {/* SLIDER PRINCIPAL */}
+            <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-md bg-gradient-to-tr from-orange-100 to-orange-50">
+              <Swiper
+                modules={[Pagination, Mousewheel, Keyboard]}
+                slidesPerView={1}
+                spaceBetween={10}
+                mousewheel={{ forceToAxis: true }}
+                keyboard
+                pagination={{
+                  clickable: true,
+                  el: '.custom-swiper-pagination',
+                  bulletActiveClass: 'bg-orange-500 border-orange-600',
+                  bulletClass:
+                    'swiper-pagination-bullet w-3 h-3 rounded-full border-2 bg-white border-gray-300 mx-1 transition',
+                }}
+                className="w-full h-full"
+                onSlideChange={(swiper) => setActiveImage(swiper.activeIndex)}
+                initialSlide={activeImage}
+              >
+                {ad.images.map((src, i) => (
+                  <SwiperSlide key={i}>
+                    <Image
+                      src={src}
+                      width={800}
+                      height={600}
+                      alt={`image-${i}`}
+                      className="object-cover w-full h-full rounded-3xl"
+                      draggable={false}
+                      priority={i === 0}
                     />
-                  ))}
-                </div>
-              )}
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              <div className="custom-swiper-pagination absolute bottom-3 left-1/2 -translate-x-1/2 z-10"></div>
             </div>
 
-            {/* MINIATURES */}
-            {ad.images?.length > 1 && (
-              <div className="flex gap-3 mt-4 overflow-x-auto">
-                {ad.images.map((img, i) => (
-                  <div
-                    key={i}
-                    className={`h-16 w-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 ${
-                      activeImage === i
-                        ? 'border-orange-500 shadow-md'
-                        : 'border-transparent'
-                    }`}
-                    onClick={() => setActiveImage(i)}
-                  >
-                    <Image
-                      src={img}
-                      width={500}
-                      height={500}
-                      alt={`miniature-${i}`}
-                      className="object-cover h-full w-full hover:scale-105 transition-transform"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* MINIATURES EN DESSOUS */}
+            <div className="flex gap-2 mt-1 overflow-x-auto pb-2">
+              {ad.images.map((img, i) => (
+                <div
+                  key={i}
+                  className={`h-12 w-16 min-w-[64px] rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 ${
+                    activeImage === i
+                      ? 'border-orange-500  '
+                      : 'border-gray-200 opacity-80'
+                  }`}
+                  onClick={() => setActiveImage(i)}
+                >
+                  <Image
+                    src={img}
+                    width={100}
+                    height={80}
+                    alt={`miniature-${i}`}
+                    className="object-cover h-full w-full"
+                    draggable={false}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* INFOS */}

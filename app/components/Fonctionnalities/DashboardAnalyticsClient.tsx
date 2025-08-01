@@ -12,6 +12,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import Loader from './Loader';
 
 type AdAnalytics = {
   views: number;
@@ -106,7 +107,7 @@ export default function AnalyticsDashboard() {
         </CardHeader>
         <CardContent>
           {chartData.length === 0 ? (
-            <p className="text-gray-400 text-sm">Chargement des données...</p>
+            <Loader />
           ) : (
             <ChartContainer config={chartConfig}>
               <BarChart accessibilityLayer data={chartData}>
