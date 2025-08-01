@@ -79,16 +79,14 @@ export default function ProfilPage() {
         <CardContent className="p-8">
           <form onSubmit={handleSave} className="space-y-6">
             <div className="flex flex-col items-start gap-2">
-              <label className="font-medium text-sm">
-                Photo de profil{' '}
+              <label className="font-medium text-sm">Photo de profil </label>
+
+              <div className="relative group">
                 {uploadingAvatar && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/70">
                     <span className="animate-spin text-lg">⏳</span>
                   </div>
                 )}
-              </label>
-
-              <div className="relative group">
                 <label
                   htmlFor="avatar-upload"
                   className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100 text-gray-500 cursor-pointer hover:ring-2 hover:ring-orange-400 transition"
