@@ -2,16 +2,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import {
-  UserCircle,
-  Heart,
-  MessageCircle,
-  List,
-  Settings,
-  LogOut,
-  FileText,
-  HelpCircle,
-} from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import AnalyticsDashboard from '@/app/components/Fonctionnalities/DashboardAnalyticsClient';
@@ -88,7 +79,11 @@ export default async function DashboardPage() {
                       admin★
                     </Link>
                   )}
-                  <span className="text-gray-500 text-sm">{user.age}</span>
+                  {user.age && (
+                    <span className="text-gray-500 text-sm">
+                      {user.age} ans
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm text-gray-500">{user.city}</div>
 
