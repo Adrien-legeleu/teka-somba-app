@@ -30,6 +30,7 @@ export default function ProfilPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     fetch('/api/profile')
@@ -78,7 +79,14 @@ export default function ProfilPage() {
         <CardContent className="p-8">
           <form onSubmit={handleSave} className="space-y-6">
             <div className="flex flex-col items-start gap-2">
-              <label className="font-medium text-sm">Photo de profil</label>
+              <label className="font-medium text-sm">
+                Photo de profil{' '}
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                    <span className="animate-spin text-lg">⏳</span>
+                  </div>
+                )}
+              </label>
 
               <div className="relative group">
                 <label
@@ -113,16 +121,24 @@ export default function ProfilPage() {
                     const file = e.target.files?.[0];
                     if (!file) return;
 
+                    setUploadingAvatar(true); // 👈 start loading
+
                     const formData = new FormData();
                     formData.append('file', file);
 
-                    const res = await fetch('/api/upload', {
-                      method: 'POST',
-                      body: formData,
-                    });
+                    try {
+                      const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                      });
 
-                    const data = await res.json();
-                    setForm((prev) => ({ ...prev, avatar: data.url }));
+                      const data = await res.json();
+                      setForm((prev) => ({ ...prev, avatar: data.url }));
+                    } catch (err) {
+                      alert("Erreur pendant l'upload de l'image");
+                    } finally {
+                      setUploadingAvatar(false); // 👈 stop loading
+                    }
                   }}
                 />
               </div>
@@ -229,10 +245,15 @@ export default function ProfilPage() {
 
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-10"
-              disabled={saving}
+              className=" text-white rounded-3xl px-10"
+              disabled={saving || uploadingAvatar} // 👈 ici
+              style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
             >
-              {saving ? 'Enregistrement…' : 'Enregistrer'}
+              {saving
+                ? 'Enregistrement…'
+                : uploadingAvatar
+                  ? 'Chargement image…'
+                  : 'Enregistrer'}
             </Button>
           </form>
         </CardContent>

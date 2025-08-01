@@ -105,8 +105,9 @@ export function PasswordChangeBlock() {
         )}
         <Button
           type="submit"
-          className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-10"
+          className=" text-white rounded-3xl px-10"
           disabled={loading}
+          style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
         >
           {loading ? 'Changement…' : 'Changer le mot de passe'}
         </Button>

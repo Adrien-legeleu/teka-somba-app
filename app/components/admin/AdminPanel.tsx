@@ -555,7 +555,8 @@ function AdminPromotion() {
             />
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl"
+              style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
+              className="  text-white rounded-xl"
             >
               <Shield className="w-4 h-4 mr-1" /> Promouvoir
             </Button>
