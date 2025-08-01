@@ -34,7 +34,7 @@ export default function LayoutHomeMobile({
             </div>
 
             <FilterModalMobile />
-            <main className="px-4 relative">{children}</main>
+            <main className="px-4  relative">{children}</main>
           </>
         ) : (
           /* --- Desktop Layout: Show horizontal FilterBar and then content --- */

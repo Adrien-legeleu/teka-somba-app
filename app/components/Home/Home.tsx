@@ -80,7 +80,7 @@ export default function Home({ userId }: { userId?: string | null }) {
   return (
     <div
       className=" w-full flex min-h-[60vh] relative
-     flex-col items-center gap-10 "
+     flex-col items-center   "
     >
       <motion.div
         initial={{ opacity: 0, y: -20 }}
