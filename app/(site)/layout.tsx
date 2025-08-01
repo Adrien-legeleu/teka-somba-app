@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import { FilterProvider } from '../components/Home/FilterContext';
+import Loader from '../components/Fonctionnalities/Loader';
 
 const LayoutHomeMobile = dynamic(
   () => import('../components/Home/LayoutHomeMobile'),
@@ -24,7 +25,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
   return (
     <div>
-      <Suspense fallback={<div>Chargement du header...</div>}>
+      <Suspense fallback={<Loader />}>
         <Header />
       </Suspense>
 

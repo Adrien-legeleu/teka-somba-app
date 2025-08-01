@@ -1,6 +1,7 @@
 'use client';
 import { GoogleMap, Circle, useLoadScript } from '@react-google-maps/api';
 import { useEffect, useMemo } from 'react';
+import Loader from '../Fonctionnalities/Loader';
 
 type SellerMapProps = {
   lat: number;
@@ -16,9 +17,7 @@ export default function SellerMap({ lat, lng, radius = 300 }: SellerMapProps) {
   const center = useMemo(() => ({ lat, lng }), [lat, lng]);
 
   if (!isLoaded) {
-    return (
-      <div className="text-gray-400 text-sm">Chargement de la carte...</div>
-    );
+    return <Loader />;
   }
 
   return (

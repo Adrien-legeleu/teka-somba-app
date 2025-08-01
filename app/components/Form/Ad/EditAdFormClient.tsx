@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Eye, Heart, MessageSquare } from 'lucide-react';
 import { Ad } from '@/types/ad';
 import { Category } from '@/types/category';
+import Loader from '../../Fonctionnalities/Loader';
 
 export default function EditAdFormClient({
   userId,
@@ -33,7 +34,7 @@ export default function EditAdFormClient({
     fetchData();
   }, [userId, adId]);
 
-  if (!ad || categories.length === 0) return <p>Chargement...</p>;
+  if (!ad || categories.length === 0) return <Loader />;
   console.log('[DEBUG] page.tsx - ad envoyé au EditAdForm:', ad);
 
   return (
