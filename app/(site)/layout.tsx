@@ -8,7 +8,6 @@ import { usePathname } from 'next/navigation';
 
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import { FilterProvider } from '../components/Home/FilterContext';
-import { log } from 'console';
 
 const LayoutHomeMobile = dynamic(
   () => import('../components/Home/LayoutHomeMobile'),
@@ -21,27 +20,26 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isHome = pathname === '/';
   const isMobile = useMediaQuery('(max-width: 768px)');
-
   const showMobileHomeLayout = isMobile && isHome;
-  console.log('isHome:', isHome);
 
   return (
     <>
-      <Suspense fallback={<div>Chargement...</div>}>
+      <Suspense fallback={<div>Chargement du header...</div>}>
         <Header />
       </Suspense>
 
-      {/* 🔥 Injecte FilterProvider uniquement pour la home */}
       {isHome ? (
-        <FilterProvider>
-          <main>
-            {showMobileHomeLayout ? (
-              <LayoutHomeMobile>{children}</LayoutHomeMobile>
-            ) : (
-              children
-            )}
-          </main>
-        </FilterProvider>
+        <Suspense fallback={<div>Chargement des filtres...</div>}>
+          <FilterProvider>
+            <main>
+              {showMobileHomeLayout ? (
+                <LayoutHomeMobile>{children}</LayoutHomeMobile>
+              ) : (
+                children
+              )}
+            </main>
+          </FilterProvider>
+        </Suspense>
       ) : (
         <main>{children}</main>
       )}
