@@ -51,13 +51,13 @@ export default async function DashboardPage() {
     <div>
       <div className="flex flex-col w-full min-h-screen items-center pb-14 px-2">
         <div className="w-full flex border-b items-center justify-center bg-neutral-50 md:pt-20 md:pb-5">
-          <div className="px-10 max-w-3xl flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white w-fit min-w-xl border rounded-3xl p-7 mb-10 shadow-black/10  shadow-2xl">
+          <div className="px-10  flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl bg-white w-full max-md:max-w-xl max-w-5xl border rounded-3xl p-7 mb-10 shadow-black/10  shadow-2xl">
             {user.isAdmin && (
               <Link
                 href={'/admin'}
-                className="bg-[#ffbf00]/20 px-2 py-0.5 text-sm absolute top-2 right-2 rounded-full text-[#ec5d22] font-semibold"
+                className="bg-[#ffbf00]/20 px-2 py-0.5 text-sm absolute top-3 right-3 rounded-full text-[#ec5d22] font-semibold"
               >
-                admin★
+                Admin★
               </Link>
             )}
             <div className="flex md:items-center items-center max-md:flex-col gap-5">
