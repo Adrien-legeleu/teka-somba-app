@@ -30,16 +30,14 @@ export default function Login() {
 
     setLoading(false);
 
-    if (res.ok) {
-      window.location.href = '/dashboard';
+    if (res.redirected) {
+      window.location.href = res.url;
     } else {
       let error = 'Erreur de connexion.';
       try {
         const json = await res.json();
         error = json.error || error;
-      } catch {
-        // JSON invalide, on garde le message par défaut
-      }
+      } catch {}
       setMsg(error);
     }
   };
