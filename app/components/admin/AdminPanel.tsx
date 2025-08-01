@@ -349,11 +349,11 @@ function ReportsList() {
 
   return (
     <div className="max-w-5xl w-full mx-auto px-4 py-8">
-      <div className="rounded-[3rem] shadow-2xl shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-2 md:p-4">
+      <div className="rounded-3xl shadow-2xl shadow-[#0000001c] bg-white/90 backdrop-blur-xl p-2 md:p-4">
         {reports.map((r) => (
           <Card
             key={r.id}
-            className="flex flex-col md:flex-row items-start md:items-center md:justify-between mb-6 p-6 last:mb-0"
+            className="flex flex-col md:flex-row rounded-3xl items-start md:items-center md:justify-between mb-6 p-6 last:mb-0"
           >
             <div className="flex items-start gap-4 flex-1">
               <Flag className="w-6 h-6 text-orange-500" />
@@ -381,11 +381,16 @@ function ReportsList() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
-              <Button variant="outline" onClick={() => handleIgnore(r.id)}>
+              <Button
+                variant="outline"
+                className="text-sm"
+                onClick={() => handleIgnore(r.id)}
+              >
                 <X className="w-4 h-4 mr-1" /> Ignorer
               </Button>
               <Button
                 variant="destructive"
+                className="text-sm"
                 onClick={() => handleDeleteAd(r.ad.id, r.id)}
               >
                 <Trash2 className="w-4 h-4 mr-1" /> Supprimer l&apos;annonce
