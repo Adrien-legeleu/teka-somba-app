@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -271,6 +271,14 @@ export default function Header() {
           <IconHeart size={28} />
         </Link>
         <Link
+          href="/dashboard/annonces/new"
+          style={{ background: gradient }}
+          className="w-14 h-14 -mt-6 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+        >
+          <IconPlus size={26} />
+        </Link>
+
+        <Link
           href="/dashboard/messages"
           className="relative flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
@@ -283,12 +291,6 @@ export default function Header() {
           )}
         </Link>
 
-        <Link
-          href="/dashboard/messages"
-          className="flex flex-col items-center text-gray-600 hover:text-orange-500"
-        >
-          <IconMessage size={28} />
-        </Link>
         <Link
           href="/dashboard"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
