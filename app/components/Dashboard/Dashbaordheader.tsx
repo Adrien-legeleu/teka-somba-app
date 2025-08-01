@@ -3,7 +3,17 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 
-function DashboardHeader({ user }: { user: any }) {
+type DashboardUser = {
+  name: string;
+  prenom: string;
+  avatar: string | null;
+  city: string;
+  age: number | null;
+  isAdmin: boolean;
+  credit: number;
+};
+
+function DashboardHeader({ user }: { user: DashboardUser }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
