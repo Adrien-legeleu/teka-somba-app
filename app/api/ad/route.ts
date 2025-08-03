@@ -123,7 +123,7 @@ export async function GET(request: Request) {
       }
 
       // Tri
-      let sqlOrder = `ORDER BY "Ad"."${sortByParam}" ${sortOrderParam.toUpperCase()}`;
+      const sqlOrder = `ORDER BY "Ad"."${sortByParam}" ${sortOrderParam.toUpperCase()}`;
 
       // -- Final query --
       ads = await prisma.$queryRawUnsafe<AdWithRelations[]>(
@@ -168,11 +168,11 @@ export async function GET(request: Request) {
           sortByParam === 'price'
             ? { price: sortOrderParam }
             : { createdAt: sortOrderParam },
-      })) as any; // mapping juste après
+      })) as AdWithRelations[]; // mapping juste après
     }
 
     // ---- 3/ Mapping et favoris -----
-    let adsWithFavorite = ads.map((ad: any) => ({
+    const adsWithFavorite = ads.map((ad: AdWithRelations) => ({
       ...ad,
       isFavorite: userId
         ? !!(ad.favorites ? (ad.favorites?.length ?? 0) > 0 : ad.isFavorite) // si jointure SQL
