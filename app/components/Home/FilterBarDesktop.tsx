@@ -46,15 +46,7 @@ export default function FilterBarDesktop() {
   } = useFilter();
 
   return (
-    <div className="hidden md:flex flex-col gap-4 p-4 items-start justify-center rounded-3xl shadow-2xl shadow-black/10 border bg-neutral-50/60 backdrop-blur-md absolute top-5 right-5 z-30 border-b border-gray-200">
-      <LocationSlider
-        radius={Number(radius) || 10}
-        setRadius={(v) => setRadius(v.toString())}
-        lat={lat}
-        lng={lng}
-        setLat={setLat}
-        setLng={setLng}
-      />
+    <div className="hidden md:flex flex-col gap-4 p-4 items-start justify-center rounded-3xl shadow-2xl shadow-black/10 border bg-neutral-50/60 backdrop-blur-md mt-6 max-w-sm mx-auto z-30 border-b border-gray-200">
       <div className="flex  items-end justify-between max-w-7xl w-full gap-4">
         <div className="flex flex-col gap-2 w-full">
           {/* Ville (city) classique */}
@@ -150,6 +142,14 @@ export default function FilterBarDesktop() {
           </DrawerContent>
         </Drawer>
       </div>
+      <LocationSlider
+        radius={Number(radius) || 10}
+        setRadius={(v) => setRadius(v.toString())}
+        lat={lat}
+        lng={lng}
+        setLat={setLat}
+        setLng={setLng}
+      />
     </div>
   );
 }
