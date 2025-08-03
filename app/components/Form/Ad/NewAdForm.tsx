@@ -40,21 +40,35 @@ type Category = {
 
 type AdType = 'FOR_SALE' | 'FOR_RENT';
 
-const schema = z.object({
-  title: z.string().min(1, 'Titre obligatoire'),
-  description: z.string().min(1, 'Description obligatoire'),
-  price: z.number().positive('Prix invalide'),
-  images: z.array(z.string().url()).min(1, 'Ajoutez au moins une image'),
-  location: z.string(),
-  lat: z.number().nullable(),
-  lng: z.number().nullable(),
-  isDon: z.boolean().optional(),
-  categoryId: z.string(),
-  type: z.enum(['FOR_SALE', 'FOR_RENT']),
-  durationValue: z.number().optional(),
-  durationUnit: z.enum(['DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
-  dynamicFields: z.object({}).catchall(z.unknown()),
-});
+const schema = z
+  .object({
+    title: z.string().min(1, 'Titre obligatoire'),
+    description: z.string().min(1, 'Description obligatoire'),
+    price: z.number(),
+    images: z.array(z.string().url()).min(1, 'Ajoutez au moins une image'),
+    location: z.string(),
+    lat: z.number().nullable(),
+    lng: z.number().nullable(),
+    isDon: z.boolean().optional(),
+    categoryId: z.string(),
+    type: z.enum(['FOR_SALE', 'FOR_RENT']),
+    durationValue: z.number().optional(),
+    durationUnit: z.enum(['DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
+    dynamicFields: z.object({}).catchall(z.unknown()),
+  })
+  .refine(
+    (data) => {
+      // Si don → prix doit être 0
+      if (data.isDon) return data.price === 0;
+      // Sinon → prix doit être > 0
+      return data.price > 0;
+    },
+    {
+      message: 'Le prix doit être strictement positif, sauf pour un don (0).',
+      path: ['price'],
+    }
+  );
+
 function normalize(str: string) {
   return str
     .normalize('NFD')

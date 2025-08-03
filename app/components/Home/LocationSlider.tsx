@@ -1,7 +1,9 @@
 'use client';
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Slider } from '@/components/ui/slider';
 
 type Props = {
   radius: number;
@@ -25,10 +27,9 @@ export default function LocationSlider({
   max = 100,
 }: Props) {
   const isActive = lat && lng;
-  const [hovered, setHovered] = useState(false);
 
   return (
-    <div className="flex max-md:flex-col md:items-center items-start max-md:left-6 relative md:gap-3 max-md:mt-2 w-full">
+    <div className="flex max-md:flex-col md:items-center  max-md:text-sm items-start max-md:left-6 relative md:gap-3 max-md:mt-2 w-full">
       <button
         type="button"
         onClick={() => {
@@ -65,44 +66,34 @@ export default function LocationSlider({
         {isActive && (
           <motion.div
             key="slider"
-            initial={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0 }}
             animate={{
               opacity: 1,
-              height: hovered ? 38 : 20,
+
               marginTop:
                 typeof window !== 'undefined' && window.innerWidth <= 768
                   ? 8
-                  : 0, // mt-2 sur mobile
+                  : 0,
             }}
-            exit={{ opacity: 0, height: 0 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.42, 0, 0.58, 1] }}
             className={`
-              location-slider relative
+               relative bottom-1
               ${isActive ? '' : 'pointer-events-none opacity-40'}
-              ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'min-h-[38px] w-[90vw] max-w-[320px]' : 'flex-1'}
+              ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'min-h-[42px] w-[90vw] max-w-[320px]' : 'flex-1'}
             `}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
           >
-            <input
-              type="range"
-              min={min}
-              max={max}
-              value={radius}
-              onChange={(e) => setRadius(Number(e.target.value))}
-              className={`h-full ${
-                typeof window !== 'undefined' && window.innerWidth <= 768
-                  ? 'w-full'
-                  : 'w-[180px]'
-              }`}
-              style={{
-                pointerEvents: isActive ? 'auto' : 'none',
-              }}
-              disabled={!isActive}
-            />
-            <span className="absolute right-0 top-1/2 -translate-y-1/2 font-bold text-black text-base px-2 pointer-events-none select-none">
+            <span className="relative   font-bold text-black max-md:text-xs text-sm px-2 pointer-events-none select-none">
               {radius} km
             </span>
+            <Slider
+              value={[radius]}
+              onValueChange={([val]) => setRadius(val)}
+              min={min}
+              max={max}
+              disabled={!isActive}
+              className="[&>:last-child>span]:border-background [&>:last-child>span]:bg-primary *:data-[slot=slider-thumb]:shadow-none [&>:last-child>span]:h-6 [&>:last-child>span]:w-2.5 [&>:last-child>span]:border-[3px] [&>:last-child>span]:ring-offset-0"
+            />
           </motion.div>
         )}
       </AnimatePresence>
