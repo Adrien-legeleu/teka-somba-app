@@ -186,12 +186,12 @@ export default function Home({ userId }: { userId?: string | null }) {
             </AnimatePresence>
           </div>
           {totalPages > 1 && (
-            <div className="w-full flex justify-center mt-10">
+            <div className="w-full flex justify-center mb-10 mt-5">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      className="rounded-2xl"
+                      className="rounded-2xl cursor-pointer"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       aria-disabled={page === 1}
                     />
@@ -201,7 +201,7 @@ export default function Home({ userId }: { userId?: string | null }) {
                       <PaginationLink
                         isActive={page === i + 1}
                         onClick={() => setPage(i + 1)}
-                        className={`rounded-2xl font-semibold transition-all ${
+                        className={`rounded-2xl cursor-pointer font-semibold transition-all ${
                           page === i + 1
                             ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-xl'
                             : 'bg-white text-gray-700 hover:bg-orange-50'
@@ -213,7 +213,7 @@ export default function Home({ userId }: { userId?: string | null }) {
                   ))}
                   <PaginationItem>
                     <PaginationNext
-                      className="rounded-2xl"
+                      className="rounded-2xl cursor-pointer"
                       onClick={() =>
                         setPage((p) => Math.min(totalPages, p + 1))
                       }

@@ -48,11 +48,11 @@ type Ad = {
   isDon?: boolean;
   type?: 'FOR_SALE' | 'FOR_RENT';
   durationValue?: number;
-  durationUnit?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
+  durationUnit?: 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
   category?: { id: string; parentId: string };
   dynamicFields?: DynamicFieldValues;
 };
-type DurationUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
+type DurationUnit = 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
 
 export default function EditAdForm({
   ad,
