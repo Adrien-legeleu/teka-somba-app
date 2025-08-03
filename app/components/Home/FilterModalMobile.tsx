@@ -49,7 +49,7 @@ export default function FilterDrawerMobile() {
     <>
       <Button
         variant="outline"
-        className="rounded-full relative left-6 text-sm px-4 py-2 mt-2 flex items-center gap-2"
+        className="rounded-full relative  left-6 text-sm px-4 py-2 mt-4 flex items-center gap-2"
         onClick={() => setOpen(true)}
       >
         <IconAdjustmentsHorizontal size={18} />

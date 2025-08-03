@@ -29,7 +29,7 @@ export default function LocationSlider({
   const isActive = lat && lng;
 
   return (
-    <div className="flex max-md:flex-col md:items-center  max-md:text-sm items-start max-md:left-6 relative md:gap-3 max-md:mt-2 w-full">
+    <div className="flex max-md:flex-col md:items-center pl-6  max-md:text-sm items-start  relative md:gap-3 max-md:mt-2">
       <button
         type="button"
         onClick={() => {
