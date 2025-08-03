@@ -199,7 +199,7 @@ export default function AdDetailsPage() {
                   backgroundImage: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
                 }}
               >
-                {ad.price?.toLocaleString()} FCFA
+                {ad.price?.toLocaleString()} USD
               </h2>
 
               <p className="text-md text-gray-600 mb-1">{ad.location}</p>

@@ -134,24 +134,14 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     watched.title.trim().length > 0 && categoryId !== null && images.length > 0;
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
-    console.log('🟡 Données soumises par le formulaire (brutes) :', data);
-    console.log('🟢 Champs dynamiques (avant filtre) :', data.dynamicFields);
-
     const selectedCatId = subCategoryId ?? categoryId ?? data.categoryId;
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
       .find((cat) => cat.id === selectedCatId);
 
-    console.log('📛 categoryId :', categoryId);
-    console.log('📛 subCategoryId :', subCategoryId);
-    console.log('📛 data.categoryId :', data.categoryId);
-    console.log('📛 Catégorie trouvée :', selectedCat);
-
     const expectedDynamicFields = (selectedCat?.fields || []).map((f) =>
       normalize(f.name)
     );
-
-    console.log(expectedDynamicFields);
 
     const filteredDynamicFields = Object.fromEntries(
       Object.entries(data.dynamicFields || {}).filter(([key]) => {
@@ -159,11 +149,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
           (expected) => normalize(expected) === normalize(key)
         );
       })
-    );
-
-    console.log(
-      '🔵 Champs dynamiques filtrés (après nettoyage) :',
-      filteredDynamicFields
     );
 
     const finalDurationValue =
@@ -347,20 +332,24 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 rows={4}
               />
 
-              <Label htmlFor="price">Prix (FCFA) *</Label>
-              <Input
-                id="price"
-                type="number"
-                value={priceValue}
-                onChange={(e) =>
-                  setValue(
-                    'price',
-                    e.target.value === '' ? NaN : Number(e.target.value),
-                    { shouldValidate: true }
-                  )
-                }
-                disabled={isDon}
-              />
+              <Label htmlFor="price">Prix *</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="price"
+                  type="number"
+                  value={priceValue}
+                  onChange={(e) =>
+                    setValue(
+                      'price',
+                      e.target.value === '' ? NaN : Number(e.target.value),
+                      { shouldValidate: true }
+                    )
+                  }
+                  disabled={isDon}
+                  className="w-40"
+                  placeholder={'USD'}
+                />
+              </div>
 
               {dynamicFields.length > 0 && (
                 <DynamicFieldsSection fields={dynamicFields} />

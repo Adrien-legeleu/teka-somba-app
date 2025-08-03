@@ -170,7 +170,7 @@ export default function AdminModerateAds({
                   {ad.title}
                 </h2>
                 <div className="text-primary font-bold mt-1">
-                  {ad.price.toLocaleString()} FCFA
+                  {ad.price.toLocaleString()} USD
                 </div>
                 {ad.location && (
                   <div className="text-sm text-muted-foreground mt-1">

@@ -101,7 +101,7 @@ export default function AdPreview({ ad, dynamicFields = [] }: AdPreviewProps) {
       {/* Prix */}
       {typeof price === 'number' && !isNaN(price) && (
         <div className="font-bold text-base text-foreground">
-          {price === 0 ? 'Gratuit' : `${price.toLocaleString('fr-FR')} FCFA`}
+          {price === 0 ? 'Gratuit' : `${price.toLocaleString('fr-FR')} USD`}
         </div>
       )}
 

@@ -49,7 +49,7 @@ export default function WalletRecharge() {
               </span>
             )}
             <div className="text-3xl font-bold mb-2">
-              {offer.amount.toLocaleString()} FCFA
+              {offer.amount.toLocaleString()} USD
             </div>
             <div className="text-lg font-medium">
               {offer.credits.toLocaleString()} crédits

@@ -21,30 +21,39 @@ interface AdWithRelations {
   user: { id: string; name: string; avatar: string | null };
   favorites?: { id: string }[];
   isFavorite?: boolean;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-
+    // --- Filtres principaux
     const categoryId = searchParams.get('categoryId');
     const city = searchParams.get('city');
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get('userId'); // Pour les favoris
     const query = searchParams.get('q')?.trim().toLowerCase() || '';
     const isDon = searchParams.get('isDon') === 'true';
 
-    // ----- Nouveaux paramètres -----
+    // --- Filtres prix / tri
     const priceMinRaw = searchParams.get('priceMin');
     const priceMaxRaw = searchParams.get('priceMax');
-
     const sortByRaw = searchParams.get('sortBy');
     const sortByParam: 'price' | 'createdAt' =
       sortByRaw === 'price' ? 'price' : 'createdAt';
-
     const sortOrderRaw = searchParams.get('sortOrder');
     const sortOrderParam: 'asc' | 'desc' =
       sortOrderRaw === 'asc' ? 'asc' : 'desc';
 
+    // --- Filtre géolocalisation
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    const radius = searchParams.get('radius');
+    const userLat = lat ? parseFloat(lat) : null;
+    const userLng = lng ? parseFloat(lng) : null;
+    const radiusKm = radius ? parseFloat(radius) : null;
+
+    // --- Calcul bornes prix
     const priceMin =
       priceMinRaw !== null && !Number.isNaN(Number(priceMinRaw))
         ? Number(priceMinRaw)
@@ -54,7 +63,7 @@ export async function GET(request: Request) {
         ? Number(priceMaxRaw)
         : undefined;
 
-    // ----- Catégorie + sous-catégories -----
+    // --- Catégorie + sous-catégories
     let categoryIds: string[] = [];
     if (categoryId) {
       const category = await prisma.category.findUnique({
@@ -67,58 +76,119 @@ export async function GET(request: Request) {
       ];
     }
 
-    // ----- WHERE -----
-    const where: Prisma.AdWhereInput = {};
-    if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
-    if (isDon) where.isDon = true;
-    if (city) where.location = { contains: city, mode: 'insensitive' };
+    // ------------------------------------
+    // ---- 1/ REQUÊTE SQL RAW SI GEO -----
+    // ------------------------------------
+    let ads: AdWithRelations[] = [];
+    if (userLat !== null && userLng !== null && radiusKm !== null) {
+      // Construit le WHERE dynamique
+      let sqlWhere = `
+        WHERE "Ad".lat IS NOT NULL
+          AND "Ad".lng IS NOT NULL
+          AND (
+            6371 * acos(
+              cos(radians($1)) * cos(radians("Ad".lat)) *
+              cos(radians("Ad".lng) - radians($2)) +
+              sin(radians($1)) * sin(radians("Ad".lat))
+            )
+          ) <= $3
+      `;
+      const sqlParams: (number | string)[] = [userLat, userLng, radiusKm];
 
-    if (priceMin !== undefined || priceMax !== undefined) {
-      where.price = {};
-      if (priceMin !== undefined)
-        (where.price as Prisma.IntFilter).gte = priceMin;
-      if (priceMax !== undefined)
-        (where.price as Prisma.IntFilter).lte = priceMax;
+      // Ajoute autres filtres dynamiquement
+      let paramIndex = 4;
+      if (categoryIds.length > 0) {
+        sqlWhere += ` AND "Ad"."categoryId" IN (${categoryIds
+          .map((_, i) => `$${paramIndex++}`)
+          .join(',')})`;
+        sqlParams.push(...categoryIds);
+      }
+      if (isDon) {
+        sqlWhere += ` AND "Ad"."isDon" = true`;
+      }
+      if (city) {
+        sqlWhere += ` AND LOWER("Ad"."location") LIKE $${paramIndex}`;
+        sqlParams.push(`%${city.toLowerCase()}%`);
+        paramIndex++;
+      }
+      if (priceMin !== undefined) {
+        sqlWhere += ` AND "Ad"."price" >= $${paramIndex}`;
+        sqlParams.push(priceMin);
+        paramIndex++;
+      }
+      if (priceMax !== undefined) {
+        sqlWhere += ` AND "Ad"."price" <= $${paramIndex}`;
+        sqlParams.push(priceMax);
+        paramIndex++;
+      }
+
+      // Tri
+      let sqlOrder = `ORDER BY "Ad"."${sortByParam}" ${sortOrderParam.toUpperCase()}`;
+
+      // -- Final query --
+      ads = await prisma.$queryRawUnsafe<AdWithRelations[]>(
+        `
+        SELECT
+          "Ad".*,
+          "User".name as "userName",
+          "User".avatar as "userAvatar",
+          "Category".name as "categoryName"
+        FROM "Ad"
+        LEFT JOIN "User" ON "Ad"."userId" = "User".id
+        LEFT JOIN "Category" ON "Ad"."categoryId" = "Category".id
+        ${sqlWhere}
+        ${sqlOrder}
+        `,
+        ...sqlParams
+      );
+    } else {
+      // ------------------------------------
+      // --------- 2/ PRISMA NORMAL ---------
+      // ------------------------------------
+      const where: Prisma.AdWhereInput = {};
+      if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
+      if (isDon) where.isDon = true;
+      if (city) where.location = { contains: city, mode: 'insensitive' };
+      if (priceMin !== undefined || priceMax !== undefined) {
+        where.price = {};
+        if (priceMin !== undefined)
+          (where.price as Prisma.IntFilter).gte = priceMin;
+        if (priceMax !== undefined)
+          (where.price as Prisma.IntFilter).lte = priceMax;
+      }
+
+      ads = (await prisma.ad.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, avatar: true } },
+          category: { select: { id: true, name: true } },
+          favorites: userId ? { where: { userId } } : false,
+        },
+        orderBy:
+          sortByParam === 'price'
+            ? { price: sortOrderParam }
+            : { createdAt: sortOrderParam },
+      })) as any; // mapping juste après
     }
 
-    // ----- TRI DB -----
-    const orderBy: Prisma.AdOrderByWithRelationInput =
-      sortByParam === 'price'
-        ? { price: sortOrderParam }
-        : { createdAt: sortOrderParam };
-
-    // ----- Récupération -----
-    const ads = (await prisma.ad.findMany({
-      where,
-      include: {
-        user: { select: { id: true, name: true, avatar: true } },
-        category: { select: { id: true, name: true } },
-        favorites: userId ? { where: { userId } } : false,
-      },
-      orderBy,
-    })) as AdWithRelations[];
-
-    const adsWithFavorite = ads.map((ad) => ({
+    // ---- 3/ Mapping et favoris -----
+    let adsWithFavorite = ads.map((ad: any) => ({
       ...ad,
-      isFavorite: userId ? (ad.favorites?.length ?? 0) > 0 : false,
+      isFavorite: userId
+        ? !!(ad.favorites ? (ad.favorites?.length ?? 0) > 0 : ad.isFavorite) // si jointure SQL
+        : false,
     }));
 
-    // ----- Recherche fuzzy (après DB) -----
+    // ---- 4/ Recherche fuzzy (après DB, si query) -----
     let result = adsWithFavorite;
     if (query) {
       const fuse = new Fuse(adsWithFavorite, {
-        keys: [
-          'title',
-          'description',
-          'location',
-          'category.name',
-          'user.name',
-        ],
+        keys: ['title', 'description', 'location', 'categoryName', 'userName'],
         threshold: 0.4,
       });
       result = fuse.search(query).map((r) => r.item);
 
-      // Conserver le tri demandé même après fuzzy
+      // Trie le résultat même après fuzzy
       result.sort((a, b) => {
         const dir = sortOrderParam === 'asc' ? 1 : -1;
         if (sortByParam === 'price') {
@@ -173,6 +243,7 @@ export async function POST(req: NextRequest) {
     title: z.string().min(1),
     description: z.string().min(1),
     price: z.number().int().nonnegative(),
+
     location: z.string().min(1),
     lat: z.number().optional(),
     lng: z.number().optional(),

@@ -74,6 +74,7 @@ export async function PATCH(
       subCategoryId,
       categoryId, // ← à exclure aussi pour éviter qu'il rentre dans baseData
       dynamicFields,
+
       ...baseData
     } = data;
 

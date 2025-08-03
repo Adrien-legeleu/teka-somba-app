@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         price_data: {
           currency: 'xof',
           product_data: {
-            name: `Crédits TekaSomba (${amount} FCFA)`,
+            name: `Crédits TekaSomba (${amount} USD)`,
           },
           unit_amount: amount,
         },

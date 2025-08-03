@@ -31,7 +31,7 @@ export default function ContactSellerModal({
 }: ContactSellerModalProps) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(
-    `Bonjour, je suis intéressé(e) par "${ad.title}" à ${formatPrice(ad.price)} FCFA sur TekaSomba. Est-il toujours disponible ?`
+    `Bonjour, je suis intéressé(e) par "${ad.title}" à ${formatPrice(ad.price)} USD sur TekaSomba. Est-il toujours disponible ?`
   );
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +110,7 @@ export default function ContactSellerModal({
               <div>
                 <div className="font-semibold text-base">{ad.title}</div>
                 <div className="text-orange-600 font-bold">
-                  {formatPrice(ad.price)} FCFA
+                  {formatPrice(ad.price)} USD
                 </div>
                 <div className="text-sm text-gray-500">{ad.location}</div>
               </div>

@@ -15,6 +15,8 @@ import { CategorySection } from '../Filter/Categorypicker';
 import { DonSection } from '../Filter/DonSwitch';
 import { useState } from 'react';
 import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
+import { toast } from 'sonner';
+import LocationSlider from './LocationSlider';
 
 export default function FilterDrawerMobile() {
   const [open, setOpen] = useState(false);
@@ -35,6 +37,12 @@ export default function FilterDrawerMobile() {
     sortOrder,
     setSortOrder,
     resetFilters,
+    radius,
+    setLat,
+    setLng,
+    lat,
+    lng,
+    setRadius,
   } = useFilter();
 
   return (
@@ -47,6 +55,14 @@ export default function FilterDrawerMobile() {
         <IconAdjustmentsHorizontal size={18} />
         Filtres
       </Button>
+      <LocationSlider
+        radius={Number(radius) || 10}
+        setRadius={(v) => setRadius(v.toString())}
+        lat={lat}
+        lng={lng}
+        setLat={setLat}
+        setLng={setLng}
+      />
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="w-full max-w-md mx-auto p-0 bg-white rounded-t-3xl  flex flex-col">
           <div className="flex-1 flex pb-4 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4">
@@ -71,14 +87,14 @@ export default function FilterDrawerMobile() {
               <div className="flex max-xs:flex-col xs:items-center gap-2">
                 <input
                   type="number"
-                  placeholder="Min (FCFA)"
+                  placeholder="Min (USD)"
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
                   className=" border rounded-xl px-3 py-2 text-sm"
                 />
                 <input
                   type="number"
-                  placeholder="Max (FCFA)"
+                  placeholder="Max (USD)"
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
                   className=" border rounded-xl px-3 py-2 text-sm"

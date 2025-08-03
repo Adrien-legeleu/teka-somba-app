@@ -29,6 +29,9 @@ export default function Home({ userId }: { userId?: string | null }) {
     priceMin,
     priceMax,
     sortOrder,
+    lat,
+    lng,
+    radius,
   } = useFilter();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -53,6 +56,10 @@ export default function Home({ userId }: { userId?: string | null }) {
         params.append('sortBy', 'price');
         params.append('sortOrder', sortOrder);
       }
+      if (lat) params.append('lat', lat);
+      if (lng) params.append('lng', lng);
+      if (radius) params.append('radius', radius);
+
       try {
         const res = await fetch('/api/ad?' + params.toString());
         const data: Ad[] = await res.json();
@@ -75,6 +82,9 @@ export default function Home({ userId }: { userId?: string | null }) {
     priceMax,
     sortOrder,
     userId,
+    lat,
+    lng,
+    radius,
   ]);
 
   return (
@@ -147,7 +157,7 @@ export default function Home({ userId }: { userId?: string | null }) {
                     </div>
                   )}
                   <p className="font-semibold mt-2 text-sm md:text-base">
-                    {ad.price.toLocaleString()} FCFA
+                    {ad.price.toLocaleString()} USD
                   </p>
                 </Link>
               </motion.div>

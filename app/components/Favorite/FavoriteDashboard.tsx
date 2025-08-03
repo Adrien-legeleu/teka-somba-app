@@ -73,7 +73,7 @@ export default function FavoriteDashboard({ userId }: { userId: string }) {
               </div>
             )}
             <p className="font-semibold mt-2 text-sm md:text-base">
-              {ad.price.toLocaleString()} FCFA
+              {ad.price.toLocaleString()} USD
             </p>
           </Link>
         </div>

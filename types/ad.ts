@@ -26,16 +26,18 @@ export interface Ad {
   images: string[];
   location: string;
   lat: number | null;
-  fields?: AdField[];
   lng: number | null;
+
   isDon?: boolean;
   category?: { id: string; name?: string; parentId: string };
-  subCategoryId?: string; // ajouté si tu veux le gérer
+  subCategoryId?: string;
   dynamicFields?: DynamicFieldValues;
   durationValue?: number;
   durationUnit?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
   adAnalytics?: AdAnalytics;
   user?: User;
+
+  fields?: AdField[]; // Si tu utilises toujours ce champ
 }
 
 export type Category = {

@@ -15,6 +15,8 @@ import { CategorySection } from '../Filter/Categorypicker';
 import { DonSection } from '../Filter/DonSwitch';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import LocationSlider from './LocationSlider';
 
 export default function FilterBarDesktop() {
   const [open, setOpen] = useState(false);
@@ -35,13 +37,34 @@ export default function FilterBarDesktop() {
     sortOrder,
     setSortOrder,
     resetFilters,
+    radius,
+    setRadius,
+    setLat,
+    setLng,
+    lat,
+    lng,
   } = useFilter();
 
   return (
     <div className="hidden md:flex flex-col gap-4 p-4 items-center justify-center rounded-3xl shadow-2xl shadow-black/10 border bg-neutral-50/60 backdrop-blur-xl absolute top-5 right-5 z-30 border-b border-gray-200">
-      <div className="flex items-end justify-between max-w-7xl mx-auto gap-4">
-        <div className="w-full max-w-xs">
-          <CitySection city={city} setCity={setCity} />
+      <LocationSlider
+        radius={Number(radius) || 10}
+        setRadius={(v) => setRadius(v.toString())}
+        lat={lat}
+        lng={lng}
+        setLat={setLat}
+        setLng={setLng}
+      />
+      <div className="flex  items-end justify-between max-w-7xl w-full gap-4">
+        <div className="flex flex-col gap-2 w-full">
+          {/* Ville (city) classique */}
+          <input
+            type="text"
+            placeholder="Ville, quartier..."
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="w-full rounded-3xl bg-white border p-4 text-sm shadow"
+          />
         </div>
 
         {/* Drawer Filtres Desktop */}
@@ -49,7 +72,7 @@ export default function FilterBarDesktop() {
           <DrawerTrigger asChild>
             <button
               onClick={() => setOpen(true)}
-              className="flex items-center gap-2 px-5 py-2 rounded-3xl bg-white border shadow-sm hover:bg-gray-100 transition text-sm font-medium text-gray-800"
+              className="flex items-center gap-2  p-4 rounded-3xl bg-white border shadow-sm hover:bg-gray-100 transition text-sm font-medium text-gray-800"
             >
               <IconAdjustmentsHorizontal size={20} />
               Filtres
@@ -80,7 +103,7 @@ export default function FilterBarDesktop() {
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    placeholder="Min (FCFA)"
+                    placeholder="Min (USD)"
                     value={priceMin}
                     onChange={(e) => setPriceMin(e.target.value)}
                     className="w-full rounded-3xl p-4 border shadow-lg border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
@@ -88,7 +111,7 @@ export default function FilterBarDesktop() {
                   <span className="text-gray-400">–</span>
                   <input
                     type="number"
-                    placeholder="Max (FCFA)"
+                    placeholder="Max (USD)"
                     value={priceMax}
                     onChange={(e) => setPriceMax(e.target.value)}
                     className="w-full rounded-3xl p-4 border shadow-lg border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"

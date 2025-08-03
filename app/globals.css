@@ -538,3 +538,97 @@ h6 {
 .cube:nth-child(9) {
   animation-delay: 1.8s;
 }
+
+/* ----- Slider de localisation stylisé ----- */
+.location-slider {
+  --slider-width: 100%;
+  --slider-bg: rgba(82, 82, 82, 0.1);
+  --slider-border-radius: 1.5rem;
+  --level-color: linear-gradient(90deg, #ff9100, #ff5a00 95%);
+}
+.location-slider input[type='range'] {
+  appearance: none;
+  width: var(--slider-width);
+  /* background: var(--slider-bg); */
+  border-radius: var(--slider-border-radius);
+
+  outline: none;
+  transition: background 0.3s;
+  overflow: hidden;
+  position: relative;
+  /* Pour la progress custom */
+  background-image: none;
+}
+.location-slider input[type='range']:focus {
+  outline: none;
+}
+
+/* Le “remplissage” custom via ::before */
+.location-slider input[type='range']::-webkit-slider-runnable-track {
+  background: var(--slider-bg);
+  border-radius: var(--slider-border-radius);
+}
+.location-slider input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 0;
+  height: 0;
+  box-shadow:
+    -100vw 0 25px 100vw #ff7a00,
+    /* orange-300 très subtil (halo externe, léger) */ -100vw 0 35px 90vw
+      #fb923cbb,
+    /* orange-400 */ -100vw 0 50px 80vw #f97316cc,
+    /* orange-500 (plus intense) */ -100vw 0 75px 60vw #ea580cdd,
+    /* orange-600 */ -100vw 0 100px 40vw #c2410ccc;
+
+  background: transparent;
+  cursor: pointer;
+  border: none;
+  transition: box-shadow 0.2s;
+}
+.location-slider input[type='range']:disabled::-webkit-slider-thumb {
+  box-shadow: none;
+}
+.location-slider input[type='range']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Firefox */
+.location-slider input[type='range']::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  border: none;
+  box-shadow:
+    -100vw 0 18px 100vw #ff9100,
+    -100vw 0 55px 90vw #ff7a0030;
+  background: transparent;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.location-slider input[type='range']:disabled::-moz-range-thumb {
+  box-shadow: none;
+}
+.location-slider input[type='range']::-ms-fill-lower {
+  background: #ff7a00;
+}
+.location-slider input[type='range']::-ms-thumb {
+  width: 0;
+  height: 0;
+  box-shadow:
+    -100vw 0 18px 100vw #ff9100,
+    -100vw 0 55px 90vw #ff7a0030;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+/* Hide default track for all browsers except Chrome, Firefox, Edge */
+.location-slider input[type='range']::-ms-fill-upper,
+.location-slider input[type='range']::-ms-fill-lower {
+  background: transparent;
+}
+
+.location-slider input[type='range']:focus::-webkit-slider-runnable-track {
+  background: var(--slider-bg);
+}

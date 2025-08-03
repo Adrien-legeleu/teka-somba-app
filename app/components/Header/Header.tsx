@@ -180,7 +180,10 @@ export default function Header() {
       </div>
 
       <nav className="w-full z-50 relative border-t border-gray-100 hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto no-scrollbar">
+        <div
+          className="max-w-7xl mx-auto px-4 flex items-center h-12 gap-4 overflow-x-auto no-scrollbar"
+          style={{ scrollbarWidth: 'none' }}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.8, filter: 'blur(6px)' }}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}

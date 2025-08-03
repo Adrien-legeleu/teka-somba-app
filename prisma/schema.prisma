@@ -76,6 +76,7 @@ isVip Boolean @default(false)
     durationValue Int? // <-- durée en valeur, ex: 3
   durationUnit  DurationUnit?
   isDon  Boolean @default(false)
+
   createdAt   DateTime  @default(now())
   userId      String
   user        User      @relation(fields: [userId], references: [id])

@@ -296,23 +296,21 @@ export default function EditAdForm({
                   rows={5}
                   className="rounded-xl px-4 py-2 shadow-sm"
                 />
-
                 <div className="flex w-full gap-2 items-center">
                   <Input
                     {...methods.register('price', { valueAsNumber: true })}
                     type="number"
-                    placeholder="Prix (FCFA)"
+                    placeholder="Prix (USD)"
                     min={0}
                     disabled={methods.watch('isDon')}
                     className="rounded-xl px-4 py-2 shadow-sm"
                   />
-                  <span className="font-semibold">FCFA</span>
+                  <span className="font-semibold">USD</span>
                 </div>
 
                 {dynamicFields.length > 0 && (
                   <DynamicFieldsSection fields={dynamicFields} />
                 )}
-
                 <LocationPicker
                   location={location}
                   setLocation={setLocation}
@@ -321,7 +319,6 @@ export default function EditAdForm({
                   lng={lng}
                   setLng={setLng}
                 />
-
                 <ImageUploader
                   onChange={(urls) => {
                     setImages(urls);
@@ -329,7 +326,6 @@ export default function EditAdForm({
                   }}
                   defaultImages={images}
                 />
-
                 <div className="flex flex-col  md:flex-row w-full mt-4 items-stretch md:items-center justify-center gap-5">
                   <Button
                     type="submit"

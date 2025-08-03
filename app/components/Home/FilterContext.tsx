@@ -31,6 +31,12 @@ interface FilterContextProps {
   resetFilters: () => void;
   isFilterModalOpen: boolean;
   setFilterModalOpen: (open: boolean) => void;
+  radius: string;
+  setRadius: (radius: string) => void;
+  lat: string | null;
+  lng: string | null;
+  setLat: (lat: string | null) => void;
+  setLng: (lng: string | null) => void;
 }
 
 // Create context with default (will be overridden by provider)
@@ -55,6 +61,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [priceMax, setPriceMax] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isFilterModalOpen, setFilterModalOpen] = useState<boolean>(false);
+  const [radius, setRadius] = useState<string>('');
+  const [lat, setLat] = useState<string | null>('');
+  const [lng, setLng] = useState<string | null>('');
 
   const searchParams = useSearchParams(); // to read URL query params
 
@@ -143,6 +152,12 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     resetFilters,
     isFilterModalOpen,
     setFilterModalOpen,
+    radius,
+    setRadius,
+    lat,
+    setLat,
+    lng,
+    setLng,
   };
 
   return (
