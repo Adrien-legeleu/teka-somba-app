@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,14 +70,6 @@ export default function Header() {
     router.push('/?' + params.toString());
   }
 
-  function handleDonClick(e: React.MouseEvent) {
-    e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (isDonActive) params.delete('isDon');
-    else params.set('isDon', 'true');
-    router.push('/?' + params.toString());
-  }
-
   function showDropdown(catId: string) {
     setActiveCat(catId);
     const rect = catRefs.current[catId]?.getBoundingClientRect();
@@ -93,24 +85,43 @@ export default function Header() {
   function closeDropdown() {
     setActiveCat(null);
   }
+  const pathname = usePathname();
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
+    // État initial (prend en compte les nouveaux messages + l'état du localStorage)
+    const updateHasUnread = () => {
+      // Priorité : nouveau message reçu ou badge déjà activé
+      setHasUnread(localStorage.getItem('messagesSeen') !== 'true');
+    };
+
+    // Écoute le socket pour les nouveaux messages
     socket.on('new_message', (message) => {
       setHasUnread(true);
+      localStorage.setItem('messagesSeen', 'false');
       toast('💬 Nouveau message reçu : ' + message.content);
     });
-    fetch('/api/messages/unread')
-      .then((res) => res.json())
-      .then((data) => {
-        setHasUnread(data.unread);
-      })
-      .catch(() => {});
 
+    // Vérifie au chargement de la page
+    updateHasUnread();
+
+    // Synchronise entre onglets/tabs
+    window.addEventListener('storage', updateHasUnread);
+
+    // Nettoie à l'unmount
     return () => {
       socket.off('new_message');
+      window.removeEventListener('storage', updateHasUnread);
     };
   }, []);
+
+  // Watch la route, désactive le badge si on va sur les messages
+  useEffect(() => {
+    if (pathname.startsWith('/dashboard/messages')) {
+      setHasUnread(false);
+      localStorage.setItem('messagesSeen', 'true');
+    }
+  }, [pathname]);
 
   return (
     <header className="w-full bg-[#F9F9F9] max-md:rounded-b-3xl max-md:shadow-xl max-md:shadow-black/5 border-b border-gray-100 z-[1000] sticky top-0">

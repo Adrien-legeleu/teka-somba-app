@@ -93,6 +93,7 @@ enum AdType {
   FOR_RENT
 }
 enum DurationUnit {
+  HOUR
   DAY
   WEEK
   MONTH

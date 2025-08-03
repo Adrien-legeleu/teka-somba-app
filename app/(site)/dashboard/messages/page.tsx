@@ -37,6 +37,8 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    localStorage.setItem('messagesSeen', 'true');
+
     fetch('/api/messages/inbox')
       .then((res) => res.json())
       .then((data: Thread[]) => setThreads(data))

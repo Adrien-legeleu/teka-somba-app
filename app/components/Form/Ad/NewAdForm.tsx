@@ -53,7 +53,7 @@ const schema = z
     categoryId: z.string(),
     type: z.enum(['FOR_SALE', 'FOR_RENT']),
     durationValue: z.number().optional(),
-    durationUnit: z.enum(['DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
+    durationUnit: z.enum(['HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
     dynamicFields: z.object({}).catchall(z.unknown()),
   })
   .refine(
@@ -204,6 +204,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
 
   const durationUnit = watch('durationUnit');
   const durationLabels: Record<DurationUnit, string> = {
+    HOUR: 'Heure(s)',
     DAY: 'Jour(s)',
     WEEK: 'Semaine(s)',
     MONTH: 'Mois',
@@ -294,6 +295,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                       {durationUnit ? durationLabels[durationUnit] : 'Unité'}
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="HOUR">Heure(s)</SelectItem>
                       <SelectItem value="DAY">Jour(s)</SelectItem>
                       <SelectItem value="WEEK">Semaine(s)</SelectItem>
                       <SelectItem value="MONTH">Mois</SelectItem>

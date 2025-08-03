@@ -28,14 +28,18 @@ interface AdWithRelations {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    // --- Filtres principaux
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '20', 10);
+    const skip = (page - 1) * limit;
+
+    // Filtres principaux
     const categoryId = searchParams.get('categoryId');
     const city = searchParams.get('city');
-    const userId = searchParams.get('userId'); // Pour les favoris
+    const userId = searchParams.get('userId');
     const query = searchParams.get('q')?.trim().toLowerCase() || '';
     const isDon = searchParams.get('isDon') === 'true';
 
-    // --- Filtres prix / tri
+    // Filtres prix / tri
     const priceMinRaw = searchParams.get('priceMin');
     const priceMaxRaw = searchParams.get('priceMax');
     const sortByRaw = searchParams.get('sortBy');
@@ -45,7 +49,7 @@ export async function GET(request: Request) {
     const sortOrderParam: 'asc' | 'desc' =
       sortOrderRaw === 'asc' ? 'asc' : 'desc';
 
-    // --- Filtre géolocalisation
+    // Filtre géolocalisation
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
     const radius = searchParams.get('radius');
@@ -53,7 +57,7 @@ export async function GET(request: Request) {
     const userLng = lng ? parseFloat(lng) : null;
     const radiusKm = radius ? parseFloat(radius) : null;
 
-    // --- Calcul bornes prix
+    // Calcul bornes prix
     const priceMin =
       priceMinRaw !== null && !Number.isNaN(Number(priceMinRaw))
         ? Number(priceMinRaw)
@@ -63,7 +67,7 @@ export async function GET(request: Request) {
         ? Number(priceMaxRaw)
         : undefined;
 
-    // --- Catégorie + sous-catégories
+    // Catégorie + sous-catégories
     let categoryIds: string[] = [];
     if (categoryId) {
       const category = await prisma.category.findUnique({
@@ -76,12 +80,12 @@ export async function GET(request: Request) {
       ];
     }
 
-    // ------------------------------------
-    // ---- 1/ REQUÊTE SQL RAW SI GEO -----
-    // ------------------------------------
     let ads: AdWithRelations[] = [];
+    let total = 0;
+
+    // --- 1/ SQL RAW (géoloc, sans vrai total paginé)
     if (userLat !== null && userLng !== null && radiusKm !== null) {
-      // Construit le WHERE dynamique
+      // Ta logique actuelle pour filtrer par géoloc
       let sqlWhere = `
         WHERE "Ad".lat IS NOT NULL
           AND "Ad".lng IS NOT NULL
@@ -95,7 +99,6 @@ export async function GET(request: Request) {
       `;
       const sqlParams: (number | string)[] = [userLat, userLng, radiusKm];
 
-      // Ajoute autres filtres dynamiquement
       let paramIndex = 4;
       if (categoryIds.length > 0) {
         sqlWhere += ` AND "Ad"."categoryId" IN (${categoryIds
@@ -103,9 +106,7 @@ export async function GET(request: Request) {
           .join(',')})`;
         sqlParams.push(...categoryIds);
       }
-      if (isDon) {
-        sqlWhere += ` AND "Ad"."isDon" = true`;
-      }
+      if (isDon) sqlWhere += ` AND "Ad"."isDon" = true`;
       if (city) {
         sqlWhere += ` AND LOWER("Ad"."location") LIKE $${paramIndex}`;
         sqlParams.push(`%${city.toLowerCase()}%`);
@@ -125,7 +126,7 @@ export async function GET(request: Request) {
       // Tri
       const sqlOrder = `ORDER BY "Ad"."${sortByParam}" ${sortOrderParam.toUpperCase()}`;
 
-      // -- Final query --
+      // -- Query sans pagination SQL (car $queryRawUnsafe pagine mal, à améliorer si besoin)
       ads = await prisma.$queryRawUnsafe<AdWithRelations[]>(
         `
         SELECT
@@ -141,10 +142,12 @@ export async function GET(request: Request) {
         `,
         ...sqlParams
       );
+
+      total = ads.length;
+      // Si tu veux paginer côté JS ici :
+      ads = ads.slice(skip, skip + limit);
     } else {
-      // ------------------------------------
-      // --------- 2/ PRISMA NORMAL ---------
-      // ------------------------------------
+      // --- 2/ PRISMA NORMAL
       const where: Prisma.AdWhereInput = {};
       if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
       if (isDon) where.isDon = true;
@@ -157,6 +160,10 @@ export async function GET(request: Request) {
           (where.price as Prisma.IntFilter).lte = priceMax;
       }
 
+      // 1️⃣ Compte total SANS pagination
+      total = await prisma.ad.count({ where });
+
+      // 2️⃣ Récupère la page courante
       ads = (await prisma.ad.findMany({
         where,
         include: {
@@ -168,18 +175,20 @@ export async function GET(request: Request) {
           sortByParam === 'price'
             ? { price: sortOrderParam }
             : { createdAt: sortOrderParam },
-      })) as AdWithRelations[]; // mapping juste après
+        skip, // <= Ici la pagination
+        take: limit,
+      })) as AdWithRelations[];
     }
 
-    // ---- 3/ Mapping et favoris -----
+    // ---- Mapping et favoris
     const adsWithFavorite = ads.map((ad: AdWithRelations) => ({
       ...ad,
       isFavorite: userId
-        ? !!(ad.favorites ? (ad.favorites?.length ?? 0) > 0 : ad.isFavorite) // si jointure SQL
+        ? !!(ad.favorites ? (ad.favorites?.length ?? 0) > 0 : ad.isFavorite)
         : false,
     }));
 
-    // ---- 4/ Recherche fuzzy (après DB, si query) -----
+    // ---- Fuzzy search (facultatif : si tu veux paginer le résultat fuzzy, applique slice ici !)
     let result = adsWithFavorite;
     if (query) {
       const fuse = new Fuse(adsWithFavorite, {
@@ -187,21 +196,20 @@ export async function GET(request: Request) {
         threshold: 0.4,
       });
       result = fuse.search(query).map((r) => r.item);
-
       // Trie le résultat même après fuzzy
       result.sort((a, b) => {
         const dir = sortOrderParam === 'asc' ? 1 : -1;
-        if (sortByParam === 'price') {
-          return (a.price - b.price) * dir;
-        }
+        if (sortByParam === 'price') return (a.price - b.price) * dir;
         return (
           (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
           dir
         );
       });
+      // ➡️ Optionnel : pagine aussi ici si query
+      result = result.slice(0, limit);
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ data: result, total });
   } catch (e) {
     console.error(e);
     return NextResponse.json(
@@ -253,7 +261,7 @@ export async function POST(req: NextRequest) {
     dynamicFields: z.record(z.string(), z.unknown()),
     type: z.enum(['FOR_SALE', 'FOR_RENT']),
     durationValue: z.number().optional(),
-    durationUnit: z.enum(['DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
+    durationUnit: z.enum(['HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
   });
 
   let parsed: z.infer<typeof baseSchema>;

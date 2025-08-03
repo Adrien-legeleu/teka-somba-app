@@ -16,7 +16,7 @@ type AdPreviewProps = {
     dynamicFields?: DynamicFieldValues;
     type?: 'FOR_SALE' | 'FOR_RENT';
     durationValue?: number;
-    durationUnit?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
+    durationUnit?: 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
   };
   dynamicFields?: DynamicField[];
 };
@@ -25,6 +25,8 @@ const getFrenchDurationUnit = (unit: string) => {
   switch (unit) {
     case 'DAY':
       return 'jour';
+    case 'HOUR':
+      return 'heure';
     case 'WEEK':
       return 'semaine';
     case 'MONTH':

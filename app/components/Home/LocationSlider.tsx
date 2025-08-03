@@ -29,7 +29,7 @@ export default function LocationSlider({
   const isActive = lat && lng;
 
   return (
-    <div className="flex max-md:flex-col md:items-center pl-6  max-md:text-sm items-start  relative md:gap-3 max-md:mt-2">
+    <div className="flex max-md:flex-col md:items-center max-md:px-6 w-full  max-md:text-sm items-start  relative md:gap-3 max-md:mt-2">
       <button
         type="button"
         onClick={() => {
@@ -80,7 +80,7 @@ export default function LocationSlider({
             className={`
                relative bottom-1
               ${isActive ? '' : 'pointer-events-none opacity-40'}
-              ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'min-h-[42px] w-[90vw] max-w-[320px]' : 'flex-1'}
+              ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'min-h-[42px] w-[90vw] max-w-[220px]' : 'flex-1'}
             `}
           >
             <span className="relative   font-bold text-black max-md:text-xs text-sm px-2 pointer-events-none select-none">

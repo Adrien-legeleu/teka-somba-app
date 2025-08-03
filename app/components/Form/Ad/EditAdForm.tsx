@@ -116,7 +116,7 @@ export default function EditAdForm({
     type: z.enum(['FOR_SALE', 'FOR_RENT']),
     durationValue: z.number().min(1, 'Durée requise').optional().nullable(),
     durationUnit: z
-      .enum(['DAY', 'WEEK', 'MONTH', 'YEAR'])
+      .enum(['HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR'])
       .optional()
       .nullable(),
     dynamicFields: z.object({}).catchall(z.unknown()),
@@ -159,12 +159,11 @@ export default function EditAdForm({
   const onSubmit = async (data: z.infer<typeof AdSchema>) => {
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
-      .find((cat) => cat.id === (categoryId ?? data.categoryId));
+      .find((cat) => cat.id === (subCategoryId ?? data.subCategoryId));
     const expectedFields = (selectedCat?.fields || []).map((f) => f.name);
+
     const filteredDynamicFields = Object.fromEntries(
-      Object.entries(data.dynamicFields || {}).filter(
-        ([key, value]) => expectedFields.includes(key) && value !== ''
-      )
+      expectedFields.map((name) => [name, data.dynamicFields?.[name] ?? null])
     );
 
     try {
@@ -271,6 +270,7 @@ export default function EditAdForm({
                   <SelectValue placeholder="Unité de durée" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="HOUR">Heure</SelectItem>
                   <SelectItem value="DAY">Jour</SelectItem>
                   <SelectItem value="WEEK">Semaine</SelectItem>
                   <SelectItem value="MONTH">Mois</SelectItem>

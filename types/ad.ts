@@ -33,7 +33,7 @@ export interface Ad {
   subCategoryId?: string;
   dynamicFields?: DynamicFieldValues;
   durationValue?: number;
-  durationUnit?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
+  durationUnit?: 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
   adAnalytics?: AdAnalytics;
   user?: User;
 
