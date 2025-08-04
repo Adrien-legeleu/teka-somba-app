@@ -26,15 +26,18 @@ type MapboxFeature = {
   center: [number, number];
 };
 
-function useDebouncedCallback<T extends (...args: any[]) => void>(
-  callback: T,
+export function useDebouncedCallback<Args extends unknown[]>(
+  callback: (...args: Args) => void | Promise<void>,
   delay: number
 ) {
   const timeout = useRef<NodeJS.Timeout | null>(null);
+
   return useCallback(
-    (...args: Parameters<T>) => {
+    (...args: Args) => {
       if (timeout.current) clearTimeout(timeout.current);
-      timeout.current = setTimeout(() => callback(...args), delay);
+      timeout.current = setTimeout(() => {
+        void callback(...args); // ignore le résultat async
+      }, delay);
     },
     [callback, delay]
   );
@@ -43,9 +46,9 @@ function useDebouncedCallback<T extends (...args: any[]) => void>(
 export default function LocationPicker({
   location,
   setLocation,
-  lat,
+
   setLat,
-  lng,
+
   setLng,
 }: LocationPickerProps) {
   const [search, setSearch] = useState(location || '');

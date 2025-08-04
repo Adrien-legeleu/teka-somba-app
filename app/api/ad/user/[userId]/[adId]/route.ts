@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+type AdFieldValue = string | number | boolean;
 export async function GET(
   request: Request,
   context: { params: Promise<{ userId: string; adId: string }> }
@@ -111,7 +112,7 @@ export async function PATCH(
           .filter(Boolean) as {
           adId: string;
           categoryFieldId: string;
-          value: any;
+          value: AdFieldValue;
         }[];
 
         if (fieldsToCreate.length > 0) {
