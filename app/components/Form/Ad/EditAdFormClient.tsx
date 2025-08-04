@@ -35,7 +35,6 @@ export default function EditAdFormClient({
   }, [userId, adId]);
 
   if (!ad || categories.length === 0) return <Loader />;
-  console.log('[DEBUG] page.tsx - ad envoyé au EditAdForm:', ad);
 
   return (
     <div className="p-10 space-y-8">

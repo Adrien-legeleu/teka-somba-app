@@ -87,7 +87,12 @@ export default function BaggageServicePage() {
           required
         />
 
-        <Button type="submit" disabled={loading} className="w-full">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full text-white"
+          style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
+        >
           {loading ? 'Envoi en cours...' : 'Envoyer la demande'}
         </Button>
 

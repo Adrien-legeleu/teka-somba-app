@@ -13,35 +13,36 @@ model User {
   email       String      @unique
   password    String
   name        String
-  prenom        String
-    premiumPurchase PremiumPurchase[]
-
+  prenom      String
+  premiumPurchase PremiumPurchase[]
   phone       String
-  avatar      String? 
+  avatar      String?
   helpRequests HelpRequest[]
   walletTransaction WalletTransaction[]
-credit Int @default(0)
-
+  credit      Int @default(0)
   city        String
-  age         Int? 
+  age         Int?
   isAdmin     Boolean     @default(false)
-  isSuperAdmin Boolean  @default(false)
+  isSuperAdmin Boolean    @default(false)
   notifications Notification[]
   favorites   Favorite[]
-  // wallet   Wallet[]
-  // purchase   Purchase[]
   ads         Ad[]
-  // paymentsAsBuyer Payment[] @relation("PaymentsAsBuyer")
   messagesSent     Message[] @relation("MessagesSent")
   messagesReceived Message[] @relation("MessagesReceived")
-  identityCardUrl   String?      // URL/photo de la carte d'identité
-  isVerified        Boolean  @default(false)   // Validé par l'admin ?
+  identityCardUrl   String?
+  isVerified        Boolean  @default(false)
   isRejected        Boolean  @default(false)
   resetToken          String?
   resetTokenExpiry    DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@index([city])
+  @@index([isVerified])
+  @@index([isAdmin])
+  @@index([isSuperAdmin])
 }
+
 model PendingUser {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -51,41 +52,50 @@ model PendingUser {
   phone        String
   city         String
   identityCardUrl String
-  age         Int? 
+  age         Int?
   otp          String
   otpExpiry    DateTime
   createdAt    DateTime @default(now())
 }
 
-
 model Ad {
   id          String    @id @default(uuid())
   title       String
   description String
-  price       Int                                       // prix en centimes (si devise unique) ou Decimal pour plus de précision
-  location    String?                                   // Adresse ou ville (texte saisi ou fourni par Mapbox)
-  lat         Float?                                    // Latitude GPS
-  lng         Float?                                    // Longitude GPS
-  images      Json? 
-  boostType   String? 
+  price       Int
+  location    String?
+  lat         Float?
+  lng         Float?
+  images      Json?
+  boostType   String?
   reports     Report[]
-boostUntil  DateTime?
-isVip Boolean @default(false) 
-    premiumPurchase PremiumPurchase[]
-    type AdType
-    durationValue Int? // <-- durée en valeur, ex: 3
+  boostUntil  DateTime?
+  isVip       Boolean @default(false)
+  premiumPurchase PremiumPurchase[]
+  type        AdType
+  durationValue Int?
   durationUnit  DurationUnit?
-  isDon  Boolean @default(false)
-
+  isDon       Boolean @default(false)
   createdAt   DateTime  @default(now())
   userId      String
   user        User      @relation(fields: [userId], references: [id])
   categoryId  String
   category    Category  @relation("AdCategory", fields: [categoryId], references: [id])
-  fields      AdField[] 
-  favorites   Favorite[]         
-  messages    Message[]   
-  adAnalytics AdAnalytics? 
+  fields      AdField[]
+  favorites   Favorite[]
+  messages    Message[]
+  adAnalytics AdAnalytics?
+
+  // Indexes pour rapidité sur les filtres courants
+  @@index([userId])
+  @@index([categoryId])
+  @@index([price])
+  @@index([createdAt])
+  @@index([isDon])
+  @@index([isVip])
+  @@index([boostUntil])
+  @@index([location])
+  @@index([lat, lng]) // Pour la recherche géolocalisée rapide
 }
 
 enum AdType {
@@ -111,7 +121,6 @@ model AdAnalytics {
   updatedAt      DateTime @updatedAt
 }
 
-
 model AdField {
   id               String   @id @default(uuid())
   adId             String
@@ -119,6 +128,9 @@ model AdField {
   categoryFieldId  String
   categoryField    CategoryField @relation(fields: [categoryFieldId], references: [id])
   value            Json
+
+  @@index([adId])
+  @@index([categoryFieldId])
 }
 
 enum AdStatus {
@@ -135,9 +147,11 @@ model Category {
   parent    Category?   @relation("CategoryParent", fields: [parentId], references: [id])
   children  Category[]  @relation("CategoryParent")
   fields    CategoryField[]
-  icon String
-  allowRent Boolean @default(false) 
+  icon      String
+  allowRent Boolean @default(false)
   ads       Ad[]        @relation("AdCategory")
+
+  @@index([parentId])
 }
 
 model CategoryField {
@@ -148,7 +162,9 @@ model CategoryField {
   type        String
   required    Boolean   @default(false)
   options     Json?
-  adFields    AdField[]          // <--- AJOUT : Relation inverse
+  adFields    AdField[]
+  
+  @@index([categoryId])
 }
 
 model Favorite {
@@ -160,6 +176,8 @@ model Favorite {
   createdAt DateTime @default(now())
 
   @@unique([userId, adId])
+  @@index([userId])
+  @@index([adId])
 }
 
 model Message {
@@ -175,8 +193,13 @@ model Message {
   deletedBySender   Boolean  @default(false)
   deletedByReceiver Boolean  @default(false)
   createdAt DateTime @default(now())
-    @@index([adId, senderId, receiverId])
 
+  @@index([adId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([adId, senderId, receiverId])
+  @@index([createdAt])
+  @@index([isRead])
 }
 
 model Notification {
@@ -184,19 +207,27 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   content   String
-  link      String?  
+  link      String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
 }
 
 model WalletTransaction {
   id        String   @id @default(uuid())
   user      User     @relation(fields: [userId], references: [id])
   userId    String
-  amount    Int      // Montant en crédits (positif ou négatif)
+  amount    Int
   type      TransactionType
-  metadata  String?  // Par exemple "Paiement Orange Money" ou "Achat Boost"
+  metadata  String?
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
 }
 
 enum TransactionType {
@@ -209,9 +240,11 @@ model PremiumOffer {
   title       String
   description String
   premiumPurchase PremiumPurchase[]
-  price       Int      // en crédits
-  duration    Int?     // en jours (pour Boost/VIP)
+  price       Int
+  duration    Int?
   type        OfferType
+
+  @@index([type])
 }
 
 enum OfferType {
@@ -231,6 +264,10 @@ model HelpRequest {
   resolved  Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resolved])
+  @@index([createdAt])
 }
 
 model PremiumPurchase {
@@ -242,6 +279,10 @@ model PremiumPurchase {
   ad        Ad       @relation(fields: [adId], references: [id])
   adId      String
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([adId])
+  @@index([offerId])
 }
 
 model BaggageRequest {
@@ -252,8 +293,9 @@ model BaggageRequest {
   message   String
   quantity  Int
   createdAt DateTime @default(now())
-}
 
+  @@index([createdAt])
+}
 
 model Report {
   id        String   @id @default(uuid())
@@ -262,6 +304,10 @@ model Report {
   reason    ReportReason
   message   String?
   createdAt DateTime @default(now())
+
+  @@index([adId])
+  @@index([reason])
+  @@index([createdAt])
 }
 
 enum ReportReason {

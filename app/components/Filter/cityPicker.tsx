@@ -1,6 +1,3 @@
-// ✅ 1. CitySection.tsx
-'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,13 +20,23 @@ export function CitySection({ city, setCity }: CitySectionProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  async function handleSearch(q: string) {
+  // ➡️ Debounce ref
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Version debounce
+  function handleSearchDebounced(q: string) {
     setSearch(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      doSearch(q);
+    }, 400); // 400ms de délai (ajuste si tu veux)
+  }
+
+  async function doSearch(q: string) {
     if (!q.trim()) {
       setSuggestions([]);
       return;
     }
-
     try {
       const res = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -65,7 +72,7 @@ export function CitySection({ city, setCity }: CitySectionProps) {
         placeholder="Kinshasa, Mbujimayi, Lubumbashi..."
         value={search}
         onFocus={() => search && suggestions.length > 0 && setOpen(true)}
-        onChange={(e) => handleSearch(e.target.value)}
+        onChange={(e) => handleSearchDebounced(e.target.value)}
         className="w-full mt-1 px-4 py-2 rounded-3xl border bg-white shadow-sm border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
       />
 

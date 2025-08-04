@@ -61,7 +61,6 @@ export default function AdDetailsPage() {
         const res = await fetch(`/api/ad/${id}`);
         const data = await res.json();
         setAd(data);
-        console.log(data);
       } catch (err) {
         console.error(err);
       } finally {

@@ -52,13 +52,19 @@ export async function DELETE(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '20', 10);
+  const skip = (page - 1) * limit;
 
   if (!userId) {
     return NextResponse.json({ error: 'userId requis' }, { status: 400 });
   }
 
   try {
-    // Récupère tous les favoris de cet user
+    // Pour pagination desktop
+    const total = await prisma.favorite.count({ where: { userId } });
+
+    // Récupère favoris paginés
     const favorites = await prisma.favorite.findMany({
       where: { userId },
       include: {
@@ -70,10 +76,12 @@ export async function GET(req: Request) {
             price: true,
             location: true,
             category: { select: { id: true, name: true } },
-            favorites: false,
           },
         },
       },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
     });
 
     const ads = favorites
@@ -84,7 +92,7 @@ export async function GET(req: Request) {
         isFavorite: true,
       }));
 
-    return NextResponse.json(ads);
+    return NextResponse.json({ data: ads, total });
   } catch (error) {
     return NextResponse.json(
       { error: 'Erreur lors de la récupération' },

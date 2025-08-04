@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { IconMapPin } from '@tabler/icons-react';
@@ -17,6 +17,9 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from '@/components/ui/pagination';
+import { useMediaQuery } from 'usehooks-ts';
+import { LayoutGrid, Rows } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Ad = {
   id: string;
@@ -44,10 +47,16 @@ export default function Home({ userId }: { userId?: string | null }) {
     radius,
   } = useFilter();
 
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
+  const [isCompact, setIsCompact] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(total / ADS_PER_PAGE));
 
   useEffect(() => {
     async function fetchAds() {
@@ -69,14 +78,14 @@ export default function Home({ userId }: { userId?: string | null }) {
       if (lng) params.append('lng', lng);
       if (radius) params.append('radius', radius);
 
-      // pagination
       params.append('page', String(page));
       params.append('limit', String(ADS_PER_PAGE));
 
       try {
         const res = await fetch('/api/ad?' + params.toString());
-        const { data, total } = await res.json(); // attend un objet avec data et total
-        setAds(data);
+        const { data, total } = await res.json();
+
+        setAds((prev) => (isMobile && page > 1 ? [...prev, ...data] : data));
         setTotal(total);
       } catch (err) {
         console.error('Failed to fetch ads', err);
@@ -86,6 +95,7 @@ export default function Home({ userId }: { userId?: string | null }) {
         setLoading(false);
       }
     }
+
     fetchAds();
   }, [
     categoryId,
@@ -101,9 +111,31 @@ export default function Home({ userId }: { userId?: string | null }) {
     lng,
     radius,
     page,
+    isMobile,
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / ADS_PER_PAGE));
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && ads.length < total) {
+          setPage((p) => p + 1);
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [ads, loading, isMobile]);
 
   return (
     <div className="w-full flex min-h-[60vh] relative flex-col items-center">
@@ -116,7 +148,7 @@ export default function Home({ userId }: { userId?: string | null }) {
         <FilterBarDesktop />
       </motion.div>
 
-      {loading ? (
+      {loading && page === 1 ? (
         <Loader />
       ) : ads.length === 0 ? (
         <p className="text-center rounded-2xl mt-4 shadow-md bg-white p-10 text-gray-600">
@@ -124,7 +156,29 @@ export default function Home({ userId }: { userId?: string | null }) {
         </p>
       ) : (
         <>
-          <div className="grid grid-cols-1 w-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 px-4 md:px-10">
+          {isMobile && (
+            <div className="sticky top-2 z-30 w-fit left-4 bg-white/90 shadow-xl border backdrop-blur-xl rounded-3xl px-3 py-2 mb-2 flex items-center gap-2">
+              <button
+                onClick={() => setIsCompact(!isCompact)}
+                className="rounded-2xl border bg-white p-2 shadow hover:bg-gray-50 transition"
+                title="Changer la vue"
+              >
+                {isCompact ? <Rows size={18} /> : <LayoutGrid size={18} />}
+              </button>
+              <span className="text-sm text-gray-600">
+                {isCompact ? '2 par ligne' : '1 par ligne'}
+              </span>
+            </div>
+          )}
+
+          <div
+            className={cn(
+              'grid w-full gap-6 mt-6 px-4 md:px-10 transition-all duration-300',
+              isCompact
+                ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+                : 'grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+            )}
+          >
             <AnimatePresence mode="wait">
               {ads.map((ad) => (
                 <motion.div
@@ -135,7 +189,12 @@ export default function Home({ userId }: { userId?: string | null }) {
                     scale: 0.85,
                     filter: 'blur(10px)',
                   }}
-                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    filter: 'blur(0px)',
+                  }}
                   exit={{
                     opacity: 0,
                     y: 30,
@@ -185,7 +244,12 @@ export default function Home({ userId }: { userId?: string | null }) {
               ))}
             </AnimatePresence>
           </div>
-          {totalPages > 1 && (
+
+          {/* Infinite scroll trigger (mobile) */}
+          {isMobile && <div ref={loaderRef} className="h-12 mt-6" />}
+
+          {/* Pagination (desktop only) */}
+          {totalPages > 1 && !isMobile && (
             <div className="w-full flex justify-center mb-10 mt-5">
               <Pagination>
                 <PaginationContent>

@@ -242,7 +242,6 @@ export async function POST(req: NextRequest) {
   let body: unknown;
   try {
     body = await req.json();
-    console.log('📥 Payload reçu côté serveur :', body);
   } catch {
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
   }
@@ -268,7 +267,6 @@ export async function POST(req: NextRequest) {
 
   try {
     parsed = baseSchema.parse(body);
-    console.log('✅ Données validées (base) :', parsed);
   } catch (err) {
     return NextResponse.json(
       { error: 'Erreur de validation', details: (err as z.ZodError).issues },
@@ -284,11 +282,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Catégorie invalide' }, { status: 400 });
 
   const dynamicSchema = buildDynamicSchema(category.fields);
-  console.log(
-    '⛔ Champs dynamiques reçus côté serveur :',
-    parsed.dynamicFields
-  );
-  console.log('🧩 Schéma attendu :', category.fields);
 
   let dynamicParsed: Record<string, unknown>;
   try {
@@ -304,45 +297,65 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const newAd = await prisma.ad.create({
-      data: {
-        title: parsed.title,
-        description: parsed.description,
-        price: parsed.price,
-        location: parsed.location,
-        lat: parsed.lat,
-        lng: parsed.lng,
-        images: parsed.images,
-        isDon: parsed.isDon ?? false,
-        userId,
-        categoryId: parsed.categoryId,
-        type: parsed.type,
-        durationValue: parsed.durationValue,
-        durationUnit: parsed.durationUnit,
-      },
-    });
+    const adData = {
+      title: parsed.title,
+      description: parsed.description,
+      price: parsed.price,
+      location: parsed.location,
+      lat: parsed.lat,
+      lng: parsed.lng,
+      images: parsed.images,
+      isDon: parsed.isDon ?? false,
+      userId,
+      categoryId: parsed.categoryId,
+      type: parsed.type,
+      durationValue: parsed.durationValue,
+      durationUnit: parsed.durationUnit,
+    };
 
-    for (const fieldDef of category.fields) {
-      let value = dynamicParsed[fieldDef.name];
-      if (value === undefined || value === '' || value === null) continue;
-      if (fieldDef.type === 'number' && typeof value === 'string')
-        value = Number(value);
-      console.log('📌 Champs dynamiques parsés :', dynamicParsed);
-
-      await prisma.adField.create({
-        data: {
-          adId: newAd.id,
+    // 1️⃣ Prépare le bulk d’AdField
+    const adFieldsData = category.fields
+      .map((fieldDef) => {
+        let value = dynamicParsed[fieldDef.name];
+        if (value === undefined || value === '' || value === null) return null;
+        if (fieldDef.type === 'number' && typeof value === 'string')
+          value = Number(value);
+        return {
           categoryFieldId: fieldDef.id,
           value: value as Prisma.InputJsonValue,
-        },
+        };
+      })
+      .filter(Boolean) as {
+      categoryFieldId: string;
+      value: Prisma.InputJsonValue;
+    }[];
+
+    // 2️⃣ Transaction : crée tout ou rien
+    const [newAd] = await prisma
+      .$transaction([
+        prisma.ad.create({
+          data: adData,
+        }),
+        // ATTENTION : adFields ont besoin de l'id du nouvel ad => petit trick :
+        // on doit d'abord créer l'ad, puis faire createMany avec son id
+      ])
+      .then(async ([ad]) => {
+        if (adFieldsData.length) {
+          await prisma.adField.createMany({
+            data: adFieldsData.map((f) => ({
+              ...f,
+              adId: ad.id,
+            })),
+          });
+        }
+        return [ad];
       });
-    }
 
     return NextResponse.json(
       { success: true, adId: newAd.id },
       { status: 201 }
     );
-  } catch {
+  } catch (e) {
     return NextResponse.json(
       { error: "Erreur lors de la création de l'annonce." },
       { status: 500 }

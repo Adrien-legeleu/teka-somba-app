@@ -5,13 +5,11 @@ import { getUserIdFromRequest } from '@/lib/authUser';
 // POST : envoyer un message
 export async function POST(req: Request) {
   const userId = await getUserIdFromRequest();
-  console.log(userId);
 
   if (!userId)
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
   const { adId, receiverId, content } = await req.json();
-  console.log(adId, receiverId, content);
 
   if (receiverId === userId)
     return NextResponse.json(
@@ -82,8 +80,24 @@ export async function GET(req: Request) {
     orderBy: { createdAt: 'asc' },
     include: {
       ad: { select: { id: true, title: true, images: true } },
-      sender: { select: { id: true, name: true, avatar: true } },
-      receiver: { select: { id: true, name: true, avatar: true } },
+      sender: {
+        select: {
+          id: true,
+          name: true,
+          prenom: true,
+          email: true,
+          avatar: true,
+        },
+      },
+      receiver: {
+        select: {
+          id: true,
+          name: true,
+          prenom: true,
+          email: true,
+          avatar: true,
+        },
+      },
     },
   });
 

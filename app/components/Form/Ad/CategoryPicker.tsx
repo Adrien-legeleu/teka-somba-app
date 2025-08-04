@@ -42,20 +42,12 @@ export const CategoryPicker = ({
       .then((data) => setCategories(data));
   }, []);
   useEffect(() => {
-    console.log('[DEBUG] subCategoryId:', subCategoryId);
-    console.log('[DEBUG] current categoryId:', categoryId);
-    console.log('[DEBUG] categories:', categories);
-
     if (!categoryId && subCategoryId) {
       for (const parent of categories) {
         const match = parent.children.find(
           (child) => child.id === subCategoryId
         );
         if (match) {
-          console.log(
-            '[DEBUG] FOUND parent category for subCategoryId:',
-            parent.id
-          );
           setCategoryId(parent.id);
           break;
         }

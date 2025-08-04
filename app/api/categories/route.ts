@@ -14,7 +14,6 @@ export async function GET() {
       },
     },
   });
-  console.log(categories, '🔵 Catégories récupérées depuis la DB');
 
   return NextResponse.json(categories);
 }

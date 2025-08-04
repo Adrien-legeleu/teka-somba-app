@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getUserIdFromRequest } from '@/lib/authUser';
+import { requireAdmin } from '@/lib/requireAdmin';
 
 export async function GET() {
   try {
-    const userId = await getUserIdFromRequest();
-    if (!userId)
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.isAdmin)
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+    await requireAdmin(); // <-- Centralise la vérif admin ici
 
     const requests = await prisma.helpRequest.findMany({
       where: { resolved: false },
@@ -27,20 +21,17 @@ export async function GET() {
 
     return NextResponse.json(requests);
   } catch (error) {
-    console.error('Erreur GET support admin :', error);
+    if (error instanceof Error && error.message === '401')
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (error instanceof Error && error.message === '403')
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
   }
 }
 
 export async function PATCH(req: Request) {
   try {
-    const userId = await getUserIdFromRequest();
-    if (!userId)
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.isAdmin)
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+    await requireAdmin();
 
     const { id } = await req.json();
     if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
@@ -52,7 +43,10 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Erreur PATCH support admin :', error);
+    if (error instanceof Error && error.message === '401')
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (error instanceof Error && error.message === '403')
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
   }
 }

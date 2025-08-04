@@ -66,7 +66,6 @@ export default function EditAdForm({
   const [categoryId, setCategoryId] = useState<string | null>(
     ad.category?.parentId || null
   );
-  console.log('ad direct', ad);
 
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [images, setImages] = useState<string[]>(ad.images || []);
@@ -92,11 +91,6 @@ export default function EditAdForm({
     }
 
     const selectedSubCategory = findCategoryById(categories, subCategoryId);
-    console.log(
-      'SubCat:',
-      selectedSubCategory?.name,
-      selectedSubCategory?.fields
-    );
 
     setDynamicFields(selectedSubCategory?.fields || []);
   }, [subCategoryId, categories]);
@@ -121,7 +115,6 @@ export default function EditAdForm({
       .nullable(),
     dynamicFields: z.object({}).catchall(z.unknown()),
   });
-  console.log('[DEBUG] ad reçu dans EditAdForm:', ad);
 
   const methods = useForm({
     resolver: zodResolver(AdSchema),

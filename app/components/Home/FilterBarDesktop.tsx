@@ -2,7 +2,6 @@
 
 import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
 import { useFilter } from '../Home/FilterContext';
-import { CitySection } from '../Filter/cityPicker';
 import {
   Drawer,
   DrawerContent,
@@ -15,7 +14,6 @@ import { CategorySection } from '../Filter/Categorypicker';
 import { DonSection } from '../Filter/DonSwitch';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import LocationSlider from './LocationSlider';
 
 export default function FilterBarDesktop() {

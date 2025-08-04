@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { X, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase'; // <- à créer plus bas
 
 type ImageItem = {
   url: string;
@@ -31,6 +32,7 @@ export default function ImageUploader({
     onUploadingChange?.(anyUploading);
   }, [images, onUploadingChange]);
 
+  // NOUVELLE LOGIQUE SUPABASE
   const uploadFiles = async (files: FileList | File[]) => {
     const previews = Array.from(files).map((file) => ({
       url: URL.createObjectURL(file),
@@ -44,34 +46,39 @@ export default function ImageUploader({
     });
 
     for (const [i, file] of Array.from(files).entries()) {
-      const form = new FormData();
-      form.append('file', file);
-      try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: form,
-        });
-        const { url: uploadedUrl } = await res.json();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-        setImages((prev) => {
-          const updated = [...prev];
-          const previewUrl = previews[i].url;
-          const index = updated.findIndex(
-            (img) => img.url === previewUrl && img.isUploading
-          );
-          if (index !== -1) {
-            updated[index] = { url: uploadedUrl, isUploading: false };
-            imagesRef.current = updated;
-            onChange(
-              updated.filter((img) => !img.isUploading).map((img) => img.url)
-            );
-          }
-          return updated;
-        });
-      } catch (error) {
+      // Upload direct dans Supabase Storage
+      const { error } = await supabase.storage
+        .from('images')
+        .upload(fileName, file);
+
+      if (error) {
+        // Si erreur, on retire le preview
         const previewUrl = previews[i].url;
         setImages((prev) => prev.filter((img) => img.url !== previewUrl));
+        continue;
       }
+
+      // Génère l’URL publique (bucket public conseillé !)
+      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/images/${fileName}`;
+
+      setImages((prev) => {
+        const updated = [...prev];
+        const previewUrl = previews[i].url;
+        const index = updated.findIndex(
+          (img) => img.url === previewUrl && img.isUploading
+        );
+        if (index !== -1) {
+          updated[index] = { url, isUploading: false };
+          imagesRef.current = updated;
+          onChange(
+            updated.filter((img) => !img.isUploading).map((img) => img.url)
+          );
+        }
+        return updated;
+      });
     }
   };
 

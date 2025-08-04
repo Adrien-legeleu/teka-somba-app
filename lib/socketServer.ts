@@ -13,15 +13,11 @@ export function initSocket(server: HTTPServer) {
     });
 
     io.on('connection', (socket) => {
-      console.log('Nouvelle connexion socket:', socket.id);
-
       socket.on('join', (userId: string) => {
         socket.join(userId); // Le user "rejoint sa room"
       });
 
-      socket.on('disconnect', () => {
-        console.log('Déconnexion socket:', socket.id);
-      });
+      socket.on('disconnect', () => {});
     });
   }
   return io;

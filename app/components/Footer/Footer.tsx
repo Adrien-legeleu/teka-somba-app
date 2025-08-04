@@ -7,6 +7,7 @@ import {
   IconBrandInstagram,
   IconBrandTwitter,
   IconBrandLinkedin,
+  IconBrandTiktok,
 } from '@tabler/icons-react';
 
 export default function Footer() {
@@ -107,30 +108,21 @@ export default function Footer() {
             Suivez-nous
           </h3>
           <div className="flex gap-3">
-            <Link
-              href="#"
-              className="p-2 bg-white rounded-full shadow hover:bg-orange-500 hover:text-white transition"
-            >
-              <IconBrandFacebook size={20} />
-            </Link>
-            <Link
-              href="#"
+            <a
+              href="https://www.instagram.com/teka_sombaofficiel?igsh=bTZ3NDh3b2J6bzRt&utm_source=qr"
+              target="_blank"
               className="p-2 bg-white rounded-full shadow hover:bg-orange-500 hover:text-white transition"
             >
               <IconBrandInstagram size={20} />
-            </Link>
-            <Link
-              href="#"
+            </a>
+
+            <a
+              href="https://www.tiktok.com/@teka_somba.offici?_t=ZN-8yWCzmJ8Auk&_r=1"
+              target="_blank"
               className="p-2 bg-white rounded-full shadow hover:bg-orange-500 hover:text-white transition"
             >
-              <IconBrandTwitter size={20} />
-            </Link>
-            <Link
-              href="#"
-              className="p-2 bg-white rounded-full shadow hover:bg-orange-500 hover:text-white transition"
-            >
-              <IconBrandLinkedin size={20} />
-            </Link>
+              <IconBrandTiktok size={20} />
+            </a>
           </div>
         </div>
       </div>

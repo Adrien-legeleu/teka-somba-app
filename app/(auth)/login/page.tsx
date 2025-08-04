@@ -10,7 +10,6 @@ export default async function LoginPage() {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-      console.log('Token décodé ✅', decoded);
       redirect('/dashboard');
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {

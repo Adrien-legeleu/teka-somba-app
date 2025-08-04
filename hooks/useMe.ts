@@ -8,7 +8,6 @@ export function useMe() {
     fetch('/api/me')
       .then((res) => res.json())
       .then((data) => {
-        console.log('Données utilisateur reçues :', data);
         setMe(data);
       })
 

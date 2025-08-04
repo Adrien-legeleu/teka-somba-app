@@ -90,7 +90,7 @@ export async function PATCH(
     // Suppression des anciens champs dynamiques
     await prisma.adField.deleteMany({ where: { adId } });
 
-    // Ajout des nouveaux champs dynamiques
+    // Après deleteMany
     if (dynamicFields && typeof dynamicFields === 'object') {
       const category = await prisma.category.findUnique({
         where: { id: subCategoryId },
@@ -98,17 +98,26 @@ export async function PATCH(
       });
 
       if (category?.fields?.length) {
-        for (const fieldDef of category.fields) {
-          const value = dynamicFields[fieldDef.name];
-          if (value !== undefined) {
-            await prisma.adField.create({
-              data: {
-                adId,
-                categoryFieldId: fieldDef.id,
-                value,
-              },
-            });
-          }
+        const fieldsToCreate = category.fields
+          .map((fieldDef) => {
+            const value = dynamicFields[fieldDef.name];
+            if (value === undefined) return null;
+            return {
+              adId,
+              categoryFieldId: fieldDef.id,
+              value,
+            };
+          })
+          .filter(Boolean) as {
+          adId: string;
+          categoryFieldId: string;
+          value: any;
+        }[];
+
+        if (fieldsToCreate.length > 0) {
+          await prisma.adField.createMany({
+            data: fieldsToCreate,
+          });
         }
       }
     }

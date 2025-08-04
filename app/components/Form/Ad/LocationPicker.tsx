@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,12 +20,25 @@ type LocationPickerProps = {
   setLng: (val: number) => void;
 };
 
-// Type pour les suggestions Mapbox
 type MapboxFeature = {
   id: string;
   place_name: string;
-  center: [number, number]; // [longitude, latitude]
+  center: [number, number];
 };
+
+function useDebouncedCallback<T extends (...args: any[]) => void>(
+  callback: T,
+  delay: number
+) {
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+  return useCallback(
+    (...args: Parameters<T>) => {
+      if (timeout.current) clearTimeout(timeout.current);
+      timeout.current = setTimeout(() => callback(...args), delay);
+    },
+    [callback, delay]
+  );
+}
 
 export default function LocationPicker({
   location,
@@ -42,8 +55,8 @@ export default function LocationPicker({
     setSearch(location);
   }, [location]);
 
-  async function handleSearch(q: string) {
-    setSearch(q);
+  // La vraie fonction qui fait le fetch
+  const fetchSuggestions = useCallback(async (q: string) => {
     if (!q.trim()) return setSuggestions([]);
     try {
       const res = await fetch(
@@ -57,6 +70,14 @@ export default function LocationPicker({
       console.error('Erreur de géocodage:', error);
       setSuggestions([]);
     }
+  }, []);
+
+  // Debounced version pour le input
+  const debouncedFetch = useDebouncedCallback(fetchSuggestions, 350);
+
+  function handleChange(q: string) {
+    setSearch(q);
+    debouncedFetch(q); // Limite les appels API Mapbox à 1 tous les 350ms
   }
 
   return (
@@ -66,7 +87,7 @@ export default function LocationPicker({
         id="location"
         placeholder="Adresse, ville, quartier…"
         value={search}
-        onChange={(e) => handleSearch(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         className="rounded-2xl"
       />
       {suggestions.length > 0 && (
