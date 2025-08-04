@@ -46,8 +46,21 @@ export default function Header() {
 
   useEffect(() => {
     fetch('/api/categories')
-      .then((res) => res.json())
-      .then((data: Category[]) => setCategories(data));
+      .then(async (res) => {
+        if (!res.ok) {
+          console.error('Erreur /api/categories :', res.status);
+          return []; // ← renvoie un tableau vide pour éviter le crash
+        }
+
+        try {
+          const data = await res.json();
+          return data as Category[];
+        } catch (err) {
+          console.error('Erreur parsing JSON:', err);
+          return [];
+        }
+      })
+      .then((data) => setCategories(data));
   }, []);
 
   useEffect(() => {
