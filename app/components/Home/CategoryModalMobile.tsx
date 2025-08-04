@@ -17,10 +17,23 @@ export default function CategoryModalMobile({
 
   useEffect(() => {
     async function fetchCategories() {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
-      setCategories(data);
+      try {
+        const res = await fetch('/api/categories');
+
+        if (!res.ok) {
+          console.error('❌ /api/categories failed:', res.status);
+          setCategories([]);
+          return;
+        }
+
+        const data: Category[] = await res.json();
+        setCategories(data);
+      } catch (err) {
+        console.error('❌ Fetch failed:', err);
+        setCategories([]);
+      }
     }
+
     fetchCategories();
   }, []);
 

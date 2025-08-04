@@ -5,12 +5,27 @@ import Loader from '@/app/components/Fonctionnalities/Loader';
 
 export default function Page() {
   const [categories, setCategories] = useState([]);
-
   useEffect(() => {
     fetch('/api/categories')
-      .then((res) => res.json())
-      .then(setCategories)
-      .catch(() => setCategories([]));
+      .then(async (res) => {
+        if (!res.ok) {
+          console.error('❌ /api/categories failed with status:', res.status);
+          return [];
+        }
+
+        try {
+          const data = await res.json();
+          return data;
+        } catch (err) {
+          console.error('❌ JSON parsing failed:', err);
+          return [];
+        }
+      })
+      .then((data) => setCategories(data))
+      .catch((err) => {
+        console.error('❌ Fetch crashed:', err);
+        setCategories([]);
+      });
   }, []);
 
   return (

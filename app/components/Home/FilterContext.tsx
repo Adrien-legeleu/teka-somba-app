@@ -72,12 +72,21 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     async function fetchCategories() {
       try {
         const res = await fetch('/api/categories');
+
+        if (!res.ok) {
+          console.error('❌ /api/categories failed:', res.status);
+          setCategories([]);
+          return;
+        }
+
         const data: Category[] = await res.json();
         setCategories(data);
       } catch (err) {
-        console.error('Failed to fetch categories', err);
+        console.error('❌ Fetch failed:', err);
+        setCategories([]);
       }
     }
+
     fetchCategories();
   }, []);
 
