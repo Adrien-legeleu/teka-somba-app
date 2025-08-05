@@ -9,6 +9,7 @@ import {
   IconBrandLinkedin,
   IconBrandTiktok,
 } from '@tabler/icons-react';
+import MobileNavLink from '../Home/MobileNavLink';
 
 export default function Footer() {
   return (
@@ -38,9 +39,12 @@ export default function Footer() {
           </h3>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link href="/" className="hover:text-orange-600 transition">
+              <MobileNavLink
+                href="/"
+                className="hover:text-orange-600 transition"
+              >
                 Accueil
-              </Link>
+              </MobileNavLink>
             </li>
             <li>
               <Link
