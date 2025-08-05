@@ -11,6 +11,5 @@ export const prisma =
     log: ['error'],
   });
 
-// ⛔ PAS de disconnect ici avec beforeExit dans un contexte Serverless → à retirer
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

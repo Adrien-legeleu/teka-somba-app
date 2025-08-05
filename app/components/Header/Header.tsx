@@ -19,6 +19,7 @@ import DashboardNav from './DashboardNav';
 import CategoryIcon from '../Fonctionnalities/CategoryIcon';
 import socket from '@/lib/socket';
 import { toast } from 'sonner';
+import MobileNavLink from '../Home/MobileNavLink';
 
 type Category = {
   id: string;
@@ -304,12 +305,12 @@ export default function Header() {
       </nav>
 
       <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0 xs:-translate-x-1/2 sm:w-1/2 xs:w-2/3 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 flex items-center justify-around md:hidden h-16 shadow-lg z-[999]">
-        <Link
+        <MobileNavLink
           href="/"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
           <IconHome size={28} />
-        </Link>
+        </MobileNavLink>
         <Link
           href="/dashboard/favoris"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
