@@ -16,9 +16,36 @@ const poppins = Poppins({
   display: 'swap',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://teka-somba.com';
+
 export const metadata: Metadata = {
-  title: 'TekaSomba',
-  description: 'Petites annonces',
+  metadataBase: new URL(siteUrl),
+  title: 'Teka Somba – Petites annonces gratuites au Congo',
+  description:
+    'Déposez et consultez gratuitement des petites annonces au Congo sur Teka Somba : immobilier, véhicules, emploi, services et bien plus encore. Achetez, vendez, louez facilement au Congo.',
+  keywords:
+    'petites annonces Congo, annonces gratuites Congo, immobilier Congo, voitures Congo, emploi Congo, services Congo, Teka Somba',
+  authors: [{ name: 'Teka Somba', url: siteUrl }],
+  openGraph: {
+    title: 'Teka Somba – Petites annonces gratuites au Congo',
+    description:
+      'Trouvez ou publiez facilement des petites annonces gratuites au Congo : immobilier, véhicules, emploi et services avec Teka Somba.',
+    url: siteUrl,
+    siteName: 'Teka Somba',
+    locale: 'fr_FR',
+    type: 'website',
+    images: [
+      {
+        url: `${siteUrl}/logo teka somba.png`,
+        width: 400,
+        height: 400,
+        alt: 'Logo Teka Somba',
+      },
+    ],
+  },
+  icons: {
+    icon: '/logo teka somba.png', // pour la favicon onglet navigateur
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +57,6 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${inter.variable} ${poppins.variable} antialiased`}>
         {children}
-
         <Footer />
       </body>
     </html>
