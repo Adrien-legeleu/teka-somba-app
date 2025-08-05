@@ -1,9 +1,14 @@
 import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
 
 type AuthPayload = JwtPayload & {
   userId: string;
+};
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminLayout({

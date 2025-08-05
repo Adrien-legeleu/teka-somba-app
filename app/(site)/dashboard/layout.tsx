@@ -2,9 +2,13 @@ import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { redirect } from 'next/navigation';
 import SuspenseWrapper from '@/app/components/Dashboard/SuspenseWrapper';
+import { Metadata } from 'next';
 export const runtime = 'nodejs';
 type AuthPayload = JwtPayload & {
   userId: string;
+};
+export const metadata: Metadata = {
+  robots: { index: false, follow: false }, // désindexe toute la zone /dashboard
 };
 
 export default async function DashboardLayout({
