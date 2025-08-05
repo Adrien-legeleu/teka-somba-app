@@ -23,6 +23,11 @@ interface UserProfile {
   isRejected?: boolean;
 }
 
+interface ApiProfileResponse {
+  user?: UserProfile;
+  error?: string;
+}
+
 export default function ProfilPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +45,7 @@ export default function ProfilPage() {
         const data: UserProfile = await res.json();
         setUser(data);
         setForm(data);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error(e);
         setUser(null);
       } finally {
@@ -61,10 +66,9 @@ export default function ProfilPage() {
     setError(null);
 
     try {
-      // normalise l’âge (string -> number | null)
       const payload = { ...form };
       if ('age' in payload) {
-        const v = (payload.age as any) ?? '';
+        const v = payload.age ?? '';
         payload.age = v === '' || isNaN(Number(v)) ? null : Number(v);
       }
 
@@ -74,37 +78,44 @@ export default function ProfilPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || 'Erreur lors de la sauvegarde');
+      let responseData: ApiProfileResponse = {};
+      try {
+        responseData = await res.json();
+      } catch {
+        // si le body n'est pas JSON, garder vide
       }
 
-      const j = await res.json();
-      setSuccess(true);
-      if (j?.user) {
-        setUser(j.user);
-        setForm(j.user);
+      if (!res.ok) {
+        throw new Error(responseData.error || 'Erreur lors de la sauvegarde');
       }
-    } catch (err: any) {
-      setError(err?.message || 'Erreur');
+
+      setSuccess(true);
+      if (responseData.user) {
+        setUser(responseData.user);
+        setForm(responseData.user);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Erreur inconnue');
+      }
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleAvatarSelect(file: File) {
+  async function handleAvatarSelect(file: File): Promise<void> {
     setUploadingAvatar(true);
     setError(null);
     try {
-      // nom de fichier unique
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const key = `avatars/${Date.now()}_${Math.random()
         .toString(36)
         .slice(2)}.${ext}`;
 
-      // upload direct vers le bucket "images"
       const { error: uploadError } = await supabase.storage
-        .from('images') // <-- bucket public "images"
+        .from('images')
         .upload(key, file, {
           cacheControl: '3600',
           upsert: false,
@@ -113,14 +124,17 @@ export default function ProfilPage() {
 
       if (uploadError) throw new Error(uploadError.message);
 
-      // URL publique propre
       const { data: pub } = supabase.storage.from('images').getPublicUrl(key);
       const url = pub.publicUrl;
 
       setForm((prev) => ({ ...prev, avatar: url }));
-    } catch (e: any) {
-      console.error('Upload avatar error:', e);
-      setError(e?.message || "Erreur pendant l'upload de l'image");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.error('Upload avatar error:', e);
+        setError(e.message);
+      } else {
+        setError("Erreur pendant l'upload de l'image");
+      }
     } finally {
       setUploadingAvatar(false);
     }
