@@ -1,22 +1,21 @@
 'use client';
-export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
+import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import Image from 'next/image';
 import { PasswordChangeBlock } from '@/app/components/Profil/MDProfil';
 import Loader from '@/app/components/Fonctionnalities/Loader';
+import { supabase } from '@/lib/supabase';
 
-// Interface pour l'utilisateur
 interface UserProfile {
   id: string;
   name: string;
   prenom: string;
   email: string;
   city?: string;
-  age?: number;
+  age?: number | null;
   phone?: string;
   avatar?: string;
   identityCardUrl?: string;
@@ -34,13 +33,20 @@ export default function ProfilPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    fetch('/api/profile')
-      .then((res) => res.json())
-      .then((data: UserProfile) => {
+    (async () => {
+      try {
+        const res = await fetch('/api/profile', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`API /profile ${res.status}`);
+        const data: UserProfile = await res.json();
         setUser(data);
         setForm(data);
-      })
-      .finally(() => setLoading(false));
+      } catch (e: any) {
+        console.error(e);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -55,18 +61,68 @@ export default function ProfilPage() {
     setError(null);
 
     try {
+      // normalise l’âge (string -> number | null)
+      const payload = { ...form };
+      if ('age' in payload) {
+        const v = (payload.age as any) ?? '';
+        payload.age = v === '' || isNaN(Number(v)) ? null : Number(v);
+      }
+
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Erreur lors de la sauvegarde');
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error || 'Erreur lors de la sauvegarde');
+      }
+
+      const j = await res.json();
       setSuccess(true);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur';
-      setError(message);
+      if (j?.user) {
+        setUser(j.user);
+        setForm(j.user);
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Erreur');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleAvatarSelect(file: File) {
+    setUploadingAvatar(true);
+    setError(null);
+    try {
+      // nom de fichier unique
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const key = `avatars/${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}.${ext}`;
+
+      // upload direct vers le bucket "images"
+      const { error: uploadError } = await supabase.storage
+        .from('images') // <-- bucket public "images"
+        .upload(key, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'image/jpeg',
+        });
+
+      if (uploadError) throw new Error(uploadError.message);
+
+      // URL publique propre
+      const { data: pub } = supabase.storage.from('images').getPublicUrl(key);
+      const url = pub.publicUrl;
+
+      setForm((prev) => ({ ...prev, avatar: url }));
+    } catch (e: any) {
+      console.error('Upload avatar error:', e);
+      setError(e?.message || "Erreur pendant l'upload de l'image");
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -76,21 +132,24 @@ export default function ProfilPage() {
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-8">Mon profil</h1>
+
       <Card className="bg-white/90 backdrop-blur-xl shadow-black/10 rounded-3xl shadow-2xl mb-8">
         <CardContent className="p-8">
           <form onSubmit={handleSave} className="space-y-6">
+            {/* Avatar */}
             <div className="flex flex-col items-start gap-2">
-              <label className="font-medium text-sm">Photo de profil </label>
+              <label className="font-medium text-sm">Photo de profil</label>
 
               <div className="relative group">
                 {uploadingAvatar && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
                     <span className="animate-spin text-lg">⏳</span>
                   </div>
                 )}
+
                 <label
                   htmlFor="avatar-upload"
-                  className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100 text-gray-500 cursor-pointer hover:ring-2 hover:ring-orange-400 transition"
+                  className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100 text-gray-500 cursor-pointer hover:ring-2 hover:ring-orange-400 transition relative"
                 >
                   {form.avatar ? (
                     <Image
@@ -105,7 +164,6 @@ export default function ProfilPage() {
                       Ajouter une photo
                     </span>
                   )}
-
                   <div className="absolute bottom-0 right-0 p-1 bg-white rounded-full shadow-md border group-hover:scale-105 transition">
                     📷
                   </div>
@@ -118,31 +176,13 @@ export default function ProfilPage() {
                   className="hidden"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    setUploadingAvatar(true); // 👈 start loading
-
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    try {
-                      const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                      });
-
-                      const data = await res.json();
-                      setForm((prev) => ({ ...prev, avatar: data.url }));
-                    } catch (err) {
-                      alert("Erreur pendant l'upload de l'image");
-                    } finally {
-                      setUploadingAvatar(false); // 👈 stop loading
-                    }
+                    if (file) await handleAvatarSelect(file);
                   }}
                 />
               </div>
             </div>
 
+            {/* Infos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 name="prenom"
@@ -187,12 +227,8 @@ export default function ProfilPage() {
                 placeholder="Email"
               />
             </div>
-            <div className="text-xs text-gray-400">
-              Pour changer d’adresse, veuillez supprimer votre compte et en
-              recréer un.
-            </div>
 
-            {/* Upload carte d'identité */}
+            {/* Carte d'identité */}
             <div>
               <div className="mb-1 font-medium">
                 Carte d&apos;identité (photo/scan)
@@ -244,8 +280,8 @@ export default function ProfilPage() {
 
             <Button
               type="submit"
-              className=" text-white rounded-3xl px-10"
-              disabled={saving || uploadingAvatar} // 👈 ici
+              className="text-white rounded-3xl px-10"
+              disabled={saving || uploadingAvatar}
               style={{ background: 'linear-gradient(90deg, #ff7a00, #ff3c00)' }}
             >
               {saving
@@ -257,6 +293,7 @@ export default function ProfilPage() {
           </form>
         </CardContent>
       </Card>
+
       <PasswordChangeBlock />
     </div>
   );
