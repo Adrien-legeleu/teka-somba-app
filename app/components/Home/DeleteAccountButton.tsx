@@ -55,7 +55,7 @@ export default function DeleteAccountButton() {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-2xl z-[100000000]">
           <DialogHeader>
             <DialogTitle>Supprimer votre compte</DialogTitle>
           </DialogHeader>
