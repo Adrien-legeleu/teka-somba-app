@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Home from '../components/Home/Home';
 import { Suspense } from 'react';
+import Loader from '../components/Fonctionnalities/Loader';
 export const runtime = 'nodejs';
 
 type AuthPayload = JwtPayload & {
