@@ -48,7 +48,7 @@ export function CategorySection({
       </Label>
 
       <div
-        className="cursor-pointer text-sm text-gray-600 flex items-center gap-1 mt-1 px-4 py-2 rounded-3xl border border-gray-300 hover:bg-gray-50 transition"
+        className="cursor-pointer text-sm shadow-sm py-4 text-gray-600 flex items-center gap-1 mt-1 px-4  rounded-3xl border border-gray-300 hover:bg-gray-50 transition"
         onClick={() => setIsModalOpen(true)}
       >
         <span>{selectedCategory?.name || 'Catégorie'}</span>

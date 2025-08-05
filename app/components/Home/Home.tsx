@@ -157,10 +157,10 @@ export default function Home({ userId }: { userId?: string | null }) {
       ) : (
         <>
           {isMobile && (
-            <div className="sticky top-2 z-30 w-fit left-4 bg-white/90 shadow-xl border backdrop-blur-xl rounded-3xl px-3 py-2 mb-2 flex items-center gap-2">
+            <div className="  z-30 w-fit  mt-4 bg-white/90 shadow-xl border backdrop-blur-xl rounded-3xl px-3 py-2  flex items-center gap-2">
               <button
                 onClick={() => setIsCompact(!isCompact)}
-                className="rounded-2xl border bg-white p-2 shadow hover:bg-gray-50 transition"
+                className="rounded-2xl border bg-white  p-2 shadow hover:bg-gray-50 transition"
                 title="Changer la vue"
               >
                 {isCompact ? <Rows size={18} /> : <LayoutGrid size={18} />}

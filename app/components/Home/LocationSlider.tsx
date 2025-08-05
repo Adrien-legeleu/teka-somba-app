@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Slider } from '@/components/ui/slider';
@@ -26,29 +26,51 @@ export default function LocationSlider({
   min = 1,
   max = 100,
 }: Props) {
-  const isActive = lat && lng;
+  const isActive = Boolean(lat && lng);
+  const [localRadius, setLocalRadius] = useState<number>(radius);
+
+  // Garde localRadius aligné si radius parent change ailleurs
+  useEffect(() => {
+    setLocalRadius(radius);
+  }, [radius]);
+
+  const isMobile = useMemo(
+    () => typeof window !== 'undefined' && window.innerWidth <= 768,
+    []
+  );
+
+  const enableGeoloc = () => {
+    const DEFAULT_RADIUS = Math.min(Math.max(10, min), max);
+
+    if (!navigator.geolocation) {
+      toast.error('La géolocalisation n’est pas supportée');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLat(pos.coords.latitude.toString());
+        setLng(pos.coords.longitude.toString());
+        setRadius(DEFAULT_RADIUS); // <= seulement une fois lat/lng connus
+        toast.success('Position détectée !');
+      },
+      () => toast.error('Impossible d’obtenir la position !')
+    );
+  };
+
+  const disableGeoloc = () => {
+    setLat(null);
+    setLng(null);
+    toast.info('Recherche par localisation désactivée');
+  };
 
   return (
-    <div className="flex max-md:flex-col md:items-center max-md:px-6 w-full  max-md:text-sm items-start  relative md:gap-3 max-md:mt-2">
+    <div className="flex max-md:flex-col md:items-center max-md:px-6 w-full max-md:text-sm items-start relative md:gap-3 max-md:mt-2">
       <button
         type="button"
         onClick={() => {
-          if (isActive) {
-            setLat(null);
-            setLng(null);
-            toast.info('Recherche par localisation désactivée');
-          } else if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                setLat(pos.coords.latitude.toString());
-                setLng(pos.coords.longitude.toString());
-                toast.success('Position détectée !');
-              },
-              () => toast.error('Impossible d’obtenir la position !')
-            );
-          } else {
-            toast.error('La géolocalisation n’est pas supportée');
-          }
+          if (isActive) disableGeoloc();
+          else enableGeoloc();
         }}
         className={`
           px-4 py-2 rounded-3xl cursor-pointer border font-bold shadow flex items-center gap-2 transition
@@ -67,28 +89,24 @@ export default function LocationSlider({
           <motion.div
             key="slider"
             initial={{ opacity: 0 }}
-            animate={{
-              opacity: 1,
-
-              marginTop:
-                typeof window !== 'undefined' && window.innerWidth <= 768
-                  ? 8
-                  : 0,
-            }}
+            animate={{ opacity: 1, marginTop: isMobile ? 8 : 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.42, 0, 0.58, 1] }}
             className={`
-               relative bottom-1
+              relative bottom-1
               ${isActive ? '' : 'pointer-events-none opacity-40'}
-              ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'min-h-[42px] w-[90vw] max-w-[220px]' : 'flex-1'}
+              ${isMobile ? 'min-h-[42px] w-[90vw] max-w-[220px]' : 'flex-1'}
             `}
           >
-            <span className="relative   font-bold text-black max-md:text-xs text-sm px-2 pointer-events-none select-none">
-              {radius} km
+            <span className="relative font-bold text-black max-md:text-xs text-sm px-2 pointer-events-none select-none">
+              {localRadius} km
             </span>
+
+            {/* Fix #2 : onValueChange => UI seulement ; onValueCommit => applique le filtre */}
             <Slider
-              value={[radius]}
-              onValueChange={([val]) => setRadius(val)}
+              value={[localRadius]}
+              onValueChange={([val]) => setLocalRadius(val)}
+              onValueCommit={([val]) => setRadius(val)}
               min={min}
               max={max}
               disabled={!isActive}

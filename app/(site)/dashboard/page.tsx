@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma';
 import AnalyticsDashboard from '@/app/components/Fonctionnalities/DashboardAnalyticsClient';
 import DashboardCard from '@/app/components/Dashboard/DashboardCard';
 import DashboardHeader from '@/app/components/Dashboard/Dashbaordheader';
+import DeleteAccountButton from '@/app/components/Home/DeleteAccountButton';
 export const runtime = 'nodejs';
 
 interface JWTPayload {
@@ -108,15 +109,19 @@ export default async function DashboardPage() {
         <div className="w-full max-w-5xl mx-auto p-4 pb-10">
           <AnalyticsDashboard />
         </div>
-        <form action="/api/auth/logout" method="POST">
-          <Button
-            type="submit"
-            className="bg-white/90 backdrop-blur-xl border text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white border-[var(--color-accent)] rounded-full px-8 py-2 font-semibold transition-all flex gap-2 items-center"
-            variant="outline"
-          >
-            <LogOut size={18} /> Me déconnecter
-          </Button>
-        </form>
+        <div className="flex gap-3 items-center mt-6">
+          <form action="/api/auth/logout" method="POST">
+            <Button
+              type="submit"
+              className="bg-white/90 backdrop-blur-xl border text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white border-[var(--color-accent)] rounded-full px-8 py-2 font-semibold transition-all flex gap-2 items-center"
+              variant="outline"
+            >
+              <LogOut size={18} /> Me déconnecter
+            </Button>
+          </form>
+
+          <DeleteAccountButton />
+        </div>
       </div>
     </div>
   );

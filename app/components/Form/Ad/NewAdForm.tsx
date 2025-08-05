@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,6 +99,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
 
   const { watch, setValue, handleSubmit } = methods;
   const [step, setStep] = useState(1);
+  const topRef = useRef<HTMLDivElement | null>(null);
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [location, setLocation] = useState('');
@@ -115,7 +116,21 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     : watched.price === undefined
       ? ''
       : watched.price;
+  useEffect(() => {
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
+    // scroll dans la page
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    }
+    // et si ton form est dans un conteneur scrollable, scrolle l’ancre
+    topRef.current?.scrollIntoView({
+      behavior: reduce ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, [step]);
   useEffect(() => {
     const targetId = subCategoryId || categoryId;
     if (!targetId) return;
