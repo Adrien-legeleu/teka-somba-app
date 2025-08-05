@@ -17,15 +17,22 @@ type CategoryWithChildren = Category & {
 
 const emojiMap: Record<string, string> = {
   Véhicules: '🚗',
-  Immobilier: '🏠',
-  Mode: '👕',
   'High-Tech': '💻',
   'Maison & Jardin': '🏡',
   Loisirs: '🎮',
-  Emploi: '💼',
   Services: '🔧',
-  Animaux: '🐕',
-  Autres: '📦',
+  vehicules: '🚗',
+  Immobilier: '🏠',
+  Vacances: '🏖️',
+  Emploi: '💼',
+  Mode: '👗',
+  'Famille (Puériculture)': '🍼',
+  Électronique: '📱',
+  loisirs: '🎉',
+  Animaux: '🐾',
+  'Matériel professionnel': '🏭',
+  services: '🛎️',
+  Autres: '🔄',
 };
 
 export const CategoryPicker = ({

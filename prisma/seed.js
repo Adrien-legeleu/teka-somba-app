@@ -1655,9 +1655,6 @@ async function main() {
       type: 'BOOLEAN',
       required: false,
     },
-
-    // Autres > Divers
-    // (Pas de champs spécifiques additionnels, utiliser le titre/description globaux)
   ];
 
   // Insertion des champs dynamiques
