@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: `${siteUrl}/logo teka somba.png`,
+        url: `${siteUrl}/logo-teka-somba.png`,
         width: 400,
         height: 400,
         alt: 'Logo Teka Somba',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: '/logo teka somba.png', // pour la favicon onglet navigateur
+    icon: '/logo-teka-somba.png', // pour la favicon onglet navigateur
   },
 };
 
