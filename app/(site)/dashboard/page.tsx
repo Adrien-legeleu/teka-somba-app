@@ -109,7 +109,7 @@ export default async function DashboardPage() {
         <div className="w-full max-w-5xl mx-auto p-4 pb-10">
           <AnalyticsDashboard />
         </div>
-        <div className="flex gap-3 items-center mt-6">
+        <div className="flex max-sm:flex-col justify-center gap-3 items-center mt-6">
           <form action="/api/auth/logout" method="POST">
             <Button
               type="submit"
