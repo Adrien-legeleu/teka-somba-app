@@ -6,7 +6,6 @@ import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-
 import {
   IconSearch,
   IconPlus,
@@ -28,40 +27,48 @@ type Category = {
   children?: Category[];
 };
 
+type Me = { id: string } | null;
+
+type MessagePayload = {
+  id: string;
+  content?: string;
+  senderId?: string;
+  conversationId?: string;
+  createdAt?: string;
+};
+
+type DropdownPos = { left: number; top: number; width: number };
+
 export default function Header() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [search, setSearch] = useState(searchParams.get('q') || '');
-  const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState<string>(searchParams.get('q') || '');
+  const [expanded, setExpanded] = useState<boolean>(false);
   const [activeCat, setActiveCat] = useState<string | null>(null);
-  const [dropdownPos, setDropdownPos] = useState({
+  const [dropdownPos, setDropdownPos] = useState<DropdownPos>({
     left: 0,
     top: 0,
     width: 200,
   });
   const catRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const selectedCatId = searchParams.get('categoryId');
-  const isDonActive = searchParams.get('isDon') === 'true';
+  const selectedCatId = searchParams.get('categoryId') ?? undefined;
+
+  const [hasUnread, setHasUnread] = useState<boolean>(false);
 
   useEffect(() => {
-    fetch('/api/categories')
-      .then(async (res) => {
-        if (!res.ok) {
-          console.error('Erreur /api/categories :', res.status);
-          return []; // ← renvoie un tableau vide pour éviter le crash
-        }
-
-        try {
-          const data = await res.json();
-          return data as Category[];
-        } catch (err) {
-          console.error('Erreur parsing JSON:', err);
-          return [];
-        }
-      })
-      .then((data) => setCategories(data));
+    (async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (!res.ok) return setCategories([]);
+        const data: Category[] = await res.json();
+        setCategories(Array.isArray(data) ? data : []);
+      } catch {
+        setCategories([]);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -70,14 +77,17 @@ export default function Header() {
 
   const gradient = 'linear-gradient(90deg, #ff7a00, #ff3c00)';
 
-  function handleSearchSubmit(e?: React.FormEvent) {
+  function handleSearchSubmit(e?: React.FormEvent<HTMLFormElement>) {
     if (e) e.preventDefault();
     const params = new URLSearchParams();
-    if (search.trim()) params.set('q', search);
+    if (search.trim()) params.set('q', search.trim());
     router.push('/?' + params.toString());
   }
 
-  function handleCategoryClick(catId: string, e: React.MouseEvent) {
+  function handleCategoryClick(
+    catId: string,
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
     params.set('categoryId', catId);
@@ -99,47 +109,40 @@ export default function Header() {
   function closeDropdown() {
     setActiveCat(null);
   }
-  const pathname = usePathname();
-  const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
-    let cleanup = () => {};
+    let cleanup: () => void = () => {};
 
     (async () => {
-      // 1) Vérifier si user connecté
-      const me = await fetch('/api/me').then((r) => (r.ok ? r.json() : null));
+      const me: Me = await fetch('/api/me')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
       if (!me?.id) {
-        // invité: pas de notifs
         setHasUnread(false);
         localStorage.setItem('messagesSeen', 'true');
         return;
       }
 
-      // 2) Rejoindre la room perso
       joinUserRoom(me.id);
 
-      // 3) état initial badge (localStorage)
       const syncBadge = () => {
         setHasUnread(localStorage.getItem('messagesSeen') !== 'true');
       };
       syncBadge();
 
-      // 4) écoute des nouveaux messages
-      const onNewMsg = (message: any) => {
-        // Optionnel: ignorer si on EST l’émetteur
-        if (message?.senderId === me.id) return;
-
+      const onNewMsg = (message: MessagePayload) => {
+        if (message.senderId === me.id) return;
         setHasUnread(true);
         localStorage.setItem('messagesSeen', 'false');
-        // Affiche un toast
-        toast(`💬 Nouveau message : ${message.content ?? ''}`);
+        if (message.content) toast(`💬 Nouveau message : ${message.content}`);
+        else toast('💬 Nouveau message reçu');
       };
 
-      socket.on('new_message', onNewMsg);
+      socket.on('new_message', onNewMsg as (payload: unknown) => void);
       window.addEventListener('storage', syncBadge);
 
       cleanup = () => {
-        socket.off('new_message', onNewMsg);
+        socket.off('new_message', onNewMsg as (payload: unknown) => void);
         window.removeEventListener('storage', syncBadge);
       };
     })();
@@ -147,7 +150,6 @@ export default function Header() {
     return () => cleanup();
   }, []);
 
-  // Déjà présent chez toi, garde-le (il remet le badge à vu en entrant dans la page messages)
   useEffect(() => {
     if (pathname.startsWith('/dashboard/messages')) {
       setHasUnread(false);
@@ -160,7 +162,7 @@ export default function Header() {
       <div className="w-full max-w-7xl hidden md:flex mx-auto relative px-4 justify-between items-center h-20 gap-4">
         <Link href="/">
           <Image
-            src={'/logo teka somba.png'}
+            src="/logo teka somba.png"
             alt="logo teka somba"
             width={200}
             height={200}
@@ -238,10 +240,8 @@ export default function Header() {
             }}
           >
             <Link
-              href={`/service-bagage`}
-              className={`px-2 py-1 text-sm font-medium whitespace-nowrap transition flex items-center gap-2 
-        text-gray-700 hover:text-orange-500
-    }`}
+              href="/service-bagage"
+              className="px-2 py-1 text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-gray-700 hover:text-orange-500"
             >
               <span className="text-xl">📦</span>
               Services bagages
@@ -283,7 +283,8 @@ export default function Header() {
         </div>
 
         {activeCat &&
-          categories.find((c) => c.id === activeCat)?.children?.length &&
+          (categories.find((c) => c.id === activeCat)?.children?.length ?? 0) >
+            0 &&
           createPortal(
             <AnimatePresence>
               <motion.div
@@ -322,8 +323,8 @@ export default function Header() {
           )}
       </nav>
 
-      <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0  xs:-translate-x-1/2 sm:w-[70%] xs:w-5/6 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 grid grid-cols-5 items-center md:hidden h-16 shadow-lg z-[999]">
-        {/* Accueil */}
+      {/* Mobile bottom bar */}
+      <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0 xs:-translate-x-1/2 sm:w-[70%] xs:w-5/6 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 grid grid-cols-5 items-center md:hidden h-16 shadow-lg z-[999]">
         <MobileNavLink
           href="/"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
@@ -334,7 +335,6 @@ export default function Header() {
           </span>
         </MobileNavLink>
 
-        {/* Favoris */}
         <Link
           href="/dashboard/favoris"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
@@ -345,7 +345,6 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Publier */}
         <Link
           href="/dashboard/annonces/new"
           className="flex flex-col justify-center gap-1 items-center -mt-6"
@@ -361,7 +360,6 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Messages */}
         <Link
           href="/dashboard/messages"
           className="relative flex flex-col items-center text-gray-600 hover:text-orange-500"
@@ -380,7 +378,6 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Mon Compte */}
         <Link
           href="/dashboard"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
