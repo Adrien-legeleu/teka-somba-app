@@ -1,8 +1,10 @@
 'use client';
 
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, FieldErrors } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { DynamicField } from '@/types/ad';
+
+type DynamicFieldsValues = Record<string, unknown>;
 
 export default function DynamicFieldsSection({
   fields,
@@ -12,46 +14,42 @@ export default function DynamicFieldsSection({
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<DynamicFieldsValues>();
 
   return (
     <div className="space-y-6">
       {fields.map((field, idx) => {
-        const key = (field as any).id || field.name || String(idx);
-        const fieldName = `dynamicFields.${field.name}`;
-        const kind = String(field.type || '').toLowerCase();
+        const key = field.id ?? field.name ?? String(idx);
+        const fieldName = `dynamicFields.${field.name}` as const;
+        const kind = (field.type ?? '').toLowerCase();
         const isSelect = kind === 'select' || kind === 'enum';
         const isNumber =
           kind === 'number' || kind === 'int' || kind === 'numeric';
         const isBoolean = kind === 'boolean' || kind === 'bool';
 
-        // Règles communes (required piloté par field.required)
-        const rules: any = {
+        const rules: Record<string, unknown> = {
           required: field.required ? 'Champ obligatoire' : false,
         };
 
-        // Coercition/validation pour les nombres
         if (isNumber) {
-          rules.setValueAs = (v: any) =>
-            v === '' || v === null || typeof v === 'undefined'
-              ? undefined
-              : Number(v);
-          rules.validate = (v: any) =>
+          rules.setValueAs = (v: string) =>
+            v === '' || v === null || v === undefined ? undefined : Number(v);
+          rules.validate = (v: number | undefined) =>
             v === undefined || Number.isFinite(v)
               ? true
               : 'Valeur numérique invalide';
         }
 
-        // Pour Boolean "required", on force un vrai choix Oui/Non (select),
-        // sinon on laisse un simple checkbox (facultatif).
-        const errorMsg = (errors as any)?.dynamicFields?.[field.name]
-          ?.message as string | undefined;
+        const dynamicErrors = (errors as FieldErrors<DynamicFieldsValues>)
+          ?.dynamicFields as Record<string, { message?: string }> | undefined;
+
+        const errorMsg = dynamicErrors?.[field.name]?.message;
 
         return (
           <div key={key} className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              {field.name}{' '}
-              {field.required ? <span className="text-red-500">*</span> : null}
+              {field.name}
+              {field.required && <span className="text-red-500">*</span>}
             </label>
 
             {/* SELECT / ENUM */}
@@ -60,7 +58,7 @@ export default function DynamicFieldsSection({
                 defaultValue=""
                 aria-invalid={!!errorMsg}
                 aria-required={field.required || undefined}
-                required={!!field.required}
+                required={field.required}
                 {...register(fieldName, rules)}
                 className={`w-full rounded-xl border bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 ${
                   errorMsg ? 'border-red-500' : 'border-gray-300'
@@ -69,7 +67,7 @@ export default function DynamicFieldsSection({
                 <option value="" disabled>
                   Sélectionnez
                 </option>
-                {field.options.map((opt: string) => (
+                {field.options.map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}
                   </option>
@@ -86,7 +84,7 @@ export default function DynamicFieldsSection({
                 min={0}
                 aria-invalid={!!errorMsg}
                 aria-required={field.required || undefined}
-                required={!!field.required}
+                required={field.required}
                 placeholder={field.required ? 'Obligatoire' : 'Optionnel'}
                 {...register(fieldName, rules)}
                 className={`rounded-xl px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-200 ${
@@ -96,9 +94,8 @@ export default function DynamicFieldsSection({
             )}
 
             {/* BOOLEAN */}
-            {isBoolean ? (
-              field.required ? (
-                // Version "obligatoire" -> Select Oui/Non pour forcer un choix
+            {isBoolean &&
+              (field.required ? (
                 <select
                   defaultValue=""
                   aria-invalid={!!errorMsg}
@@ -106,7 +103,7 @@ export default function DynamicFieldsSection({
                   required
                   {...register(fieldName, {
                     required: 'Champ obligatoire',
-                    setValueAs: (v) =>
+                    setValueAs: (v: string) =>
                       v === 'true' ? true : v === 'false' ? false : undefined,
                   })}
                   className={`w-full rounded-xl border bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 ${
@@ -120,7 +117,6 @@ export default function DynamicFieldsSection({
                   <option value="false">Non</option>
                 </select>
               ) : (
-                // Version "facultative" -> simple checkbox
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -129,8 +125,7 @@ export default function DynamicFieldsSection({
                   />
                   <span className="text-sm text-gray-700">{field.name}</span>
                 </div>
-              )
-            ) : null}
+              ))}
 
             {/* TEXT (fallback) */}
             {!isSelect && !isNumber && !isBoolean && (
@@ -138,7 +133,7 @@ export default function DynamicFieldsSection({
                 type="text"
                 aria-invalid={!!errorMsg}
                 aria-required={field.required || undefined}
-                required={!!field.required}
+                required={field.required}
                 placeholder={field.required ? 'Obligatoire' : 'Optionnel'}
                 {...register(fieldName, rules)}
                 className={`rounded-xl px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-200 ${
@@ -147,9 +142,9 @@ export default function DynamicFieldsSection({
               />
             )}
 
-            {errorMsg ? (
-              <p className="text-xs text-red-600">{errorMsg}</p>
-            ) : null}
+            {errorMsg && (
+              <p className="text-xs text-red-600">{String(errorMsg)}</p>
+            )}
           </div>
         );
       })}

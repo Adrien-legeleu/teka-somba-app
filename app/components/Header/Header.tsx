@@ -312,7 +312,7 @@ export default function Header() {
         >
           <IconHome size={28} />
           <span className="text-[0.7rem] tracking-tight font-semibold">
-            Accueil
+            Annonces
           </span>
         </MobileNavLink>
 
