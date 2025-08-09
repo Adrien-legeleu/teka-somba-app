@@ -1,42 +1,69 @@
+// /lib/zodDynamic.ts (compatible anciennes versions de Zod)
 import { z, ZodTypeAny } from 'zod';
-import { CategoryField } from '@prisma/client';
+import type { CategoryField } from '@prisma/client';
+
+// '' / null -> undefined ; string -> string.trim()
+function cleanInput(v: unknown) {
+  if (typeof v === 'string') {
+    const t = v.trim();
+    return t === '' ? undefined : t;
+  }
+  if (v === null) return undefined;
+  return v;
+}
+
+function normalizeType(t: unknown): 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'TEXT' {
+  const s = String(t ?? '').toLowerCase();
+  if (s === 'number' || s === 'int' || s === 'float') return 'NUMBER';
+  if (s === 'boolean' || s === 'bool') return 'BOOLEAN';
+  if (s === 'select' || s === 'enum') return 'SELECT';
+  if (s === 'text' || s === 'string') return 'TEXT';
+  return 'TEXT';
+}
 
 export function buildDynamicSchema(
   fields: CategoryField[]
 ): z.ZodObject<Record<string, ZodTypeAny>> {
   const shape: Record<string, ZodTypeAny> = {};
 
-  fields.forEach((f) => {
-    let zodType: ZodTypeAny;
+  for (const f of fields) {
+    const type = normalizeType(f.type);
+    const optsRaw = (f.options as unknown) ?? null;
 
-    switch (f.type) {
-      case 'int':
-      case 'number':
-        zodType = z.preprocess(
-          (val) => (typeof val === 'string' ? Number(val) : val),
-          z.number()
-        );
+    let schema: ZodTypeAny;
+
+    switch (type) {
+      case 'NUMBER': {
+        // Accepte "123", 123, "", null -> undefined si optionnel
+        schema = z.preprocess(cleanInput, z.coerce.number());
         break;
-      case 'boolean':
-      case 'bool':
-        zodType = z.preprocess(
-          (val) =>
-            typeof val === 'string' ? val === 'true' || val === '1' : !!val,
-          z.boolean()
-        );
+      }
+      case 'BOOLEAN': {
+        // Accepte true/false/"true"/"false"/1/0/"", null
+        schema = z.preprocess(cleanInput, z.coerce.boolean());
         break;
-      case 'enum':
-        zodType =
-          f.options && (f.options as string[]).length > 0
-            ? z.enum(f.options as [string, ...string[]])
-            : z.string();
+      }
+      case 'SELECT': {
+        const allowed = Array.isArray(optsRaw) ? optsRaw.map(String) : [];
+        schema = z.preprocess(cleanInput, z.string());
+        if (allowed.length > 0) {
+          schema = schema.refine(
+            (v) => v === undefined || allowed.includes(String(v)),
+            { message: `Option non autorisée (attendu: ${allowed.join(', ')})` }
+          );
+        }
         break;
-      default:
-        zodType = z.string();
+      }
+      case 'TEXT':
+      default: {
+        schema = z.preprocess(cleanInput, z.string());
+        break;
+      }
     }
 
-    shape[f.name] = f.required ? zodType : zodType.optional();
-  });
+    // Required / Optional
+    shape[f.name] = f.required ? schema : schema.optional();
+  }
 
   return z.object(shape);
 }

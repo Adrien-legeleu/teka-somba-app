@@ -324,7 +324,7 @@ async function main() {
 
   const fields = [
     // ————————————————————————————
-    // VÉHICULES > VOITURES
+    // VÉHICULES > VOITURES (RDC)
     // ————————————————————————————
     { categoryId: 'voitures', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'voitures', name: 'Modèle', type: 'TEXT', required: true },
@@ -333,27 +333,20 @@ async function main() {
       categoryId: 'voitures',
       name: 'Kilométrage (km)',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'voitures',
       name: 'Carburant',
       type: 'SELECT',
-      options: [
-        'Essence',
-        'Diesel',
-        'Hybride',
-        'Hybride rechargeable',
-        'Électrique',
-        'GPL/E85',
-      ],
+      options: ['Essence', 'Diesel', 'Hybride', 'Électrique'],
       required: true,
     },
     {
       categoryId: 'voitures',
       name: 'Boîte de vitesse',
       type: 'SELECT',
-      options: ['Manuelle', 'Automatique', 'Robotisée'],
+      options: ['Manuelle', 'Automatique'],
       required: true,
     },
     {
@@ -362,13 +355,13 @@ async function main() {
       type: 'SELECT',
       options: [
         'Berline',
-        'Break',
-        'Monospace',
         'SUV/4x4',
+        'Pick-up',
+        'Citadine',
+        'Monospace',
         'Coupé',
         'Cabriolet',
-        'Citadine',
-        'Utilitaire',
+        'Minibus',
         'Autre',
       ],
       required: false,
@@ -378,6 +371,13 @@ async function main() {
       name: 'Nombre de portes',
       type: 'SELECT',
       options: ['2', '3', '4', '5'],
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Nombre de places',
+      type: 'SELECT',
+      options: ['2', '4', '5', '7', '8+'],
       required: false,
     },
     {
@@ -400,82 +400,45 @@ async function main() {
     },
     {
       categoryId: 'voitures',
-      name: 'Puissance (ch)',
-      type: 'NUMBER',
+      name: 'Climatisation',
+      type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'voitures',
-      name: 'Puissance fiscale (CV)',
-      type: 'NUMBER',
+      name: 'Transmission 4x4',
+      type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'voitures',
-      name: 'Crit’Air',
+      name: 'Volant',
       type: 'SELECT',
-      options: ['Non soumis', '0', '1', '2', '3', '4', '5'],
+      options: ['Gauche', 'Droite'],
       required: false,
     },
     {
       categoryId: 'voitures',
-      name: 'Norme Euro',
+      name: 'Provenance',
       type: 'SELECT',
-      options: ['Euro 6', 'Euro 5', 'Euro 4', 'Euro 3', 'Euro 2', 'Euro 1'],
+      options: ['Local', 'Europe', 'Asie/Dubaï', 'Amérique', 'Autre'],
       required: false,
     },
     {
       categoryId: 'voitures',
-      name: 'Consommation mixte (L/100 km)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'voitures',
-      name: 'Nombre de places',
-      type: 'SELECT',
-      options: ['2', '4', '5', '7', '8+'],
-      required: false,
-    },
-    {
-      categoryId: 'voitures',
-      name: 'Première main',
+      name: 'Dédouané',
       type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'voitures',
-      name: 'Entretien à jour',
+      name: 'Documents à jour',
       type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'voitures',
-      name: 'Contrôle technique OK',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'voitures',
-      name: 'Véhicule non fumeur',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'voitures',
-      name: 'Nombre de propriétaires',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'voitures',
-      name: 'Version / Finition',
-      type: 'TEXT',
       required: false,
     },
 
     // ————————————————————————————
-    // VÉHICULES > MOTOS
+    // VÉHICULES > MOTOS (RDC)
     // ————————————————————————————
     { categoryId: 'motos', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'motos', name: 'Modèle', type: 'TEXT', required: true },
@@ -484,7 +447,7 @@ async function main() {
       categoryId: 'motos',
       name: 'Kilométrage (km)',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'motos',
@@ -494,51 +457,9 @@ async function main() {
     },
     {
       categoryId: 'motos',
-      name: 'Type de permis',
-      type: 'SELECT',
-      options: ['A1', 'A2', 'A'],
-      required: true,
-    },
-    {
-      categoryId: 'motos',
       name: 'Type de moto',
       type: 'SELECT',
-      options: [
-        'Sportive',
-        'Roadster',
-        'Custom',
-        'Trail/Enduro',
-        'Scooter',
-        'Cross',
-        'Touring',
-        'Autre',
-      ],
-      required: false,
-    },
-    {
-      categoryId: 'motos',
-      name: 'Type moteur',
-      type: 'SELECT',
-      options: ['2 temps', '4 temps'],
-      required: false,
-    },
-    {
-      categoryId: 'motos',
-      name: 'Refroidissement',
-      type: 'SELECT',
-      options: ['Air', 'Liquide'],
-      required: false,
-    },
-    {
-      categoryId: 'motos',
-      name: 'Puissance (ch)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'motos',
-      name: 'A2 bridable',
-      type: 'BOOLEAN',
+      options: ['Scooter', 'Route', 'Sport', 'Cross/Enduro', 'Trail', 'Autre'],
       required: false,
     },
     {
@@ -557,90 +478,16 @@ async function main() {
       ],
       required: false,
     },
-
-    // ————————————————————————————
-    // VÉHICULES > CARAVANING
-    // ————————————————————————————
-    { categoryId: 'caravaning', name: 'Marque', type: 'TEXT', required: false },
-    { categoryId: 'caravaning', name: 'Modèle', type: 'TEXT', required: false },
-    { categoryId: 'caravaning', name: 'Année', type: 'NUMBER', required: true },
+    { categoryId: 'motos', name: 'Dédouané', type: 'BOOLEAN', required: false },
     {
-      categoryId: 'caravaning',
-      name: 'Kilométrage (km)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Longueur (m)',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Largeur (m)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Hauteur (m)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Nombre de couchages',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Type de véhicule',
-      type: 'SELECT',
-      options: [
-        'Caravane',
-        'Camping-car',
-        'Van aménagé',
-        'Mobil-home',
-        'Autre',
-      ],
-      required: true,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'PTAC (kg)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Places carte grise',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Douche',
+      categoryId: 'motos',
+      name: 'Documents à jour',
       type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Toilettes',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'caravaning',
-      name: 'Énergie',
-      type: 'SELECT',
-      options: ['Gaz', 'Électrique', 'Mixte'],
       required: false,
     },
 
     // ————————————————————————————
-    // VÉHICULES > UTILITAIRES
+    // VÉHICULES > UTILITAIRES (RDC)
     // ————————————————————————————
     { categoryId: 'utilitaires', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'utilitaires', name: 'Modèle', type: 'TEXT', required: true },
@@ -654,7 +501,7 @@ async function main() {
       categoryId: 'utilitaires',
       name: 'Kilométrage (km)',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'utilitaires',
@@ -665,6 +512,12 @@ async function main() {
     },
     {
       categoryId: 'utilitaires',
+      name: 'Charge utile (kg)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'utilitaires',
       name: 'Boîte de vitesse',
       type: 'SELECT',
       options: ['Manuelle', 'Automatique'],
@@ -672,25 +525,7 @@ async function main() {
     },
     {
       categoryId: 'utilitaires',
-      name: 'Charge utile (kg)',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'utilitaires',
-      name: 'PTAC (kg)',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'utilitaires',
-      name: 'Volume utile (m³)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'utilitaires',
-      name: 'Porte latérale',
+      name: 'Transmission 4x4',
       type: 'BOOLEAN',
       required: false,
     },
@@ -700,9 +535,21 @@ async function main() {
       type: 'BOOLEAN',
       required: false,
     },
+    {
+      categoryId: 'utilitaires',
+      name: 'Dédouané',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'utilitaires',
+      name: 'Documents à jour',
+      type: 'BOOLEAN',
+      required: false,
+    },
 
     // ————————————————————————————
-    // VÉHICULES > CAMIONS
+    // VÉHICULES > CAMIONS (RDC)
     // ————————————————————————————
     { categoryId: 'camions', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'camions', name: 'Modèle', type: 'TEXT', required: false },
@@ -711,32 +558,26 @@ async function main() {
       categoryId: 'camions',
       name: 'Kilométrage (km)',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'camions',
       name: 'Carburant',
       type: 'SELECT',
-      options: ['Diesel', 'Essence', 'Électrique', 'GNV'],
+      options: ['Diesel', 'Essence', 'Électrique'],
       required: true,
+    },
+    {
+      categoryId: 'camions',
+      name: 'Tonnage (t)',
+      type: 'NUMBER',
+      required: false,
     },
     {
       categoryId: 'camions',
       name: 'Boîte de vitesse',
       type: 'SELECT',
       options: ['Manuelle', 'Automatique'],
-      required: false,
-    },
-    {
-      categoryId: 'camions',
-      name: 'PTAC (kg)',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'camions',
-      name: 'Nombre d’essieux',
-      type: 'NUMBER',
       required: false,
     },
     {
@@ -751,8 +592,15 @@ async function main() {
         'Bâché',
         'Citerne',
         'Ampliroll',
+        'Tracteur routier',
         'Autre',
       ],
+      required: false,
+    },
+    {
+      categoryId: 'camions',
+      name: 'Nombre d’essieux',
+      type: 'NUMBER',
       required: false,
     },
     {
@@ -761,74 +609,41 @@ async function main() {
       type: 'BOOLEAN',
       required: false,
     },
+    {
+      categoryId: 'camions',
+      name: 'Dédouané',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'camions',
+      name: 'Documents à jour',
+      type: 'BOOLEAN',
+      required: false,
+    },
+
+    // (On supprime CARAVANING & NAUTISME pour la RDC)
 
     // ————————————————————————————
-    // VÉHICULES > NAUTISME
+    // IMMOBILIER > VENTES (RDC)
     // ————————————————————————————
     {
-      categoryId: 'nautisme',
-      name: 'Type de bateau',
+      categoryId: 'ventes',
+      name: 'Type de bien',
       type: 'SELECT',
       options: [
-        'Voilier',
-        'Bateau à moteur',
-        'Semi-rigide',
-        'Péniche',
-        'Jet-ski',
+        'Maison',
+        'Appartement',
+        'Studio',
+        'Villa',
+        'Terrain/Parcelle',
+        'Entrepôt',
+        'Bureau',
+        'Boutique',
+        'Autre',
       ],
       required: true,
     },
-    { categoryId: 'nautisme', name: 'Marque', type: 'TEXT', required: false },
-    { categoryId: 'nautisme', name: 'Modèle', type: 'TEXT', required: false },
-    { categoryId: 'nautisme', name: 'Année', type: 'NUMBER', required: true },
-    {
-      categoryId: 'nautisme',
-      name: 'Longueur (m)',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'nautisme',
-      name: 'Largeur (m)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'nautisme',
-      name: 'Nombre de couchages',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'nautisme',
-      name: 'Motorisation',
-      type: 'SELECT',
-      options: ['Hors-bord', 'In-bord', 'Voile', 'Mixte'],
-      required: false,
-    },
-    {
-      categoryId: 'nautisme',
-      name: 'Puissance moteur (cv)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'nautisme',
-      name: 'Nombre de moteurs',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'nautisme',
-      name: 'Armement sécurité',
-      type: 'SELECT',
-      options: ['Basique', 'Côtier', 'Hauturier'],
-      required: false,
-    },
-
-    // ————————————————————————————
-    // IMMOBILIER > VENTES
-    // ————————————————————————————
     {
       categoryId: 'ventes',
       name: 'Surface (m²)',
@@ -837,15 +652,9 @@ async function main() {
     },
     {
       categoryId: 'ventes',
-      name: 'Nombre de pièces',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'ventes',
       name: 'Nombre de chambres',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'ventes',
@@ -855,18 +664,16 @@ async function main() {
     },
     {
       categoryId: 'ventes',
-      name: 'Type de bien',
+      name: 'Meublé',
       type: 'SELECT',
-      options: [
-        'Appartement',
-        'Maison',
-        'Studio',
-        'Loft',
-        'Duplex',
-        'Terrain',
-        'Autre',
-      ],
-      required: true,
+      options: ['Oui', 'Non'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Quartier/Commune',
+      type: 'TEXT',
+      required: false,
     },
     {
       categoryId: 'ventes',
@@ -876,14 +683,33 @@ async function main() {
     },
     {
       categoryId: 'ventes',
-      name: 'Nombre d’étages',
+      name: 'Surface terrain (m²)',
       type: 'NUMBER',
       required: false,
     },
-    { categoryId: 'ventes', name: 'Étage', type: 'NUMBER', required: false },
     {
       categoryId: 'ventes',
-      name: 'Ascenseur',
+      name: 'Eau',
+      type: 'SELECT',
+      options: ['REGIDESO', 'Forage', 'Puits', 'Citerne', 'Autre'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Électricité',
+      type: 'SELECT',
+      options: ['SNEL', 'Solaire', 'SNEL + Solaire', 'Aucune'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Groupe électrogène',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Climatisation',
       type: 'BOOLEAN',
       required: false,
     },
@@ -891,105 +717,51 @@ async function main() {
       categoryId: 'ventes',
       name: 'Parking/Stationnement',
       type: 'SELECT',
-      options: ['Aucun', 'Parking', 'Box', 'Garage'],
-      required: false,
-    },
-    { categoryId: 'ventes', name: 'Jardin', type: 'BOOLEAN', required: false },
-    {
-      categoryId: 'ventes',
-      name: 'Terrasse',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    { categoryId: 'ventes', name: 'Balcon', type: 'BOOLEAN', required: false },
-    {
-      categoryId: 'ventes',
-      name: 'Surface terrain (m²)',
-      type: 'NUMBER',
+      options: ['Aucun', 'Cour', 'Garage'],
       required: false,
     },
     {
       categoryId: 'ventes',
-      name: 'État du bien',
-      type: 'SELECT',
-      options: ['Neuf', 'Rénové', 'Bon état', 'À rénover'],
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Chauffage',
-      type: 'SELECT',
-      options: ['Individuel', 'Collectif', 'Aucun'],
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Type de chauffage',
-      type: 'SELECT',
-      options: ['Électrique', 'Gaz', 'Pompe à chaleur', 'Bois', 'Fioul'],
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Cuisine',
-      type: 'SELECT',
-      options: ['Aucune', 'Aménagée', 'Équipée'],
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Exposition',
-      type: 'SELECT',
-      options: ['N', 'S', 'E', 'O', 'NE', 'NO', 'SE', 'SO'],
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Copropriété',
+      name: 'Clôture/Mur',
       type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'ventes',
-      name: 'Charges copropriété (€ /mois)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Taxe foncière (€ /an)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Classe énergie',
+      name: 'Titre de propriété',
       type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
+      options: [
+        'Certificat d’enregistrement',
+        'Contrat de vente',
+        'Attestation coutumière',
+        'Non titré',
+      ],
       required: false,
     },
     {
       categoryId: 'ventes',
-      name: 'GES',
+      name: 'Route',
       type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
-      required: false,
-    },
-    {
-      categoryId: 'ventes',
-      name: 'Accès PMR',
-      type: 'BOOLEAN',
+      options: ['Asphalte', 'Terre', 'Pavée'],
       required: false,
     },
 
     // ————————————————————————————
-    // IMMOBILIER > LOCATIONS
+    // IMMOBILIER > LOCATIONS (RDC)
     // ————————————————————————————
     {
       categoryId: 'locations',
       name: 'Type de bien',
       type: 'SELECT',
-      options: ['Appartement', 'Maison', 'Studio', 'Loft', 'Duplex', 'Autre'],
+      options: [
+        'Maison',
+        'Appartement',
+        'Studio',
+        'Chambre',
+        'Boutique',
+        'Bureau',
+        'Autre',
+      ],
       required: true,
     },
     {
@@ -1000,21 +772,27 @@ async function main() {
     },
     {
       categoryId: 'locations',
-      name: 'Nombre de pièces',
+      name: 'Nombre de chambres',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'locations',
-      name: 'Nombre de chambres',
+      name: 'Salles de bain',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'locations',
       name: 'Meublé',
       type: 'SELECT',
       options: ['Oui', 'Non'],
+      required: false,
+    },
+    {
+      categoryId: 'locations',
+      name: 'Quartier/Commune',
+      type: 'TEXT',
       required: false,
     },
     { categoryId: 'locations', name: 'Étage', type: 'NUMBER', required: false },
@@ -1028,25 +806,7 @@ async function main() {
       categoryId: 'locations',
       name: 'Parking/Stationnement',
       type: 'SELECT',
-      options: ['Aucun', 'Parking', 'Box', 'Garage'],
-      required: false,
-    },
-    {
-      categoryId: 'locations',
-      name: 'Jardin',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations',
-      name: 'Terrasse',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations',
-      name: 'Balcon',
-      type: 'BOOLEAN',
+      options: ['Aucun', 'Cour', 'Garage'],
       required: false,
     },
     {
@@ -1057,58 +817,45 @@ async function main() {
     },
     {
       categoryId: 'locations',
-      name: 'Charges mensuelles (€)',
+      name: 'Caution (montant)',
       type: 'NUMBER',
       required: false,
     },
     {
       categoryId: 'locations',
-      name: 'Type de bail',
+      name: 'Bail',
       type: 'SELECT',
-      options: [
-        'Classique',
-        'Meublé (1 an)',
-        'Bail mobilité (1–10 mois)',
-        'Colocation',
-      ],
+      options: ['Mensuel', 'Trimestriel', 'Annuel', 'Autre'],
       required: false,
     },
     {
       categoryId: 'locations',
-      name: 'Dépôt de garantie (€)',
-      type: 'NUMBER',
+      name: 'Eau',
+      type: 'SELECT',
+      options: ['REGIDESO', 'Forage', 'Puits', 'Citerne', 'Autre'],
       required: false,
     },
     {
       categoryId: 'locations',
-      name: 'Colocation acceptée',
+      name: 'Électricité',
+      type: 'SELECT',
+      options: ['SNEL', 'Solaire', 'SNEL + Solaire', 'Aucune'],
+      required: false,
+    },
+    {
+      categoryId: 'locations',
+      name: 'Groupe électrogène',
       type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'locations',
-      name: 'APL/CAF accepté',
+      name: 'Climatisation',
       type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations',
-      name: 'Classe énergie',
-      type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
-      required: false,
-    },
-    {
-      categoryId: 'locations',
-      name: 'GES',
-      type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
       required: false,
     },
 
-    // ————————————————————————————
-    // IMMOBILIER > COLOCATIONS
-    // ————————————————————————————
+    // (On peut ignorer COLOCATIONS si tu veux, je laisse mini)
     {
       categoryId: 'colocations',
       name: 'Surface de la chambre (m²)',
@@ -1130,57 +877,19 @@ async function main() {
     },
     {
       categoryId: 'colocations',
-      name: 'Fumeur accepté',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'colocations',
-      name: 'Animaux acceptés',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'colocations',
       name: 'Charges comprises',
       type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'colocations',
-      name: 'Charges mensuelles (€)',
+      name: 'Caution (montant)',
       type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'colocations',
-      name: 'Salle de bain privative',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'colocations',
-      name: 'Dépôt de garantie (€)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'colocations',
-      name: 'Classe énergie',
-      type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
-      required: false,
-    },
-    {
-      categoryId: 'colocations',
-      name: 'GES',
-      type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
       required: false,
     },
 
     // ————————————————————————————
-    // IMMOBILIER > BUREAUX & COMMERCES
+    // IMMOBILIER > BUREAUX & COMMERCES (RDC)
     // ————————————————————————————
     {
       categoryId: 'bureaux',
@@ -1192,8 +901,14 @@ async function main() {
       categoryId: 'bureaux',
       name: 'Type',
       type: 'SELECT',
-      options: ['Bureau', 'Commerce', 'Local/Atelier'],
+      options: ['Bureau', 'Commerce', 'Entrepôt', 'Atelier'],
       required: true,
+    },
+    {
+      categoryId: 'bureaux',
+      name: 'Quartier/Commune',
+      type: 'TEXT',
+      required: false,
     },
     {
       categoryId: 'bureaux',
@@ -1204,157 +919,40 @@ async function main() {
     },
     {
       categoryId: 'bureaux',
-      name: 'Ascenseur',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'bureaux',
       name: 'Parking',
       type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'bureaux',
-      name: 'Fibre optique',
+      name: 'Connexion internet',
       type: 'BOOLEAN',
       required: false,
     },
     {
       categoryId: 'bureaux',
-      name: 'Accès PMR',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'bureaux',
-      name: 'Salle de réunion',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'bureaux',
-      name: 'Charges comprises',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'bureaux',
-      name: 'Charges mensuelles (€)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'bureaux',
-      name: 'Classe énergie',
+      name: 'Électricité',
       type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
+      options: ['SNEL', 'Solaire', 'SNEL + Solaire', 'Aucune'],
       required: false,
     },
     {
       categoryId: 'bureaux',
-      name: 'GES',
-      type: 'SELECT',
-      options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
+      name: 'Groupe électrogène',
+      type: 'BOOLEAN',
       required: false,
     },
 
-    // ————————————————————————————
-    // VACANCES > LOCATIONS SAISONNIÈRES
-    // ————————————————————————————
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Capacité d’accueil (personnes)',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Chambres',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Salles de bain',
-      type: 'NUMBER',
-      required: true,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Surface (m²)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Animaux acceptés',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Piscine',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Wi-Fi',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Climatisation',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Parking',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Linge fourni',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Ménage inclus',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Arrivée autonome',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Nuitées minimum',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'locations_saisonnieres',
-      name: 'Caution (€)',
-      type: 'NUMBER',
-      required: false,
-    },
+    // (On supprime VACANCES/SAISONNIÈRES)
 
     // ————————————————————————————
-    // EMPLOI > OFFRES
+    // EMPLOI > OFFRES (RDC)
     // ————————————————————————————
     {
       categoryId: 'offres',
       name: 'Type de contrat',
       type: 'SELECT',
-      options: ['CDI', 'CDD', 'Intérim', 'Freelance', 'Alternance', 'Stage'],
+      options: ['CDI', 'CDD', 'Intérim', 'Freelance', 'Stage'],
       required: true,
     },
     {
@@ -1373,50 +971,25 @@ async function main() {
     },
     {
       categoryId: 'offres',
-      name: 'Niveau d’études requis',
-      type: 'SELECT',
-      options: ['Aucun', 'CAP/BEP', 'Bac', 'Bac+2', 'Bac+3/4', 'Bac+5 et plus'],
-      required: false,
-    },
-    {
-      categoryId: 'offres',
       name: 'Expérience (années)',
       type: 'NUMBER',
       required: false,
     },
     {
       categoryId: 'offres',
-      name: 'Salaire min (€)',
+      name: 'Salaire min (montant)',
       type: 'NUMBER',
       required: false,
     },
     {
       categoryId: 'offres',
-      name: 'Salaire max (€)',
+      name: 'Salaire max (montant)',
       type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'offres',
-      name: 'Tickets resto',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'offres',
-      name: 'Mutuelle',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'offres',
-      name: 'Transport remboursé',
-      type: 'BOOLEAN',
       required: false,
     },
 
     // ————————————————————————————
-    // EMPLOI > DEMANDES
+    // EMPLOI > DEMANDES (RDC)
     // ————————————————————————————
     {
       categoryId: 'demandes',
@@ -1432,16 +1005,9 @@ async function main() {
     },
     {
       categoryId: 'demandes',
-      name: 'Niveau d’études',
-      type: 'SELECT',
-      options: ['Aucun', 'CAP/BEP', 'Bac', 'Bac+2', 'Bac+3/4', 'Bac+5 et plus'],
-      required: false,
-    },
-    {
-      categoryId: 'demandes',
       name: 'Type de contrat souhaité',
       type: 'SELECT',
-      options: ['CDI', 'CDD', 'Intérim', 'Freelance', 'Alternance', 'Stage'],
+      options: ['CDI', 'CDD', 'Intérim', 'Freelance', 'Stage'],
       required: false,
     },
     {
@@ -1508,20 +1074,13 @@ async function main() {
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
-    {
-      categoryId: 'vetements',
-      name: 'Saison',
-      type: 'SELECT',
-      options: ['Été', 'Hiver', 'Mi-saison', 'Toutes saisons'],
-      required: false,
-    },
 
     // ————————————————————————————
     // MODE > CHAUSSURES
     // ————————————————————————————
     {
       categoryId: 'chaussures',
-      name: 'Pointure (EU)',
+      name: 'Pointure',
       type: 'NUMBER',
       required: true,
     },
@@ -1590,7 +1149,6 @@ async function main() {
       ],
       required: true,
     },
-    { categoryId: 'bijoux', name: 'Marque', type: 'TEXT', required: false },
     {
       categoryId: 'bijoux',
       name: 'Matériau',
@@ -1604,12 +1162,6 @@ async function main() {
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
-    },
-    {
-      categoryId: 'bijoux',
-      name: 'Étanchéité (ATM)',
-      type: 'NUMBER',
-      required: false,
     },
 
     // ————————————————————————————
@@ -1645,27 +1197,9 @@ async function main() {
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
-    {
-      categoryId: 'ameublement',
-      name: 'Longueur (cm)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'ameublement',
-      name: 'Profondeur (cm)',
-      type: 'NUMBER',
-      required: false,
-    },
-    {
-      categoryId: 'ameublement',
-      name: 'Hauteur (cm)',
-      type: 'NUMBER',
-      required: false,
-    },
 
     // ————————————————————————————
-    // MAISON & JARDIN > ÉLECTROMÉNAGER
+    // MAISON & JARDIN > ÉLECTROMÉNAGER (adapté RDC)
     // ————————————————————————————
     {
       categoryId: 'electromenager',
@@ -1688,9 +1222,9 @@ async function main() {
     },
     {
       categoryId: 'electromenager',
-      name: 'Classe énergie',
+      name: 'Tension',
       type: 'SELECT',
-      options: ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D'],
+      options: ['220V', '110V', '220V/110V'],
       required: false,
     },
     {
@@ -1893,7 +1427,7 @@ async function main() {
     },
 
     // ————————————————————————————
-    // ÉLECTRONIQUE > SMARTPHONES
+    // ÉLECTRONIQUE > SMARTPHONES (RDC)
     // ————————————————————————————
     { categoryId: 'smartphones', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'smartphones', name: 'Modèle', type: 'TEXT', required: true },
@@ -1927,14 +1461,13 @@ async function main() {
       type: 'NUMBER',
       required: false,
     },
-    { categoryId: 'smartphones', name: '5G', type: 'BOOLEAN', required: false },
     {
       categoryId: 'smartphones',
-      name: 'État',
-      type: 'SELECT',
-      options: ['Neuf', 'Reconditionné', 'Occasion'],
-      required: true,
+      name: 'Double SIM',
+      type: 'BOOLEAN',
+      required: false,
     },
+    { categoryId: 'smartphones', name: '5G', type: 'BOOLEAN', required: false },
     {
       categoryId: 'smartphones',
       name: 'Débloqué tout opérateur',
@@ -1943,21 +1476,10 @@ async function main() {
     },
     {
       categoryId: 'smartphones',
-      name: 'Double SIM',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'smartphones',
-      name: 'Facture disponible',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'smartphones',
-      name: 'Boîte / accessoires',
-      type: 'BOOLEAN',
-      required: false,
+      name: 'État',
+      type: 'SELECT',
+      options: ['Neuf', 'Reconditionné', 'Occasion'],
+      required: true,
     },
 
     // ————————————————————————————
@@ -2073,7 +1595,7 @@ async function main() {
     },
 
     // ————————————————————————————
-    // ÉLECTRONIQUE > TABLETTES & LISEUSES
+    // ÉLECTRONIQUE > TABLETTES
     // ————————————————————————————
     { categoryId: 'tablettes', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'tablettes', name: 'Modèle', type: 'TEXT', required: true },
@@ -2186,7 +1708,7 @@ async function main() {
     },
 
     // ————————————————————————————
-    // LOISIRS > LIVRES
+    // LOISIRS > LIVRES (langues locales ajoutées)
     // ————————————————————————————
     { categoryId: 'livres', name: 'Genre', type: 'TEXT', required: false },
     { categoryId: 'livres', name: 'Auteur', type: 'TEXT', required: false },
@@ -2197,9 +1719,10 @@ async function main() {
       options: [
         'Français',
         'Anglais',
-        'Espagnol',
-        'Allemand',
-        'Italien',
+        'Lingala',
+        'Swahili',
+        'Kikongo',
+        'Tshiluba',
         'Autre',
       ],
       required: false,
@@ -2323,12 +1846,6 @@ async function main() {
     },
     {
       categoryId: 'animaux_vivants',
-      name: 'Inscrit LOF/LOOF',
-      type: 'BOOLEAN',
-      required: false,
-    },
-    {
-      categoryId: 'animaux_vivants',
       name: 'Stérilisé',
       type: 'BOOLEAN',
       required: false,
@@ -2405,17 +1922,11 @@ async function main() {
     },
 
     // ————————————————————————————
-    // MATÉRIEL PRO > MÉDICAL
+    // MATÉRIEL PRO > MÉDICAL (sans CE)
     // ————————————————————————————
     { categoryId: 'medical', name: 'Spécialité', type: 'TEXT', required: true },
     { categoryId: 'medical', name: 'Marque', type: 'TEXT', required: false },
     { categoryId: 'medical', name: 'Année', type: 'NUMBER', required: false },
-    {
-      categoryId: 'medical',
-      name: 'Conforme CE',
-      type: 'BOOLEAN',
-      required: false,
-    },
     {
       categoryId: 'medical',
       name: 'État',
@@ -2489,7 +2000,7 @@ async function main() {
     },
     {
       categoryId: 'baby_sitting',
-      name: 'Permis B',
+      name: 'Permis de conduire',
       type: 'BOOLEAN',
       required: false,
     },
@@ -2507,7 +2018,7 @@ async function main() {
     },
     {
       categoryId: 'baby_sitting',
-      name: 'Taux horaire (€)',
+      name: 'Taux horaire (montant)',
       type: 'NUMBER',
       required: false,
     },
@@ -2548,7 +2059,7 @@ async function main() {
     },
     {
       categoryId: 'cours_particuliers',
-      name: 'Tarif horaire (€)',
+      name: 'Tarif horaire (montant)',
       type: 'NUMBER',
       required: false,
     },
@@ -2588,7 +2099,7 @@ async function main() {
     },
     {
       categoryId: 'jardinage',
-      name: 'Tarif horaire (€)',
+      name: 'Tarif horaire (montant)',
       type: 'NUMBER',
       required: false,
     },

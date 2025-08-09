@@ -252,8 +252,9 @@ export async function POST(req: NextRequest) {
     price: z.number().int().nonnegative(),
 
     location: z.string().min(1),
-    lat: z.number().optional(),
-    lng: z.number().optional(),
+    lat: z.number().nullable().optional(),
+    lng: z.number().nullable().optional(),
+
     isDon: z.boolean().optional(),
     images: z.array(z.string().url()).min(1).max(10),
     categoryId: z.string(),
@@ -316,13 +317,11 @@ export async function POST(req: NextRequest) {
     // 1️⃣ Prépare le bulk d’AdField
     const adFieldsData = category.fields
       .map((fieldDef) => {
-        let value = dynamicParsed[fieldDef.name];
+        const value = dynamicParsed[fieldDef.name];
         if (value === undefined || value === '' || value === null) return null;
-        if (fieldDef.type === 'number' && typeof value === 'string')
-          value = Number(value);
         return {
           categoryFieldId: fieldDef.id,
-          value: value as Prisma.InputJsonValue,
+          value: value as Prisma.InputJsonValue, // déjà typé par zodDynamic
         };
       })
       .filter(Boolean) as {

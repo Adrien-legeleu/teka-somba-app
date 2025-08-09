@@ -17,7 +17,7 @@ import {
 } from '@tabler/icons-react';
 import DashboardNav from './DashboardNav';
 import CategoryIcon from '../Fonctionnalities/CategoryIcon';
-import socket from '@/lib/socket';
+import { joinUserRoom, socket } from '@/lib/socket';
 import { toast } from 'sonner';
 import MobileNavLink from '../Home/MobileNavLink';
 
@@ -103,33 +103,51 @@ export default function Header() {
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
-    // État initial (prend en compte les nouveaux messages + l'état du localStorage)
-    const updateHasUnread = () => {
-      // Priorité : nouveau message reçu ou badge déjà activé
-      setHasUnread(localStorage.getItem('messagesSeen') !== 'true');
-    };
+    let cleanup = () => {};
 
-    // Écoute le socket pour les nouveaux messages
-    socket.on('new_message', (message) => {
-      setHasUnread(true);
-      localStorage.setItem('messagesSeen', 'false');
-      toast('💬 Nouveau message reçu : ' + message.content);
-    });
+    (async () => {
+      // 1) Vérifier si user connecté
+      const me = await fetch('/api/me').then((r) => (r.ok ? r.json() : null));
+      if (!me?.id) {
+        // invité: pas de notifs
+        setHasUnread(false);
+        localStorage.setItem('messagesSeen', 'true');
+        return;
+      }
 
-    // Vérifie au chargement de la page
-    updateHasUnread();
+      // 2) Rejoindre la room perso
+      joinUserRoom(me.id);
 
-    // Synchronise entre onglets/tabs
-    window.addEventListener('storage', updateHasUnread);
+      // 3) état initial badge (localStorage)
+      const syncBadge = () => {
+        setHasUnread(localStorage.getItem('messagesSeen') !== 'true');
+      };
+      syncBadge();
 
-    // Nettoie à l'unmount
-    return () => {
-      socket.off('new_message');
-      window.removeEventListener('storage', updateHasUnread);
-    };
+      // 4) écoute des nouveaux messages
+      const onNewMsg = (message: any) => {
+        // Optionnel: ignorer si on EST l’émetteur
+        if (message?.senderId === me.id) return;
+
+        setHasUnread(true);
+        localStorage.setItem('messagesSeen', 'false');
+        // Affiche un toast
+        toast(`💬 Nouveau message : ${message.content ?? ''}`);
+      };
+
+      socket.on('new_message', onNewMsg);
+      window.addEventListener('storage', syncBadge);
+
+      cleanup = () => {
+        socket.off('new_message', onNewMsg);
+        window.removeEventListener('storage', syncBadge);
+      };
+    })();
+
+    return () => cleanup();
   }, []);
 
-  // Watch la route, désactive le badge si on va sur les messages
+  // Déjà présent chez toi, garde-le (il remet le badge à vu en entrant dans la page messages)
   useEffect(() => {
     if (pathname.startsWith('/dashboard/messages')) {
       setHasUnread(false);

@@ -68,7 +68,7 @@ export default function FilterDrawerMobile() {
         setLng={setLng}
       />
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="w-full max-w-md mx-auto p-0 bg-white rounded-t-3xl flex flex-col max-h-[80vh]">
+        <DrawerContent className="w-full  mx-auto p-0 bg-white rounded-t-3xl flex flex-col max-h-[80vh]">
           <div
             className="flex-1 flex pb-10 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4"
             style={{ scrollbarWidth: 'none' }}

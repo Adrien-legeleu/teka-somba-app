@@ -28,19 +28,28 @@ import { toast } from 'sonner';
 import ReportAdDialog from '@/app/components/Fonctionnalities/ReportDialog';
 import Loader from '@/app/components/Fonctionnalities/Loader';
 
-function formatDynamicValue(key: string, value: DynamicFieldValue) {
+function isMeaningful(value: unknown) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') {
+    const s = value.trim().toLowerCase();
+    return s !== '' && s !== 'null' && s !== 'undefined' && s !== 'nan';
+  }
+  if (typeof value === 'number') return !Number.isNaN(value);
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.keys(value as object).length > 0;
+  return true;
+}
+
+function formatDynamicValue(key: string, value: unknown) {
+  // si pas “significatif”, on renvoie une chaîne vide (jamais “null”)
+  if (!isMeaningful(value)) return '';
+
   if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
   if (typeof value === 'number') {
-    if (
-      key.toLowerCase().includes('km') ||
-      key.toLowerCase().includes('kilométrage')
-    )
+    const k = key.toLowerCase();
+    if (k.includes('km') || k.includes('kilométrage'))
       return `${value.toLocaleString()} km`;
-    if (
-      key.toLowerCase().includes('kilo') ||
-      key.toLowerCase().includes('poids')
-    )
-      return `${value} kg`;
+    if (k.includes('kilo') || k.includes('poids')) return `${value} kg`;
     return value.toLocaleString();
   }
   return String(value);
@@ -85,11 +94,16 @@ export default function AdDetailsPage() {
   }
 
   const isSeller = me?.id === ad.user?.id;
-  const dynamicFields =
-    ad.fields?.map((field) => ({
-      name: field.categoryField?.name || '',
-      value: field.value,
+  const rawDynamicFields =
+    ad.fields?.map((f) => ({
+      name: f.categoryField?.name || '',
+      value: f.value as unknown,
     })) || [];
+
+  const dynamicFields = rawDynamicFields
+    .filter((f) => f.name.trim() !== '')
+    .map((f) => ({ ...f, display: formatDynamicValue(f.name, f.value) }))
+    .filter((f) => f.display !== '');
 
   return (
     <motion.div
@@ -270,8 +284,8 @@ export default function AdDetailsPage() {
           </div>
         </div>
       </motion.div>
-      {dynamicFields.length > 0 && (
-        <div className=" mt-10 grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto p-6 bg-white rounded-3xl shadow-2xl border border-gray-100">
+      {dynamicFields.length > 0 ? (
+        <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto p-6 bg-white rounded-3xl shadow-2xl border border-gray-100">
           {dynamicFields.map((field, i) => (
             <div
               key={i}
@@ -280,11 +294,27 @@ export default function AdDetailsPage() {
               <div className="text-xs uppercase text-gray-400 mb-1">
                 {field.name}
               </div>
-              <div className="font-medium text-gray-800">
-                {formatDynamicValue(field.name, field.value)}
-              </div>
+              <div className="font-medium text-gray-800">{field.display}</div>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="max-w-6xl mx-auto mt-10">
+          <div className="rounded-3xl border border-dashed border-orange-200 bg-gradient-to-br from-orange-50/80 to-white p-8 text-center shadow-sm">
+            <div className="mx-auto mb-3 w-10 h-10 rounded-2xl bg-white shadow flex items-center justify-center">
+              <span className="text-orange-500 text-xl">ℹ️</span>
+            </div>
+            <h3 className="font-semibold text-gray-900">
+              Aucune info technique
+            </h3>
+            <p className="text-gray-500 text-sm mt-1">
+              Le vendeur n’a pas indiqué de détails supplémentaires.
+            </p>
+            <p className="text-gray-500 text-sm">
+              Consulte la description ou contacte le vendeur pour en savoir
+              plus.
+            </p>
+          </div>
         </div>
       )}
 

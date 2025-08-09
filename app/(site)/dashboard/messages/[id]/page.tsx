@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useMe } from '@/hooks/useMe';
 import Link from 'next/link';
-import socket from '@/lib/socket';
+import { socket, joinConversation } from '@/lib/socket';
 import Loader from '@/app/components/Fonctionnalities/Loader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -33,6 +33,7 @@ interface Message {
   senderId: string;
   content: string;
   createdAt: string;
+  receiverId?: string; // ← ajouté (optionnel pour compat)
   receiver?: User;
   sender?: User;
   ad?: Ad;
@@ -59,7 +60,7 @@ export default function ConversationPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { me } = useMe();
 
-  // Charger la conversation
+  // Charger les messages initiaux
   useEffect(() => {
     if (!adId || !otherUserId) return;
     const fetchMessages = async () => {
@@ -89,10 +90,31 @@ export default function ConversationPage() {
     // eslint-disable-next-line
   }, [adId, otherUserId, me?.id]);
 
-  // Scroll auto en bas à chaque message
+  // Scroll auto vers le bas
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Connexion socket + écoute des messages entrants
+  useEffect(() => {
+    if (!adId || !otherUserId) return;
+
+    joinConversation(`${adId}_${otherUserId}`);
+
+    socket.on('receive_message', (newMsg: Message) => {
+      // Ajoute le message si c'est bien la bonne conversation
+      if (
+        (newMsg.senderId === otherUserId && newMsg.receiverId === me?.id) ||
+        (newMsg.senderId === me?.id && newMsg.receiverId === otherUserId)
+      ) {
+        setMessages((prev) => [...prev, newMsg]);
+      }
+    });
+
+    return () => {
+      socket.off('receive_message');
+    };
+  }, [adId, otherUserId, me?.id]);
 
   async function sendMessage() {
     if (!message.trim()) return;
@@ -109,19 +131,25 @@ export default function ConversationPage() {
       });
       if (!res.ok) throw new Error("Erreur lors de l'envoi");
 
-      setMessage('');
-      socket.emit('send_message', {
+      const newMessage: Message = {
+        id: crypto.randomUUID(),
         adId,
-        receiverId: otherUserId,
-        senderName: me?.prenom || me?.name || 'Quelqu’un',
+        senderId: me?.id || '',
         content: message,
         createdAt: new Date().toISOString(),
+        sender: me || undefined,
+      };
+
+      // Envoi en temps réel au serveur
+      socket.emit('send_message', {
+        ...newMessage,
+        receiverId: otherUserId,
+        conversationId: `${adId}_${otherUserId}`,
       });
 
-      const updated = await fetch(
-        `/api/messages?adId=${adId}&otherUserId=${otherUserId}`
-      );
-      setMessages(await updated.json());
+      // Ajout local direct
+      setMessages((prev) => [...prev, newMessage]);
+      setMessage('');
     } finally {
       setSending(false);
     }
@@ -135,24 +163,21 @@ export default function ConversationPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-5 flex flex-col h-[92vh]">
-      {/* Bouton retour sticky */}
-      <div className="sticky top-0 z-30 flex items-center mb-2 -mx-2 px-2">
+      {/* Header sticky */}
+      <div className="sticky top-0 z-30 flex items-center mb-2 -mx-2 px-2 bg-white/80 backdrop-blur-md rounded-3xl">
         <button
           onClick={() => router.back()}
           className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-orange-100 shadow-lg mr-3 hover:bg-orange-50 transition-all active:scale-95"
-          aria-label="Retour"
-          tabIndex={0}
         >
           <ArrowLeft className="w-6 h-6 text-orange-500" />
         </button>
-        {/* Bloc annonce sticky */}
-        <div className="flex-1 flex items-center gap-3 bg-gradient-to-b from-white/95 to-transparent py-2 pl-2 pr-3 rounded-3xl shadow-xl border border-orange-100">
+        <div className="flex-1 flex items-center gap-3 py-2 pl-2 pr-3 rounded-3xl shadow-xl border border-orange-100">
           {ad?.images?.[0] ? (
             <Image
               src={ad.images[0]}
               width={54}
               height={54}
-              className="rounded-3xl h-12 md:h-16 xl:h-20 w-12 md:w-16 xl:w-20 object-cover border shadow"
+              className="rounded-3xl h-12 w-12 object-cover border shadow"
               alt="annonce"
             />
           ) : (
@@ -168,24 +193,21 @@ export default function ConversationPage() {
             <div className="text-xs sm:text-sm text-gray-500 mt-1">
               {otherUser?.prenom} {otherUser?.name}
             </div>
-            <div className="text-xs sm:text-sm text-gray-500 mt-1">
-              {otherUser?.email}
-            </div>
           </div>
           {otherUser?.avatar && (
             <Image
               src={otherUser.avatar}
               width={54}
               height={54}
-              className="rounded-3xl h-12 md:h-16 xl:h-20 w-12 md:w-16 xl:w-20 object-cover border-2 border-orange-200 shadow"
+              className="rounded-3xl h-12 w-12 object-cover border-2 border-orange-200 shadow"
               alt={otherUser.name}
             />
           )}
         </div>
       </div>
 
-      {/* Fil de messages */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white via-orange-50 to-orange-100/20 rounded-3xl px-3 py-4 mb-2 custom-scroll">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-3 py-4 mb-2 custom-scroll">
         <AnimatePresence initial={false}>
           {messages.map((msg, i) => (
             <motion.div
@@ -193,7 +215,7 @@ export default function ConversationPage() {
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 30, scale: 0.95 }}
-              transition={{ duration: 0.23, delay: i * 0.01 }}
+              transition={{ duration: 0.2, delay: i * 0.01 }}
               className={`flex mb-2 ${
                 msg.senderId === me?.id ? 'justify-end' : 'justify-start'
               }`}
@@ -225,7 +247,7 @@ export default function ConversationPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Zone de saisie */}
+      {/* Saisie */}
       <form
         className="flex max-sm:flex-col gap-2 items-end px-2"
         onSubmit={(e) => {

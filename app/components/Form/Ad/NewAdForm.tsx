@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -58,10 +59,8 @@ const schema = z
   })
   .refine(
     (data) => {
-      // Si don → prix doit être 0
-      if (data.isDon) return data.price === 0;
-      // Sinon → prix doit être > 0
-      return data.price > 0;
+      if (data.isDon) return data.price === 0; // don => 0
+      return data.price > 0; // sinon > 0
     },
     {
       message: 'Le prix doit être strictement positif, sauf pour un don (0).',
@@ -69,12 +68,13 @@ const schema = z
     }
   );
 
+// helpers
 function normalize(str: string) {
   return str
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // enlever accents
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/\s+/g, ''); // enlever les espaces
+    .replace(/\s+/g, '');
 }
 
 export default function NewAdForm({ categories }: { categories: Category[] }) {
@@ -83,23 +83,24 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     defaultValues: {
       title: '',
       description: '',
-      price: undefined,
-      images: [],
+      price: undefined as unknown as number,
+      images: [] as string[],
       location: '',
-      lat: null,
-      lng: null,
+      lat: null as number | null,
+      lng: null as number | null,
       isDon: false,
-      type: 'FOR_SALE',
-      durationValue: undefined,
-      durationUnit: undefined,
+      type: 'FOR_SALE' as AdType,
+      durationValue: undefined as unknown as number | undefined,
+      durationUnit: undefined as unknown as DurationUnit | undefined,
       categoryId: '',
-      dynamicFields: {},
+      dynamicFields: {} as Record<string, unknown>,
     },
   });
 
   const { watch, setValue, handleSubmit } = methods;
   const [step, setStep] = useState(1);
   const topRef = useRef<HTMLDivElement | null>(null);
+
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [location, setLocation] = useState('');
@@ -111,26 +112,23 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
 
   const watched = watch();
   const isDon = !!watched.isDon;
-  const priceValue = isDon
-    ? 0
-    : watched.price === undefined
-      ? ''
-      : watched.price;
+
+  // scroll top on step change
   useEffect(() => {
     const reduce =
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-    // scroll dans la page
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     }
-    // et si ton form est dans un conteneur scrollable, scrolle l’ancre
     topRef.current?.scrollIntoView({
       behavior: reduce ? 'auto' : 'smooth',
       block: 'start',
     });
   }, [step]);
+
+  // compute dynamic fields from selected category (sub first, else parent)
   useEffect(() => {
     const targetId = subCategoryId || categoryId;
     if (!targetId) return;
@@ -153,30 +151,45 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     setDynamicFields(cat?.fields || []);
   }, [categoryId, subCategoryId, categories]);
 
+  // don => price = 0
   useEffect(() => {
     if (isDon) {
-      setValue('price', 0, { shouldValidate: true });
+      methods.setValue('price', 0, { shouldValidate: true });
     }
-  }, [isDon, setValue]);
+  }, [isDon, methods]);
+
+  // Validation globale avant submit
+  const selectedCatId = subCategoryId ?? categoryId ?? watched.categoryId ?? '';
 
   const isFormValid =
-    watched.title.trim().length > 0 && categoryId !== null && images.length > 0;
+    watched.title.trim().length > 0 &&
+    !!selectedCatId &&
+    images.length > 0 &&
+    location.trim().length > 0 &&
+    (isDon
+      ? watched.price === 0
+      : typeof watched.price === 'number' && watched.price > 0) &&
+    (watched.type === 'FOR_RENT'
+      ? !!watched.durationValue && !!watched.durationUnit
+      : true);
 
+  // SUBMIT
   const onSubmit = async (data: z.infer<typeof schema>) => {
-    const selectedCatId = subCategoryId ?? categoryId ?? data.categoryId;
+    // récupère la catégorie sélectionnée (sub prioritaire)
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
       .find((cat) => cat.id === selectedCatId);
 
-    const expectedDynamicFields = (selectedCat?.fields || []).map((f) =>
-      normalize(f.name)
+    // map des noms exacts des champs dynamiques (pour coller à CategoryField.name)
+    const nameMap = new Map(
+      (selectedCat?.fields || []).map((f) => [normalize(f.name), f.name])
     );
 
-    const filteredDynamicFields = Object.fromEntries(
-      Object.entries(data.dynamicFields || {}).filter(([key]) => {
-        return expectedDynamicFields.some(
-          (expected) => normalize(expected) === normalize(key)
-        );
+    // remap keys dynamiques -> noms originaux (accents/espaces)
+    const remappedDynamicFields = Object.fromEntries(
+      Object.entries(data.dynamicFields || {}).flatMap(([key, val]) => {
+        const original = nameMap.get(normalize(key));
+        return original ? [[original, val]] : [];
       })
     );
 
@@ -184,6 +197,11 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       data.durationValue ?? watched.durationValue ?? undefined;
     const finalDurationUnit =
       data.durationUnit ?? watched.durationUnit ?? undefined;
+    const dynamicFieldsClean = Object.fromEntries(
+      Object.entries(remappedDynamicFields).filter(
+        ([, v]) => v !== '' && v !== undefined && v !== null
+      )
+    );
 
     try {
       const res = await fetch('/api/ad', {
@@ -191,14 +209,15 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          // override avec les states fiables
           images,
           location,
           lat,
           lng,
-          categoryId: subCategoryId ?? categoryId, // use subCategoryId if it exists
+          categoryId: selectedCatId,
           durationValue: finalDurationValue,
           durationUnit: finalDurationUnit,
-          dynamicFields: filteredDynamicFields,
+          dynamicFields: dynamicFieldsClean,
         }),
       });
 
@@ -207,13 +226,13 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         toast.success('Annonce créée !');
         window.location.href = `/annonce/${adId}`;
       } else {
-        const error = await res.json();
-        toast.error(error.error || 'Erreur de création');
+        const error = await res.json().catch(() => ({}));
         console.error(error);
+        toast.error(error.error || 'Erreur de création');
       }
     } catch (err) {
-      toast.error('Erreur inconnue');
       console.error(err);
+      toast.error('Erreur inconnue');
     }
   };
 
@@ -230,8 +249,9 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     <FormProvider {...methods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-4xl  mx-auto space-y-8"
+        className="w-full max-w-4xl mx-auto space-y-8"
       >
+        <div ref={topRef} />
         <StepProgressBar step={step} />
 
         <AnimatePresence mode="wait">
@@ -328,8 +348,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   className="text-white"
                   onClick={() => {
                     if (
-                      !categoryId ||
-                      !subCategoryId ||
+                      !selectedCatId ||
                       watched.title.trim().length === 0 ||
                       (watched.type === 'FOR_RENT' &&
                         (!watched.durationValue || !watched.durationUnit))
@@ -339,6 +358,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                     }
                     setStep(2);
                   }}
+                  type="button"
                 >
                   Suivant
                 </Button>
@@ -368,14 +388,8 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 <Input
                   id="price"
                   type="number"
-                  value={priceValue}
-                  onChange={(e) =>
-                    setValue(
-                      'price',
-                      e.target.value === '' ? NaN : Number(e.target.value),
-                      { shouldValidate: true }
-                    )
-                  }
+                  // important: pas de NaN, on laisse RHF parser
+                  {...methods.register('price', { valueAsNumber: true })}
                   disabled={isDon}
                   className="w-40"
                   placeholder={'USD'}
@@ -507,7 +521,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   location,
                   lat,
                   lng,
-                  categoryId,
+                  categoryId: selectedCatId,
                   type: watched.type,
                   durationUnit: watched.durationUnit,
                   durationValue: watched.durationValue,

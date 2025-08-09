@@ -163,7 +163,7 @@ model CategoryField {
   required    Boolean   @default(false)
   options     Json?
   adFields    AdField[]
-  
+  @@unique([categoryId, name])
   @@index([categoryId])
 }
 

@@ -52,7 +52,6 @@ export default function DynamicFieldsSection({
               {field.required && <span className="text-red-500">*</span>}
             </label>
 
-            {/* SELECT / ENUM */}
             {isSelect && Array.isArray(field.options) && (
               <select
                 defaultValue=""
@@ -60,18 +59,20 @@ export default function DynamicFieldsSection({
                 aria-required={field.required || undefined}
                 required={field.required}
                 {...register(fieldName, rules)}
-                className={`w-full rounded-xl border bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 ${
-                  errorMsg ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full rounded-xl border bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 ${errorMsg ? 'border-red-500' : 'border-gray-300'}`}
               >
                 <option value="" disabled>
-                  Sélectionnez
+                  {' '}
+                  Sélectionnez{' '}
                 </option>
-                {field.options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
+                {field.options.map((opt) => {
+                  const val = String(opt);
+                  return (
+                    <option key={val} value={val}>
+                      {val}
+                    </option>
+                  );
+                })}
               </select>
             )}
 
@@ -79,17 +80,15 @@ export default function DynamicFieldsSection({
             {isNumber && (
               <Input
                 type="number"
-                inputMode="numeric"
-                step="1"
-                min={0}
+                inputMode="decimal"
+                step="any" // ← au lieu de "1"
+                // min={0}                 // ← enlève si pas sûr
                 aria-invalid={!!errorMsg}
                 aria-required={field.required || undefined}
                 required={field.required}
                 placeholder={field.required ? 'Obligatoire' : 'Optionnel'}
                 {...register(fieldName, rules)}
-                className={`rounded-xl px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-200 ${
-                  errorMsg ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`rounded-xl px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-200 ${errorMsg ? 'border-red-500' : 'border-gray-300'}`}
               />
             )}
 

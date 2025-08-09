@@ -73,7 +73,7 @@ export default function LocationSlider({
           else enableGeoloc();
         }}
         className={`
-           p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 font-bold flex items-center gap-2 transition
+           p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 text-sm font-bold flex items-center gap-2 transition
           ${
             isActive
               ? 'bg-gradient-to-r from-orange-400 to-orange-600 text-white border-orange-500'

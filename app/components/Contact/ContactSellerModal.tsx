@@ -14,7 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Ad } from '@/types/ad';
 import Image from 'next/image';
-import socket from '@/lib/socket';
+import { socket } from '@/lib/socket';
 
 import { useState } from 'react';
 
