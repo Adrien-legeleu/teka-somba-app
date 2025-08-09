@@ -19,19 +19,18 @@ export default function LayoutHomeMobile({
 
   const [showCategories, setShowCategories] = useState(true);
   const lastScrollY = useRef(0);
-  const threshold = 10; // évite les micro-déclenchements
+  const threshold = 10; // éviter micro-déclenchements
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // Si la différence est trop faible, on ignore
       if (Math.abs(currentScrollY - lastScrollY.current) < threshold) return;
 
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        setShowCategories(false); // Scroll vers le bas
+        setShowCategories(false); // scroll vers le bas
       } else {
-        setShowCategories(true); // Scroll vers le haut
+        setShowCategories(true); // scroll vers le haut
       }
 
       lastScrollY.current = currentScrollY;
@@ -49,9 +48,9 @@ export default function LayoutHomeMobile({
     <div className="w-full mx-auto pb-32">
       {isMobile ? (
         <>
-          <div className="sticky top-0 z-50 bg-white shadow p-4 flex flex-col gap-4">
+          <div className="sticky top-0 z-50 bg-white shadow flex flex-col gap-4 p-4">
             <h1
-              className="w-full text-center text-3xl font-bold text-transparent bg-clip-text inline-block"
+              className="w-full text-center text-3xl font-bold text-transparent bg-clip-text"
               style={{
                 backgroundImage: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
               }}
@@ -61,14 +60,15 @@ export default function LayoutHomeMobile({
 
             <SearchBarMobile />
 
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {showCategories && (
                 <motion.div
                   key="categories"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.25 }}
+                  className="overflow-hidden" // évite le glitch
                 >
                   <CategoryIconList />
                 </motion.div>
