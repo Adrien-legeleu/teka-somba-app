@@ -53,7 +53,7 @@ export default function FilterDrawerMobile() {
     <>
       <Button
         variant="outline"
-        className="rounded-full relative  left-6 text-sm px-4 py-2 mt-4 flex items-center gap-2"
+        className="p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 relative  left-6 text-sm mt-4 flex items-center gap-2"
         onClick={() => setOpen(true)}
       >
         <IconAdjustmentsHorizontal size={18} />
@@ -102,14 +102,14 @@ export default function FilterDrawerMobile() {
                   placeholder="Min (USD)"
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
-                  className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5   text-sm"
+                  className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5   text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
                 />
                 <input
                   type="number"
                   placeholder="Max (USD)"
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
-                  className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 text-sm"
+                  className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
                 />
               </div>
               <div className="relative w-full">
