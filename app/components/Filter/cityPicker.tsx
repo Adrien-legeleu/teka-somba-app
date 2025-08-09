@@ -39,10 +39,15 @@ export function CitySection({ city, setCity }: CitySectionProps) {
     }
     try {
       const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          q
-        )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&autocomplete=true&language=fr&types=place`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json` +
+          `?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}` +
+          `&autocomplete=true` +
+          `&language=fr` +
+          `&types=place,locality,region,country` +
+          `&limit=8` +
+          `&proximity=23.654,-2.879` // Centre géographique du Congo
       );
+
       const data = await res.json();
       setSuggestions((data.features as MapboxFeature[]) || []);
       setOpen(true);
@@ -73,47 +78,37 @@ export function CitySection({ city, setCity }: CitySectionProps) {
         value={search}
         onFocus={() => search && suggestions.length > 0 && setOpen(true)}
         onChange={(e) => handleSearchDebounced(e.target.value)}
-        className="w-full mt-1 px-4 py-2 rounded-3xl border bg-white shadow-sm border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
+        className="w-full mt-1 p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
       />
 
-      {createPortal(
-        <AnimatePresence>
-          {open && suggestions.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute bg-white shadow-lg rounded-2xl mt-2 p-4 z-[9999]"
-              style={{
-                position: 'absolute',
-                top:
-                  (wrapRef.current?.getBoundingClientRect().bottom ?? 0) +
-                  window.scrollY,
-                left:
-                  (wrapRef.current?.getBoundingClientRect().left ?? 0) +
-                  window.scrollX,
-                width: wrapRef.current?.offsetWidth ?? 200,
-              }}
-            >
-              {suggestions.map((place) => (
-                <div
-                  key={place.id}
-                  className="px-3 py-2 hover:bg-gray-100 rounded-xl cursor-pointer text-sm"
-                  onClick={() => {
-                    setCity(place.text);
-                    setSearch(place.text);
-                    setSuggestions([]);
-                    setOpen(false);
-                  }}
-                >
-                  {place.place_name}
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      <AnimatePresence>
+        {open && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute left-0 right-0 mt-2 bg-white shadow-lg rounded-3xl p-4 z-50 max-h-60 overflow-y-auto"
+          >
+            {suggestions.map((place) => (
+              <div
+                key={place.id}
+                className="px-3 py-2 hover:bg-gray-100 rounded-3xl cursor-pointer text-sm"
+                onClick={() => {
+                  setCity(place.text);
+                  setSearch(place.text);
+                  setSuggestions([]);
+                  setOpen(false);
+                }}
+              >
+                {place.place_name}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,6 +1,9 @@
 'use client';
 
-import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
+import {
+  IconAdjustmentsHorizontal,
+  IconChevronDown,
+} from '@tabler/icons-react';
 import { useFilter } from '../Home/FilterContext';
 import {
   Drawer,
@@ -15,6 +18,7 @@ import { DonSection } from '../Filter/DonSwitch';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import LocationSlider from './LocationSlider';
+import { CitySection } from '../Filter/cityPicker';
 
 export default function FilterBarDesktop() {
   const [open, setOpen] = useState(false);
@@ -44,16 +48,14 @@ export default function FilterBarDesktop() {
   } = useFilter();
 
   return (
-    <div className="hidden md:flex flex-col gap-4 p-4 items-start justify-center rounded-3xl shadow-2xl shadow-black/10 border bg-neutral-50/60 backdrop-blur-md mt-6 max-w-sm mx-auto z-30 border-b border-gray-200">
+    <div className="hidden md:flex flex-col gap-4 p-4 items-start justify-center rounded-3xl shadow-lg shadow-black/5 border border-black/5 bg-neutral-50/60 backdrop-blur-md mt-6 max-w-sm mx-auto z-30 border-b ">
       <div className="flex  items-end justify-between max-w-7xl w-full gap-4">
         <div className="flex flex-col gap-2 w-full">
-          {/* Ville (city) classique */}
-          <input
-            type="text"
-            placeholder="Ville, quartier..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-full rounded-3xl bg-white border p-4 text-sm shadow"
+          <CitySection
+            city={city}
+            setCity={(val) => {
+              setCity(val);
+            }}
           />
         </div>
 
@@ -62,7 +64,7 @@ export default function FilterBarDesktop() {
           <DrawerTrigger asChild>
             <button
               onClick={() => setOpen(true)}
-              className="flex items-center gap-2  p-4 rounded-3xl bg-white border shadow-sm hover:bg-gray-100 transition text-sm font-medium text-gray-800"
+              className="flex items-center gap-2   p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 hover:bg-gray-100 transition text-sm font-medium text-gray-800"
             >
               <IconAdjustmentsHorizontal size={20} />
               Filtres
@@ -79,7 +81,7 @@ export default function FilterBarDesktop() {
               </DrawerHeader>
 
               {/* Contenu scrollable */}
-              <div className="flex-1 flex max-w-2xl w-full mx-auto flex-col gap-6 pb-5">
+              <div className="flex-1 flex max-w-2xl w-full mx-auto flex-col gap-6 pb-10">
                 <CategorySection
                   categories={categories}
                   categoryId={categoryId}
@@ -96,7 +98,7 @@ export default function FilterBarDesktop() {
                     placeholder="Min (USD)"
                     value={priceMin}
                     onChange={(e) => setPriceMin(e.target.value)}
-                    className="w-full rounded-3xl p-4 border shadow-lg border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
+                    className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5   text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
                   />
                   <span className="text-gray-400">–</span>
                   <input
@@ -104,20 +106,24 @@ export default function FilterBarDesktop() {
                     placeholder="Max (USD)"
                     value={priceMax}
                     onChange={(e) => setPriceMax(e.target.value)}
-                    className="w-full rounded-3xl p-4 border shadow-lg border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
+                    className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5   text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
                   />
                 </div>
 
-                <select
-                  value={sortOrder}
-                  onChange={(e) =>
-                    setSortOrder(e.target.value as 'asc' | 'desc')
-                  }
-                  className="w-full rounded-3xl p-4 border shadow-lg border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none bg-white text-sm"
-                >
-                  <option value="desc">Prix décroissant</option>
-                  <option value="asc">Prix croissant</option>
-                </select>
+                <div className="relative w-full">
+                  <select
+                    value={sortOrder}
+                    onChange={(e) =>
+                      setSortOrder(e.target.value as 'asc' | 'desc')
+                    }
+                    className="w-full p-4 pr-10 rounded-3xl border border-black/5 shadow-lg shadow-black/5 text-sm bg-white appearance-none focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  >
+                    <option value="desc">Prix décroissant</option>
+                    <option value="asc">Prix croissant</option>
+                  </select>
+
+                  <IconChevronDown className="w-5 h-5 text-gray-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
             </div>
 

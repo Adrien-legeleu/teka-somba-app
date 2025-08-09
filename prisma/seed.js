@@ -323,13 +323,15 @@ async function main() {
   }
 
   const fields = [
-    // Véhicules > Voitures
+    // ————————————————————————————
+    // VÉHICULES > VOITURES
+    // ————————————————————————————
     { categoryId: 'voitures', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'voitures', name: 'Modèle', type: 'TEXT', required: true },
     { categoryId: 'voitures', name: 'Année', type: 'NUMBER', required: true },
     {
       categoryId: 'voitures',
-      name: 'Kilométrage',
+      name: 'Kilométrage (km)',
       type: 'NUMBER',
       required: true,
     },
@@ -337,14 +339,21 @@ async function main() {
       categoryId: 'voitures',
       name: 'Carburant',
       type: 'SELECT',
-      options: ['Essence', 'Diesel', 'Hybride', 'Électrique'],
+      options: [
+        'Essence',
+        'Diesel',
+        'Hybride',
+        'Hybride rechargeable',
+        'Électrique',
+        'GPL/E85',
+      ],
       required: true,
     },
     {
       categoryId: 'voitures',
       name: 'Boîte de vitesse',
       type: 'SELECT',
-      options: ['Manuelle', 'Automatique'],
+      options: ['Manuelle', 'Automatique', 'Robotisée'],
       required: true,
     },
     {
@@ -371,15 +380,109 @@ async function main() {
       options: ['2', '3', '4', '5'],
       required: false,
     },
-    { categoryId: 'voitures', name: 'Couleur', type: 'TEXT', required: false },
+    {
+      categoryId: 'voitures',
+      name: 'Couleur',
+      type: 'SELECT',
+      options: [
+        'Noir',
+        'Blanc',
+        'Gris',
+        'Argent',
+        'Bleu',
+        'Rouge',
+        'Vert',
+        'Beige',
+        'Marron',
+        'Autre',
+      ],
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Puissance (ch)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Puissance fiscale (CV)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Crit’Air',
+      type: 'SELECT',
+      options: ['Non soumis', '0', '1', '2', '3', '4', '5'],
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Norme Euro',
+      type: 'SELECT',
+      options: ['Euro 6', 'Euro 5', 'Euro 4', 'Euro 3', 'Euro 2', 'Euro 1'],
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Consommation mixte (L/100 km)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Nombre de places',
+      type: 'SELECT',
+      options: ['2', '4', '5', '7', '8+'],
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Première main',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Entretien à jour',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Contrôle technique OK',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Véhicule non fumeur',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Nombre de propriétaires',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'voitures',
+      name: 'Version / Finition',
+      type: 'TEXT',
+      required: false,
+    },
 
-    // Véhicules > Motos
+    // ————————————————————————————
+    // VÉHICULES > MOTOS
+    // ————————————————————————————
     { categoryId: 'motos', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'motos', name: 'Modèle', type: 'TEXT', required: true },
     { categoryId: 'motos', name: 'Année', type: 'NUMBER', required: true },
     {
       categoryId: 'motos',
-      name: 'Kilométrage',
+      name: 'Kilométrage (km)',
       type: 'NUMBER',
       required: true,
     },
@@ -407,19 +510,63 @@ async function main() {
         'Trail/Enduro',
         'Scooter',
         'Cross',
+        'Touring',
         'Autre',
       ],
       required: false,
     },
-    { categoryId: 'motos', name: 'Couleur', type: 'TEXT', required: false },
+    {
+      categoryId: 'motos',
+      name: 'Type moteur',
+      type: 'SELECT',
+      options: ['2 temps', '4 temps'],
+      required: false,
+    },
+    {
+      categoryId: 'motos',
+      name: 'Refroidissement',
+      type: 'SELECT',
+      options: ['Air', 'Liquide'],
+      required: false,
+    },
+    {
+      categoryId: 'motos',
+      name: 'Puissance (ch)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'motos',
+      name: 'A2 bridable',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'motos',
+      name: 'Couleur',
+      type: 'SELECT',
+      options: [
+        'Noir',
+        'Blanc',
+        'Gris',
+        'Rouge',
+        'Bleu',
+        'Vert',
+        'Orange',
+        'Autre',
+      ],
+      required: false,
+    },
 
-    // Véhicules > Caravaning
+    // ————————————————————————————
+    // VÉHICULES > CARAVANING
+    // ————————————————————————————
     { categoryId: 'caravaning', name: 'Marque', type: 'TEXT', required: false },
     { categoryId: 'caravaning', name: 'Modèle', type: 'TEXT', required: false },
     { categoryId: 'caravaning', name: 'Année', type: 'NUMBER', required: true },
     {
       categoryId: 'caravaning',
-      name: 'Kilométrage',
+      name: 'Kilométrage (km)',
       type: 'NUMBER',
       required: false,
     },
@@ -431,16 +578,21 @@ async function main() {
     },
     {
       categoryId: 'caravaning',
-      name: 'Nombre de couchages',
+      name: 'Largeur (m)',
       type: 'NUMBER',
-      required: true,
+      required: false,
     },
     {
       categoryId: 'caravaning',
-      name: 'Énergie',
-      type: 'SELECT',
-      options: ['Gaz', 'Électrique'],
+      name: 'Hauteur (m)',
+      type: 'NUMBER',
       required: false,
+    },
+    {
+      categoryId: 'caravaning',
+      name: 'Nombre de couchages',
+      type: 'NUMBER',
+      required: true,
     },
     {
       categoryId: 'caravaning',
@@ -455,8 +607,41 @@ async function main() {
       ],
       required: true,
     },
+    {
+      categoryId: 'caravaning',
+      name: 'PTAC (kg)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'caravaning',
+      name: 'Places carte grise',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'caravaning',
+      name: 'Douche',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'caravaning',
+      name: 'Toilettes',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'caravaning',
+      name: 'Énergie',
+      type: 'SELECT',
+      options: ['Gaz', 'Électrique', 'Mixte'],
+      required: false,
+    },
 
-    // Véhicules > Utilitaires
+    // ————————————————————————————
+    // VÉHICULES > UTILITAIRES
+    // ————————————————————————————
     { categoryId: 'utilitaires', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'utilitaires', name: 'Modèle', type: 'TEXT', required: true },
     {
@@ -467,7 +652,7 @@ async function main() {
     },
     {
       categoryId: 'utilitaires',
-      name: 'Kilométrage',
+      name: 'Kilométrage (km)',
       type: 'NUMBER',
       required: true,
     },
@@ -475,7 +660,7 @@ async function main() {
       categoryId: 'utilitaires',
       name: 'Carburant',
       type: 'SELECT',
-      options: ['Diesel', 'Essence'],
+      options: ['Diesel', 'Essence', 'Électrique'],
       required: true,
     },
     {
@@ -497,14 +682,34 @@ async function main() {
       type: 'NUMBER',
       required: true,
     },
+    {
+      categoryId: 'utilitaires',
+      name: 'Volume utile (m³)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'utilitaires',
+      name: 'Porte latérale',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'utilitaires',
+      name: 'Climatisation',
+      type: 'BOOLEAN',
+      required: false,
+    },
 
-    // Véhicules > Camions
+    // ————————————————————————————
+    // VÉHICULES > CAMIONS
+    // ————————————————————————————
     { categoryId: 'camions', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'camions', name: 'Modèle', type: 'TEXT', required: false },
     { categoryId: 'camions', name: 'Année', type: 'NUMBER', required: true },
     {
       categoryId: 'camions',
-      name: 'Kilométrage',
+      name: 'Kilométrage (km)',
       type: 'NUMBER',
       required: true,
     },
@@ -512,7 +717,7 @@ async function main() {
       categoryId: 'camions',
       name: 'Carburant',
       type: 'SELECT',
-      options: ['Diesel', 'Essence', 'Électrique'],
+      options: ['Diesel', 'Essence', 'Électrique', 'GNV'],
       required: true,
     },
     {
@@ -528,13 +733,49 @@ async function main() {
       type: 'NUMBER',
       required: true,
     },
+    {
+      categoryId: 'camions',
+      name: 'Nombre d’essieux',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'camions',
+      name: 'Configuration',
+      type: 'SELECT',
+      options: [
+        'Benne',
+        'Plateau',
+        'Fourgon',
+        'Frigo',
+        'Bâché',
+        'Citerne',
+        'Ampliroll',
+        'Autre',
+      ],
+      required: false,
+    },
+    {
+      categoryId: 'camions',
+      name: 'Hayon élévateur',
+      type: 'BOOLEAN',
+      required: false,
+    },
 
-    // Véhicules > Nautisme
+    // ————————————————————————————
+    // VÉHICULES > NAUTISME
+    // ————————————————————————————
     {
       categoryId: 'nautisme',
       name: 'Type de bateau',
       type: 'SELECT',
-      options: ['Voilier', 'Bateau à moteur', 'Péniche'],
+      options: [
+        'Voilier',
+        'Bateau à moteur',
+        'Semi-rigide',
+        'Péniche',
+        'Jet-ski',
+      ],
       required: true,
     },
     { categoryId: 'nautisme', name: 'Marque', type: 'TEXT', required: false },
@@ -548,12 +789,46 @@ async function main() {
     },
     {
       categoryId: 'nautisme',
+      name: 'Largeur (m)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'nautisme',
       name: 'Nombre de couchages',
       type: 'NUMBER',
       required: false,
     },
+    {
+      categoryId: 'nautisme',
+      name: 'Motorisation',
+      type: 'SELECT',
+      options: ['Hors-bord', 'In-bord', 'Voile', 'Mixte'],
+      required: false,
+    },
+    {
+      categoryId: 'nautisme',
+      name: 'Puissance moteur (cv)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'nautisme',
+      name: 'Nombre de moteurs',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'nautisme',
+      name: 'Armement sécurité',
+      type: 'SELECT',
+      options: ['Basique', 'Côtier', 'Hauturier'],
+      required: false,
+    },
 
-    // Immobilier > Ventes immobilières
+    // ————————————————————————————
+    // IMMOBILIER > VENTES
+    // ————————————————————————————
     {
       categoryId: 'ventes',
       name: 'Surface (m²)',
@@ -582,7 +857,15 @@ async function main() {
       categoryId: 'ventes',
       name: 'Type de bien',
       type: 'SELECT',
-      options: ['Appartement', 'Maison', 'Studio', 'Autre'],
+      options: [
+        'Appartement',
+        'Maison',
+        'Studio',
+        'Loft',
+        'Duplex',
+        'Terrain',
+        'Autre',
+      ],
       required: true,
     },
     {
@@ -597,19 +880,20 @@ async function main() {
       type: 'NUMBER',
       required: false,
     },
-    {
-      categoryId: 'ventes',
-      name: 'Étage',
-      type: 'NUMBER',
-      required: false,
-    },
+    { categoryId: 'ventes', name: 'Étage', type: 'NUMBER', required: false },
     {
       categoryId: 'ventes',
       name: 'Ascenseur',
       type: 'BOOLEAN',
       required: false,
     },
-    { categoryId: 'ventes', name: 'Parking', type: 'BOOLEAN', required: false },
+    {
+      categoryId: 'ventes',
+      name: 'Parking/Stationnement',
+      type: 'SELECT',
+      options: ['Aucun', 'Parking', 'Box', 'Garage'],
+      required: false,
+    },
     { categoryId: 'ventes', name: 'Jardin', type: 'BOOLEAN', required: false },
     {
       categoryId: 'ventes',
@@ -621,6 +905,59 @@ async function main() {
     {
       categoryId: 'ventes',
       name: 'Surface terrain (m²)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'État du bien',
+      type: 'SELECT',
+      options: ['Neuf', 'Rénové', 'Bon état', 'À rénover'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Chauffage',
+      type: 'SELECT',
+      options: ['Individuel', 'Collectif', 'Aucun'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Type de chauffage',
+      type: 'SELECT',
+      options: ['Électrique', 'Gaz', 'Pompe à chaleur', 'Bois', 'Fioul'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Cuisine',
+      type: 'SELECT',
+      options: ['Aucune', 'Aménagée', 'Équipée'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Exposition',
+      type: 'SELECT',
+      options: ['N', 'S', 'E', 'O', 'NE', 'NO', 'SE', 'SO'],
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Copropriété',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Charges copropriété (€ /mois)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'ventes',
+      name: 'Taxe foncière (€ /an)',
       type: 'NUMBER',
       required: false,
     },
@@ -638,13 +975,21 @@ async function main() {
       options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
       required: false,
     },
+    {
+      categoryId: 'ventes',
+      name: 'Accès PMR',
+      type: 'BOOLEAN',
+      required: false,
+    },
 
-    // Immobilier > Locations
+    // ————————————————————————————
+    // IMMOBILIER > LOCATIONS
+    // ————————————————————————————
     {
       categoryId: 'locations',
       name: 'Type de bien',
       type: 'SELECT',
-      options: ['Appartement', 'Maison', 'Studio', 'Autre'],
+      options: ['Appartement', 'Maison', 'Studio', 'Loft', 'Duplex', 'Autre'],
       required: true,
     },
     {
@@ -681,8 +1026,9 @@ async function main() {
     },
     {
       categoryId: 'locations',
-      name: 'Parking',
-      type: 'BOOLEAN',
+      name: 'Parking/Stationnement',
+      type: 'SELECT',
+      options: ['Aucun', 'Parking', 'Box', 'Garage'],
       required: false,
     },
     {
@@ -717,6 +1063,36 @@ async function main() {
     },
     {
       categoryId: 'locations',
+      name: 'Type de bail',
+      type: 'SELECT',
+      options: [
+        'Classique',
+        'Meublé (1 an)',
+        'Bail mobilité (1–10 mois)',
+        'Colocation',
+      ],
+      required: false,
+    },
+    {
+      categoryId: 'locations',
+      name: 'Dépôt de garantie (€)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'locations',
+      name: 'Colocation acceptée',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'locations',
+      name: 'APL/CAF accepté',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'locations',
       name: 'Classe énergie',
       type: 'SELECT',
       options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
@@ -730,7 +1106,9 @@ async function main() {
       required: false,
     },
 
-    // Immobilier > Colocations
+    // ————————————————————————————
+    // IMMOBILIER > COLOCATIONS
+    // ————————————————————————————
     {
       categoryId: 'colocations',
       name: 'Surface de la chambre (m²)',
@@ -776,6 +1154,18 @@ async function main() {
     },
     {
       categoryId: 'colocations',
+      name: 'Salle de bain privative',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'colocations',
+      name: 'Dépôt de garantie (€)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'colocations',
       name: 'Classe énergie',
       type: 'SELECT',
       options: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Vierge'],
@@ -789,7 +1179,9 @@ async function main() {
       required: false,
     },
 
-    // Immobilier > Bureaux & Commerces
+    // ————————————————————————————
+    // IMMOBILIER > BUREAUX & COMMERCES
+    // ————————————————————————————
     {
       categoryId: 'bureaux',
       name: 'Surface (m²)',
@@ -800,7 +1192,7 @@ async function main() {
       categoryId: 'bureaux',
       name: 'Type',
       type: 'SELECT',
-      options: ['Bureau', 'Commerce'],
+      options: ['Bureau', 'Commerce', 'Local/Atelier'],
       required: true,
     },
     {
@@ -819,6 +1211,24 @@ async function main() {
     {
       categoryId: 'bureaux',
       name: 'Parking',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'bureaux',
+      name: 'Fibre optique',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'bureaux',
+      name: 'Accès PMR',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'bureaux',
+      name: 'Salle de réunion',
       type: 'BOOLEAN',
       required: false,
     },
@@ -849,7 +1259,9 @@ async function main() {
       required: false,
     },
 
-    // Vacances > Locations saisonnières
+    // ————————————————————————————
+    // VACANCES > LOCATIONS SAISONNIÈRES
+    // ————————————————————————————
     {
       categoryId: 'locations_saisonnieres',
       name: 'Capacité d’accueil (personnes)',
@@ -904,14 +1316,60 @@ async function main() {
       type: 'BOOLEAN',
       required: false,
     },
+    {
+      categoryId: 'locations_saisonnieres',
+      name: 'Linge fourni',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'locations_saisonnieres',
+      name: 'Ménage inclus',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'locations_saisonnieres',
+      name: 'Arrivée autonome',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'locations_saisonnieres',
+      name: 'Nuitées minimum',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'locations_saisonnieres',
+      name: 'Caution (€)',
+      type: 'NUMBER',
+      required: false,
+    },
 
-    // Emploi > Offres d’emploi
+    // ————————————————————————————
+    // EMPLOI > OFFRES
+    // ————————————————————————————
     {
       categoryId: 'offres',
       name: 'Type de contrat',
       type: 'SELECT',
-      options: ['CDD', 'CDI', 'Intérim', 'Freelance'],
+      options: ['CDI', 'CDD', 'Intérim', 'Freelance', 'Alternance', 'Stage'],
       required: true,
+    },
+    {
+      categoryId: 'offres',
+      name: 'Temps de travail',
+      type: 'SELECT',
+      options: ['Temps plein', 'Temps partiel'],
+      required: true,
+    },
+    {
+      categoryId: 'offres',
+      name: 'Télétravail',
+      type: 'SELECT',
+      options: ['Aucun', 'Hybride', 'Temps plein'],
+      required: false,
     },
     {
       categoryId: 'offres',
@@ -938,8 +1396,28 @@ async function main() {
       type: 'NUMBER',
       required: false,
     },
+    {
+      categoryId: 'offres',
+      name: 'Tickets resto',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'offres',
+      name: 'Mutuelle',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'offres',
+      name: 'Transport remboursé',
+      type: 'BOOLEAN',
+      required: false,
+    },
 
-    // Emploi > Demandes d’emploi
+    // ————————————————————————————
+    // EMPLOI > DEMANDES
+    // ————————————————————————————
     {
       categoryId: 'demandes',
       name: 'Métier recherché',
@@ -955,18 +1433,28 @@ async function main() {
     {
       categoryId: 'demandes',
       name: 'Niveau d’études',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: ['Aucun', 'CAP/BEP', 'Bac', 'Bac+2', 'Bac+3/4', 'Bac+5 et plus'],
       required: false,
     },
     {
       categoryId: 'demandes',
       name: 'Type de contrat souhaité',
       type: 'SELECT',
-      options: ['CDD', 'CDI', 'Intérim', 'Freelance', 'Alternance'],
+      options: ['CDI', 'CDD', 'Intérim', 'Freelance', 'Alternance', 'Stage'],
+      required: false,
+    },
+    {
+      categoryId: 'demandes',
+      name: 'Télétravail souhaité',
+      type: 'SELECT',
+      options: ['Aucun', 'Hybride', 'Temps plein'],
       required: false,
     },
 
-    // Mode > Vêtements
+    // ————————————————————————————
+    // MODE > VÊTEMENTS
+    // ————————————————————————————
     {
       categoryId: 'vetements',
       name: 'Genre',
@@ -974,10 +1462,45 @@ async function main() {
       options: ['Homme', 'Femme', 'Unisexe'],
       required: true,
     },
-    { categoryId: 'vetements', name: 'Taille', type: 'TEXT', required: true },
+    {
+      categoryId: 'vetements',
+      name: 'Taille',
+      type: 'SELECT',
+      options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Autre'],
+      required: true,
+    },
     { categoryId: 'vetements', name: 'Marque', type: 'TEXT', required: false },
-    { categoryId: 'vetements', name: 'Couleur', type: 'TEXT', required: false },
-    { categoryId: 'vetements', name: 'Matière', type: 'TEXT', required: false },
+    {
+      categoryId: 'vetements',
+      name: 'Couleur',
+      type: 'SELECT',
+      options: [
+        'Noir',
+        'Blanc',
+        'Gris',
+        'Bleu',
+        'Rouge',
+        'Vert',
+        'Beige',
+        'Autre',
+      ],
+      required: false,
+    },
+    {
+      categoryId: 'vetements',
+      name: 'Matière',
+      type: 'SELECT',
+      options: [
+        'Coton',
+        'Laine',
+        'Cuir',
+        'Lin',
+        'Synthétique',
+        'Soie',
+        'Autre',
+      ],
+      required: false,
+    },
     {
       categoryId: 'vetements',
       name: 'État',
@@ -985,12 +1508,21 @@ async function main() {
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
+    {
+      categoryId: 'vetements',
+      name: 'Saison',
+      type: 'SELECT',
+      options: ['Été', 'Hiver', 'Mi-saison', 'Toutes saisons'],
+      required: false,
+    },
 
-    // Mode > Chaussures
+    // ————————————————————————————
+    // MODE > CHAUSSURES
+    // ————————————————————————————
     {
       categoryId: 'chaussures',
-      name: 'Pointure',
-      type: 'TEXT',
+      name: 'Pointure (EU)',
+      type: 'NUMBER',
       required: true,
     },
     {
@@ -1009,8 +1541,24 @@ async function main() {
       required: true,
     },
 
-    // Mode > Accessoires & Bagagerie
-    { categoryId: 'accessoires', name: 'Type', type: 'TEXT', required: true },
+    // ————————————————————————————
+    // MODE > ACCESSOIRES & BAGAGERIE
+    // ————————————————————————————
+    {
+      categoryId: 'accessoires',
+      name: 'Type',
+      type: 'SELECT',
+      options: [
+        'Sac',
+        'Ceinture',
+        'Casquette/Chapeau',
+        'Écharpe',
+        'Porte-monnaie',
+        'Valise',
+        'Autre',
+      ],
+      required: true,
+    },
     {
       categoryId: 'accessoires',
       name: 'Marque',
@@ -1025,10 +1573,31 @@ async function main() {
       required: true,
     },
 
-    // Mode > Montres & Bijoux
-    { categoryId: 'bijoux', name: 'Type', type: 'TEXT', required: true },
+    // ————————————————————————————
+    // MODE > MONTRES & BIJOUX
+    // ————————————————————————————
+    {
+      categoryId: 'bijoux',
+      name: 'Type',
+      type: 'SELECT',
+      options: [
+        'Montre',
+        'Bague',
+        'Collier',
+        'Bracelet',
+        'Boucles d’oreilles',
+        'Autre',
+      ],
+      required: true,
+    },
     { categoryId: 'bijoux', name: 'Marque', type: 'TEXT', required: false },
-    { categoryId: 'bijoux', name: 'Matériau', type: 'TEXT', required: false },
+    {
+      categoryId: 'bijoux',
+      name: 'Matériau',
+      type: 'SELECT',
+      options: ['Or', 'Argent', 'Acier', 'Plaqué', 'Autre'],
+      required: false,
+    },
     {
       categoryId: 'bijoux',
       name: 'État',
@@ -1036,13 +1605,37 @@ async function main() {
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
+    {
+      categoryId: 'bijoux',
+      name: 'Étanchéité (ATM)',
+      type: 'NUMBER',
+      required: false,
+    },
 
-    // Maison & Jardin > Ameublement
-    { categoryId: 'ameublement', name: 'Type', type: 'TEXT', required: true },
+    // ————————————————————————————
+    // MAISON & JARDIN > AMEUBLEMENT
+    // ————————————————————————————
+    {
+      categoryId: 'ameublement',
+      name: 'Type',
+      type: 'SELECT',
+      options: [
+        'Canapé',
+        'Table',
+        'Chaise',
+        'Lit',
+        'Armoire',
+        'Bureau',
+        'Rangement',
+        'Autre',
+      ],
+      required: true,
+    },
     {
       categoryId: 'ameublement',
       name: 'Matériau',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: ['Bois', 'Métal', 'Verre', 'Tissu', 'Cuir', 'Autre'],
       required: false,
     },
     {
@@ -1052,8 +1645,28 @@ async function main() {
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
+    {
+      categoryId: 'ameublement',
+      name: 'Longueur (cm)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'ameublement',
+      name: 'Profondeur (cm)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'ameublement',
+      name: 'Hauteur (cm)',
+      type: 'NUMBER',
+      required: false,
+    },
 
-    // Maison & Jardin > Électroménager
+    // ————————————————————————————
+    // MAISON & JARDIN > ÉLECTROMÉNAGER
+    // ————————————————————————————
     {
       categoryId: 'electromenager',
       name: 'Type d’appareil',
@@ -1075,13 +1688,34 @@ async function main() {
     },
     {
       categoryId: 'electromenager',
+      name: 'Classe énergie',
+      type: 'SELECT',
+      options: ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D'],
+      required: false,
+    },
+    {
+      categoryId: 'electromenager',
+      name: 'Puissance (W)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'electromenager',
+      name: 'Capacité (L/kg)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'electromenager',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Maison & Jardin > Décoration
+    // ————————————————————————————
+    // MAISON & JARDIN > DÉCORATION
+    // ————————————————————————————
     { categoryId: 'decoration', name: 'Type', type: 'TEXT', required: true },
     { categoryId: 'decoration', name: 'Style', type: 'TEXT', required: false },
     {
@@ -1092,7 +1726,9 @@ async function main() {
       required: false,
     },
 
-    // Maison & Jardin > Jardin & Plantes
+    // ————————————————————————————
+    // MAISON & JARDIN > JARDIN & PLANTES
+    // ————————————————————————————
     {
       categoryId: 'jardin',
       name: 'Type de plante',
@@ -1112,9 +1748,16 @@ async function main() {
       type: 'NUMBER',
       required: false,
     },
-    { categoryId: 'jardin', name: 'Âge', type: 'TEXT', required: false },
+    {
+      categoryId: 'jardin',
+      name: 'Âge (années)',
+      type: 'NUMBER',
+      required: false,
+    },
 
-    // Maison & Jardin > Bricolage
+    // ————————————————————————————
+    // MAISON & JARDIN > BRICOLAGE
+    // ————————————————————————————
     {
       categoryId: 'bricolage',
       name: 'Type d’outils',
@@ -1148,11 +1791,21 @@ async function main() {
       required: true,
     },
 
-    // Famille (Puériculture) > Équipement bébé
+    // ————————————————————————————
+    // FAMILLE > ÉQUIPEMENT BÉBÉ
+    // ————————————————————————————
     {
       categoryId: 'equipement_bebe',
       name: 'Type',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: [
+        'Poussette',
+        'Siège auto',
+        'Transat',
+        'Lit bébé',
+        'Chaise haute',
+        'Autre',
+      ],
       required: true,
     },
     {
@@ -1164,7 +1817,8 @@ async function main() {
     {
       categoryId: 'equipement_bebe',
       name: 'Âge enfant',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: ['0–6 mois', '6–12 mois', '12–24 mois', '2–4 ans', '4+ ans'],
       required: false,
     },
     {
@@ -1175,11 +1829,14 @@ async function main() {
       required: true,
     },
 
-    // Famille > Mobilier enfant
+    // ————————————————————————————
+    // FAMILLE > MOBILIER ENFANT
+    // ————————————————————————————
     {
       categoryId: 'mobilier_enfant',
       name: 'Type',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: ['Lit', 'Bureau', 'Armoire', 'Rangement', 'Chaise', 'Autre'],
       required: true,
     },
     {
@@ -1196,18 +1853,29 @@ async function main() {
       required: true,
     },
 
-    // Famille > Vêtements bébé
+    // ————————————————————————————
+    // FAMILLE > VÊTEMENTS BÉBÉ
+    // ————————————————————————————
     {
       categoryId: 'vetements_bebe',
       name: 'Taille',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: [
+        '0–3 mois',
+        '3–6 mois',
+        '6–12 mois',
+        '12–18 mois',
+        '18–24 mois',
+        '2–3 ans',
+        '3–4 ans',
+      ],
       required: true,
     },
     {
       categoryId: 'vetements_bebe',
       name: 'Genre',
       type: 'SELECT',
-      options: ['Garçon', 'Fille'],
+      options: ['Garçon', 'Fille', 'Unisexe'],
       required: false,
     },
     {
@@ -1224,22 +1892,42 @@ async function main() {
       required: true,
     },
 
-    // Électronique > Smartphones
+    // ————————————————————————————
+    // ÉLECTRONIQUE > SMARTPHONES
+    // ————————————————————————————
     { categoryId: 'smartphones', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'smartphones', name: 'Modèle', type: 'TEXT', required: true },
     {
       categoryId: 'smartphones',
       name: 'Couleur',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: [
+        'Noir',
+        'Blanc',
+        'Gris',
+        'Bleu',
+        'Vert',
+        'Rouge',
+        'Or',
+        'Argent',
+        'Autre',
+      ],
       required: false,
     },
     {
       categoryId: 'smartphones',
       name: 'Stockage',
       type: 'SELECT',
-      options: ['64 Go', '128 Go', '256 Go', '512 Go'],
+      options: ['64 Go', '128 Go', '256 Go', '512 Go', '1 To'],
       required: true,
     },
+    {
+      categoryId: 'smartphones',
+      name: 'Taille écran (")',
+      type: 'NUMBER',
+      required: false,
+    },
+    { categoryId: 'smartphones', name: '5G', type: 'BOOLEAN', required: false },
     {
       categoryId: 'smartphones',
       name: 'État',
@@ -1249,20 +1937,51 @@ async function main() {
     },
     {
       categoryId: 'smartphones',
-      name: 'Débloqué',
+      name: 'Débloqué tout opérateur',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'smartphones',
+      name: 'Double SIM',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'smartphones',
+      name: 'Facture disponible',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'smartphones',
+      name: 'Boîte / accessoires',
       type: 'BOOLEAN',
       required: false,
     },
 
-    // Électronique > Ordinateurs
+    // ————————————————————————————
+    // ÉLECTRONIQUE > ORDINATEURS
+    // ————————————————————————————
     { categoryId: 'ordinateurs', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'ordinateurs', name: 'Modèle', type: 'TEXT', required: true },
-    { categoryId: 'ordinateurs', name: 'RAM', type: 'TEXT', required: true },
+    {
+      categoryId: 'ordinateurs',
+      name: 'Processeur',
+      type: 'TEXT',
+      required: false,
+    },
+    {
+      categoryId: 'ordinateurs',
+      name: 'RAM (Go)',
+      type: 'NUMBER',
+      required: true,
+    },
     {
       categoryId: 'ordinateurs',
       name: 'Type de disque',
       type: 'SELECT',
-      options: ['SSD', 'HDD'],
+      options: ['SSD', 'HDD', 'SSD + HDD'],
       required: true,
     },
     {
@@ -1273,18 +1992,52 @@ async function main() {
     },
     {
       categoryId: 'ordinateurs',
+      name: 'Taille écran (")',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'ordinateurs',
+      name: 'Carte graphique',
+      type: 'TEXT',
+      required: false,
+    },
+    {
+      categoryId: 'ordinateurs',
+      name: 'Tactile',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'ordinateurs',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Reconditionné', 'Occasion'],
       required: true,
     },
+    {
+      categoryId: 'ordinateurs',
+      name: 'Système',
+      type: 'SELECT',
+      options: ['Windows', 'macOS', 'Linux', 'ChromeOS'],
+      required: false,
+    },
 
-    // Électronique > Photo/Audio/Vidéo
+    // ————————————————————————————
+    // ÉLECTRONIQUE > PHOTO / AUDIO / VIDÉO
+    // ————————————————————————————
     {
       categoryId: 'photo_audio_video',
       name: 'Type de produit',
       type: 'SELECT',
-      options: ['Appareil photo', 'Caméra', 'Enceinte'],
+      options: [
+        'Appareil photo',
+        'Caméra',
+        'Objectif',
+        'Enceinte',
+        'Casque audio',
+        'Amplificateur',
+      ],
       required: true,
     },
     {
@@ -1301,21 +2054,48 @@ async function main() {
     },
     {
       categoryId: 'photo_audio_video',
+      name: 'Résolution (MP)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'photo_audio_video',
+      name: '4K',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'photo_audio_video',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Électronique > Tablettes & Liseuses
+    // ————————————————————————————
+    // ÉLECTRONIQUE > TABLETTES & LISEUSES
+    // ————————————————————————————
     { categoryId: 'tablettes', name: 'Marque', type: 'TEXT', required: true },
     { categoryId: 'tablettes', name: 'Modèle', type: 'TEXT', required: true },
     {
       categoryId: 'tablettes',
       name: 'Stockage',
       type: 'SELECT',
-      options: ['32 Go', '64 Go', '128 Go'],
+      options: ['32 Go', '64 Go', '128 Go', '256 Go', '512 Go'],
       required: true,
+    },
+    {
+      categoryId: 'tablettes',
+      name: 'Taille écran (")',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'tablettes',
+      name: 'Connectivité',
+      type: 'SELECT',
+      options: ['Wi-Fi', 'Wi-Fi + Cellular'],
+      required: false,
     },
     {
       categoryId: 'tablettes',
@@ -1325,7 +2105,9 @@ async function main() {
       required: true,
     },
 
-    // Électronique > Consoles & Jeux vidéo
+    // ————————————————————————————
+    // ÉLECTRONIQUE > CONSOLES & JEUX
+    // ————————————————————————————
     {
       categoryId: 'consoles',
       name: 'Type d’article',
@@ -1337,8 +2119,15 @@ async function main() {
       categoryId: 'consoles',
       name: 'Plateforme',
       type: 'SELECT',
-      options: ['PC', 'PS5', 'Xbox', 'Switch'],
+      options: ['PC', 'PS5', 'PS4', 'Xbox', 'Switch', 'Autre'],
       required: true,
+    },
+    {
+      categoryId: 'consoles',
+      name: 'Stockage',
+      type: 'SELECT',
+      options: ['Aucun', '256 Go', '512 Go', '1 To', '2 To'],
+      required: false,
     },
     { categoryId: 'consoles', name: 'Édition', type: 'TEXT', required: false },
     {
@@ -1349,13 +2138,16 @@ async function main() {
       required: true,
     },
 
-    // Loisirs > Antiquités & Collections
+    // ————————————————————————————
+    // LOISIRS > ANTIQUITÉS & COLLECTIONS
+    // ————————————————————————————
     {
       categoryId: 'antiques',
       name: 'Type de collection',
       type: 'TEXT',
       required: true,
     },
+    { categoryId: 'antiques', name: 'Année', type: 'NUMBER', required: false },
     {
       categoryId: 'antiques',
       name: 'État',
@@ -1364,7 +2156,9 @@ async function main() {
       required: true,
     },
 
-    // Loisirs > Instruments de musique
+    // ————————————————————————————
+    // LOISIRS > INSTRUMENTS DE MUSIQUE
+    // ————————————————————————————
     {
       categoryId: 'instruments',
       name: 'Instrument',
@@ -1391,7 +2185,9 @@ async function main() {
       required: true,
     },
 
-    // Loisirs > Livres
+    // ————————————————————————————
+    // LOISIRS > LIVRES
+    // ————————————————————————————
     { categoryId: 'livres', name: 'Genre', type: 'TEXT', required: false },
     { categoryId: 'livres', name: 'Auteur', type: 'TEXT', required: false },
     {
@@ -1410,17 +2206,38 @@ async function main() {
     },
     {
       categoryId: 'livres',
+      name: 'Format',
+      type: 'SELECT',
+      options: ['Broché', 'Relié', 'Poche', 'eBook'],
+      required: false,
+    },
+    { categoryId: 'livres', name: 'Année', type: 'NUMBER', required: false },
+    { categoryId: 'livres', name: 'ISBN', type: 'TEXT', required: false },
+    {
+      categoryId: 'livres',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Loisirs > Sport & Plein air
+    // ————————————————————————————
+    // LOISIRS > SPORT & PLEIN AIR
+    // ————————————————————————————
     {
       categoryId: 'sport',
       name: 'Type de sport',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: [
+        'Fitness/Muscu',
+        'Football',
+        'Basket',
+        'Cyclisme',
+        'Running',
+        'Sports de combat',
+        'Randonnée',
+        'Autre',
+      ],
       required: true,
     },
     { categoryId: 'sport', name: 'Marque', type: 'TEXT', required: false },
@@ -1432,11 +2249,14 @@ async function main() {
       required: true,
     },
 
-    // Loisirs > Jeux & Jouets
+    // ————————————————————————————
+    // LOISIRS > JEUX & JOUETS
+    // ————————————————————————————
     {
       categoryId: 'jeux',
       name: 'Type',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: ['Jeu de société', 'Puzzle', 'Jouet', 'Figurine', 'Autre'],
       required: false,
     },
     { categoryId: 'jeux', name: 'Marque', type: 'TEXT', required: false },
@@ -1448,18 +2268,26 @@ async function main() {
     },
     {
       categoryId: 'jeux',
+      name: 'Complet (pièces/règles)',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'jeux',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Animaux > Animaux vivants
+    // ————————————————————————————
+    // ANIMAUX > ANIMAUX VIVANTS
+    // ————————————————————————————
     {
       categoryId: 'animaux_vivants',
       name: 'Espèce',
       type: 'SELECT',
-      options: ['Chien', 'Chat', 'Oiseau', 'Autre'],
+      options: ['Chien', 'Chat', 'Oiseau', 'Rongeur', 'Poisson', 'Autre'],
       required: true,
     },
     {
@@ -1470,7 +2298,7 @@ async function main() {
     },
     {
       categoryId: 'animaux_vivants',
-      name: 'Âge',
+      name: 'Âge (mois/ans)',
       type: 'TEXT',
       required: false,
     },
@@ -1489,7 +2317,7 @@ async function main() {
     },
     {
       categoryId: 'animaux_vivants',
-      name: 'Pucé',
+      name: 'Pucé/Identifié',
       type: 'BOOLEAN',
       required: false,
     },
@@ -1499,12 +2327,29 @@ async function main() {
       type: 'BOOLEAN',
       required: false,
     },
+    {
+      categoryId: 'animaux_vivants',
+      name: 'Stérilisé',
+      type: 'BOOLEAN',
+      required: false,
+    },
 
-    // Animaux > Accessoires animaux
+    // ————————————————————————————
+    // ANIMAUX > ACCESSOIRES
+    // ————————————————————————————
     {
       categoryId: 'accessoires_animaux',
       name: 'Type d’accessoire',
-      type: 'TEXT',
+      type: 'SELECT',
+      options: [
+        'Laisse/Collier',
+        'Niche/Cage',
+        'Aquarium',
+        'Litière',
+        'Gamelle',
+        'Jouet',
+        'Autre',
+      ],
       required: true,
     },
     {
@@ -1521,7 +2366,9 @@ async function main() {
       required: true,
     },
 
-    // Matériel pro > Matériel agricole
+    // ————————————————————————————
+    // MATÉRIEL PRO > AGRICOLE
+    // ————————————————————————————
     {
       categoryId: 'agricole',
       name: 'Type de machine',
@@ -1539,30 +2386,47 @@ async function main() {
     },
     {
       categoryId: 'agricole',
+      name: 'Largeur de travail (m)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'agricole',
+      name: 'Puissance requise (cv)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'agricole',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Matériel pro > Matériel médical
-    {
-      categoryId: 'medical',
-      name: 'Spécialité',
-      type: 'TEXT',
-      required: true,
-    },
+    // ————————————————————————————
+    // MATÉRIEL PRO > MÉDICAL
+    // ————————————————————————————
+    { categoryId: 'medical', name: 'Spécialité', type: 'TEXT', required: true },
     { categoryId: 'medical', name: 'Marque', type: 'TEXT', required: false },
     { categoryId: 'medical', name: 'Année', type: 'NUMBER', required: false },
     {
       categoryId: 'medical',
+      name: 'Conforme CE',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'medical',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Matériel pro > Équipements industriels
+    // ————————————————————————————
+    // MATÉRIEL PRO > INDUSTRIEL
+    // ————————————————————————————
     {
       categoryId: 'industriel',
       name: 'Type d’équipement',
@@ -1584,16 +2448,30 @@ async function main() {
     },
     {
       categoryId: 'industriel',
+      name: 'Tension (V)',
+      type: 'NUMBER',
+      required: false,
+    },
+    {
+      categoryId: 'industriel',
+      name: 'Triphasé',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'industriel',
       name: 'État',
       type: 'SELECT',
       options: ['Neuf', 'Très bon état', 'Bon état', 'Usé'],
       required: true,
     },
 
-    // Services > Baby-Sitting
+    // ————————————————————————————
+    // SERVICES > BABY-SITTING
+    // ————————————————————————————
     {
       categoryId: 'baby_sitting',
-      name: 'Âge enfants',
+      name: 'Âge enfants pris en charge',
       type: 'TEXT',
       required: true,
     },
@@ -1609,8 +2487,34 @@ async function main() {
       type: 'TEXT',
       required: false,
     },
+    {
+      categoryId: 'baby_sitting',
+      name: 'Permis B',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'baby_sitting',
+      name: 'Véhicule',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'baby_sitting',
+      name: 'Soirs/Week-end',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'baby_sitting',
+      name: 'Taux horaire (€)',
+      type: 'NUMBER',
+      required: false,
+    },
 
-    // Services > Cours particuliers
+    // ————————————————————————————
+    // SERVICES > COURS PARTICULIERS
+    // ————————————————————————————
     {
       categoryId: 'cours_particuliers',
       name: 'Matière',
@@ -1635,8 +2539,23 @@ async function main() {
       type: 'TEXT',
       required: false,
     },
+    {
+      categoryId: 'cours_particuliers',
+      name: 'Format',
+      type: 'SELECT',
+      options: ['À domicile', 'En ligne', 'Mixte'],
+      required: false,
+    },
+    {
+      categoryId: 'cours_particuliers',
+      name: 'Tarif horaire (€)',
+      type: 'NUMBER',
+      required: false,
+    },
 
-    // Services > Jardinage & Bricolage
+    // ————————————————————————————
+    // SERVICES > JARDINAGE & BRICOLAGE
+    // ————————————————————————————
     {
       categoryId: 'jardinage',
       name: 'Type de service',
@@ -1655,9 +2574,26 @@ async function main() {
       type: 'BOOLEAN',
       required: false,
     },
+    {
+      categoryId: 'jardinage',
+      name: 'Débarras des déchets',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'jardinage',
+      name: 'Assurance pro',
+      type: 'BOOLEAN',
+      required: false,
+    },
+    {
+      categoryId: 'jardinage',
+      name: 'Tarif horaire (€)',
+      type: 'NUMBER',
+      required: false,
+    },
   ];
 
-  // Insertion des champs dynamiques
   for (const field of fields) {
     const exists = await prisma.categoryField.findFirst({
       where: { categoryId: field.categoryId, name: field.name },

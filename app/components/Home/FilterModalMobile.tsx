@@ -14,7 +14,11 @@ import { CitySection } from '../Filter/cityPicker';
 import { CategorySection } from '../Filter/Categorypicker';
 import { DonSection } from '../Filter/DonSwitch';
 import { useState } from 'react';
-import { IconAdjustmentsHorizontal } from '@tabler/icons-react';
+import {
+  IconAdjustmentsHorizontal,
+  IconArrowBarToDown,
+  IconChevronDown,
+} from '@tabler/icons-react';
 import { toast } from 'sonner';
 import LocationSlider from './LocationSlider';
 
@@ -65,10 +69,18 @@ export default function FilterDrawerMobile() {
       />
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="w-full max-w-md mx-auto p-0 bg-white rounded-t-3xl  flex flex-col">
-          <div className="flex-1 flex pb-4 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4">
+          <div
+            className="flex-1 flex pb-10 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4"
+            style={{ scrollbarWidth: 'none' }}
+          >
             {/* Header */}
             <DrawerHeader className="px-0 pt-0">
-              <DrawerTitle className="text-base text-center">
+              <DrawerTitle
+                className="w-full text-center text-xl font-bold text-transparent bg-clip-text inline-block"
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                }}
+              >
                 Filtres avancés
               </DrawerTitle>
             </DrawerHeader>
@@ -90,24 +102,30 @@ export default function FilterDrawerMobile() {
                   placeholder="Min (USD)"
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
-                  className=" border rounded-xl px-3 py-2 text-sm"
+                  className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5   text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Max (USD)"
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
-                  className=" border rounded-xl px-3 py-2 text-sm"
+                  className=" p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5 text-sm"
                 />
               </div>
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                className="w-full border rounded-xl px-3 py-2 text-sm bg-white"
-              >
-                <option value="desc">Prix décroissant</option>
-                <option value="asc">Prix croissant</option>
-              </select>
+              <div className="relative w-full">
+                <select
+                  value={sortOrder}
+                  onChange={(e) =>
+                    setSortOrder(e.target.value as 'asc' | 'desc')
+                  }
+                  className="w-full p-4 pr-10 rounded-3xl border border-black/5 shadow-lg shadow-black/5 text-sm bg-white appearance-none focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                >
+                  <option value="desc">Prix décroissant</option>
+                  <option value="asc">Prix croissant</option>
+                </select>
+
+                <IconChevronDown className="w-5 h-5 text-gray-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
           </div>
           {/* Footer fixé */}

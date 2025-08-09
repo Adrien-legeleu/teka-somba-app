@@ -41,14 +41,14 @@ export function CategorySection({
   return (
     <div className="relative w-full">
       <Label
-        className="text-sm font-medium text-gray-700 cursor-pointer"
+        className="text-sm font-medium  text-gray-700 cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         Catégorie
       </Label>
 
       <div
-        className="cursor-pointer text-sm shadow-sm py-4 text-gray-600 flex items-center gap-1 mt-1 px-4  rounded-3xl border border-gray-300 hover:bg-gray-50 transition"
+        className="cursor-pointer text-sm p-4 rounded-3xl border border-black/5 bg-white shadow-lg shadow-black/5  text-gray-600 flex items-center gap-1 mt-1  focus:border-2 hover:border-2 hover:border-orange-500 focus:border-orange-500 focus:outline-none   hover:bg-gray-50 transition"
         onClick={() => setIsModalOpen(true)}
       >
         <span>{selectedCategory?.name || 'Catégorie'}</span>
@@ -63,13 +63,13 @@ export function CategorySection({
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="mt-4 w-full bg-white border rounded-3xl shadow-lg z-50"
+            className="mt-4 w-full bg-white border rounded-3xl shadow-lg border-black/5 shadow-black/5 z-50"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
           >
             {/* HEADER */}
-            <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex justify-between items-center p-4 border-b border-black/5">
               {showSubCategories ? (
                 <button
                   onClick={() => setShowSubCategories(false)}
@@ -95,7 +95,7 @@ export function CategorySection({
                 ? categories.map((cat) => (
                     <div
                       key={cat.id}
-                      className={`p-3 rounded-xl cursor-pointer transition hover:bg-gray-100 ${
+                      className={`p-3 rounded-3xl cursor-pointer transition hover:bg-gray-100 ${
                         cat.id === categoryId ? 'bg-gray-100 font-medium' : ''
                       }`}
                       onClick={() => handleCategoryClick(cat)}
@@ -106,7 +106,7 @@ export function CategorySection({
                 : selectedCategory?.children?.map((sub) => (
                     <div
                       key={sub.id}
-                      className={`p-3 rounded-xl cursor-pointer transition hover:bg-gray-100 ${
+                      className={`p-3 rounded-3xl cursor-pointer transition hover:bg-gray-100 ${
                         sub.id === subCategoryId
                           ? 'bg-gray-100 font-medium'
                           : ''

@@ -1,16 +1,16 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
 import './globals.css';
-import { Inter, Poppins } from 'next/font/google';
+import { Nunito_Sans, Nunito } from 'next/font/google';
 import Footer from './components/Footer/Footer';
 
-const inter = Inter({
+const nunito_sans = Nunito_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
 });
-const poppins = Poppins({
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800'],
+const nunito = Nunito({
+  weight: ['200', '300', '400', '500', '600', '700', '800'],
   subsets: ['latin'],
   variable: '--font-title',
   display: 'swap',
@@ -55,7 +55,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${inter.variable} ${poppins.variable} antialiased`}>
+      <body
+        className={`${nunito_sans.variable} ${nunito.variable} antialiased`}
+      >
         {children}
         <Footer />
       </body>

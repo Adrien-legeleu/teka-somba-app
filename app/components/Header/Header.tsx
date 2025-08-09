@@ -304,45 +304,73 @@ export default function Header() {
           )}
       </nav>
 
-      <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0 xs:-translate-x-1/2 sm:w-1/2 xs:w-2/3 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 flex items-center justify-around md:hidden h-16 shadow-lg z-[999]">
+      <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0  xs:-translate-x-1/2 sm:w-[70%] xs:w-5/6 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 grid grid-cols-5 items-center md:hidden h-16 shadow-lg z-[999]">
+        {/* Accueil */}
         <MobileNavLink
           href="/"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
           <IconHome size={28} />
+          <span className="text-[0.7rem] tracking-tight font-semibold">
+            Accueil
+          </span>
         </MobileNavLink>
+
+        {/* Favoris */}
         <Link
           href="/dashboard/favoris"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
           <IconHeart size={28} />
-        </Link>
-        <Link
-          href="/dashboard/annonces/new"
-          style={{ background: gradient }}
-          className="w-14 h-14 -mt-6 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <IconPlus size={26} />
+          <span className="text-[0.7rem] tracking-tight font-semibold">
+            Favoris
+          </span>
         </Link>
 
+        {/* Publier */}
+        <Link
+          href="/dashboard/annonces/new"
+          className="flex flex-col justify-center gap-1 items-center -mt-6"
+        >
+          <div
+            style={{ background: gradient }}
+            className="w-14 h-14 -mt-2 text-white rounded-3xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+          >
+            <IconPlus size={28} />
+          </div>
+          <span className="text-[0.7rem] text-gray-600 tracking-tight font-semibold">
+            Publier
+          </span>
+        </Link>
+
+        {/* Messages */}
         <Link
           href="/dashboard/messages"
           className="relative flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
-          <IconMessage
-            size={28}
-            className={hasUnread ? 'animate-bounce text-orange-500' : ''}
-          />
-          {hasUnread && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          )}
+          <div className="relative">
+            <IconMessage
+              size={28}
+              className={hasUnread ? 'animate-bounce text-orange-500' : ''}
+            />
+            {hasUnread && (
+              <span className="absolute -top-1 right-0 w-2 h-2 bg-red-500 rounded-full" />
+            )}
+          </div>
+          <span className="text-[0.7rem] tracking-tight font-semibold">
+            Messages
+          </span>
         </Link>
 
+        {/* Mon Compte */}
         <Link
           href="/dashboard"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
         >
           <IconUser size={28} />
+          <span className="text-[0.7rem] tracking-tight font-semibold">
+            Mon Compte
+          </span>
         </Link>
       </div>
     </header>
