@@ -22,6 +22,7 @@ export default function DynamicFieldsSection({
         const key = field.id ?? field.name ?? String(idx);
         const fieldName = `dynamicFields.${field.name}` as const;
         const kind = (field.type ?? '').toLowerCase();
+
         const isSelect = kind === 'select' || kind === 'enum';
         const isNumber =
           kind === 'number' || kind === 'int' || kind === 'numeric';
@@ -32,12 +33,16 @@ export default function DynamicFieldsSection({
         };
 
         if (isNumber) {
+          // Forcer entier
           rules.setValueAs = (v: string) =>
             v === '' || v === null || v === undefined ? undefined : Number(v);
-          rules.validate = (v: number | undefined) =>
-            v === undefined || Number.isFinite(v)
-              ? true
-              : 'Valeur numérique invalide';
+          rules.validate = (v: number | undefined) => {
+            if (v === undefined)
+              return field.required ? 'Champ obligatoire' : true;
+            if (!Number.isFinite(v)) return 'Valeur numérique invalide';
+            if (!Number.isInteger(v)) return 'Veuillez saisir un entier';
+            return true;
+          };
         }
 
         const dynamicErrors = (errors as FieldErrors<DynamicFieldsValues>)
@@ -52,6 +57,7 @@ export default function DynamicFieldsSection({
               {field.required && <span className="text-red-500">*</span>}
             </label>
 
+            {/* SELECT / ENUM */}
             {isSelect && Array.isArray(field.options) && (
               <select
                 defaultValue=""
@@ -62,8 +68,7 @@ export default function DynamicFieldsSection({
                 className={`w-full rounded-xl border bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 ${errorMsg ? 'border-red-500' : 'border-gray-300'}`}
               >
                 <option value="" disabled>
-                  {' '}
-                  Sélectionnez{' '}
+                  Sélectionnez
                 </option>
                 {field.options.map((opt) => {
                   const val = String(opt);
@@ -76,19 +81,22 @@ export default function DynamicFieldsSection({
               </select>
             )}
 
-            {/* NUMBER */}
+            {/* NUMBER (entier) */}
             {isNumber && (
               <Input
                 type="number"
-                inputMode="decimal"
-                step="any" // ← au lieu de "1"
-                // min={0}                 // ← enlève si pas sûr
+                inputMode="numeric"
+                step={1}
                 aria-invalid={!!errorMsg}
                 aria-required={field.required || undefined}
                 required={field.required}
                 placeholder={field.required ? 'Obligatoire' : 'Optionnel'}
                 {...register(fieldName, rules)}
                 className={`rounded-xl px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-200 ${errorMsg ? 'border-red-500' : 'border-gray-300'}`}
+                onKeyDown={(e) => {
+                  if (['e', 'E', '+', '-', '.'].includes(e.key))
+                    e.preventDefault();
+                }}
               />
             )}
 
@@ -120,7 +128,9 @@ export default function DynamicFieldsSection({
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-400"
-                    {...register(fieldName)}
+                    {...register(fieldName, {
+                      setValueAs: (v: unknown) => Boolean(v),
+                    })}
                   />
                   <span className="text-sm text-gray-700">{field.name}</span>
                 </div>

@@ -1,8 +1,9 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
+import type { DefaultValues, Resolver } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +30,7 @@ import {
 } from '@/components/ui/select';
 
 import { DynamicField, DynamicFieldValues } from '@/types/ad';
-import { DurationUnit } from '@prisma/client';
+import type { DurationUnit } from '@prisma/client';
 
 type Category = {
   id: string;
@@ -41,34 +42,68 @@ type Category = {
 
 type AdType = 'FOR_SALE' | 'FOR_RENT';
 
+/* =======================
+   Zod schema
+   ======================= */
 const schema = z
   .object({
     title: z.string().min(1, 'Titre obligatoire'),
     description: z.string().min(1, 'Description obligatoire'),
-    price: z.number(),
+    price: z.number().int().nonnegative(),
     images: z.array(z.string().url()).min(1, 'Ajoutez au moins une image'),
-    location: z.string(),
+    location: z.string().min(1, 'Localisation obligatoire'),
     lat: z.number().nullable(),
     lng: z.number().nullable(),
     isDon: z.boolean().optional(),
-    categoryId: z.string(),
+    categoryId: z.string().min(1, 'Catégorie obligatoire'),
     type: z.enum(['FOR_SALE', 'FOR_RENT']),
-    durationValue: z.number().optional(),
+    durationValue: z.number().int().positive().optional(),
     durationUnit: z.enum(['HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
-    dynamicFields: z.object({}).catchall(z.unknown()),
+    // préciser keyType + valueType pour compat Zod
+    dynamicFields: z.record(z.string(), z.unknown()).default({}),
   })
-  .refine(
-    (data) => {
-      if (data.isDon) return data.price === 0; // don => 0
-      return data.price > 0; // sinon > 0
-    },
-    {
-      message: 'Le prix doit être strictement positif, sauf pour un don (0).',
-      path: ['price'],
+  .superRefine((data, ctx) => {
+    // Prix: 0 si don, >0 sinon
+    if (data.isDon) {
+      if (data.price !== 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['price'],
+          message: 'Pour un don, le prix doit être 0.',
+        });
+      }
+    } else if (!(typeof data.price === 'number' && data.price > 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['price'],
+        message: 'Le prix doit être strictement positif.',
+      });
     }
-  );
 
-// helpers
+    // Durée obligatoire si location
+    if (data.type === 'FOR_RENT') {
+      if (!data.durationValue) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['durationValue'],
+          message: 'Durée obligatoire pour une location.',
+        });
+      }
+      if (!data.durationUnit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['durationUnit'],
+          message: 'Unité obligatoire pour une location.',
+        });
+      }
+    }
+  });
+
+type FormValues = z.infer<typeof schema>;
+
+/* =======================
+   Helpers
+   ======================= */
 function normalize(str: string) {
   return str
     .normalize('NFD')
@@ -77,27 +112,45 @@ function normalize(str: string) {
     .replace(/\s+/g, '');
 }
 
+const durationLabels: Record<DurationUnit, string> = {
+  HOUR: 'Heure(s)',
+  DAY: 'Jour(s)',
+  WEEK: 'Semaine(s)',
+  MONTH: 'Mois',
+  YEAR: 'An(s)',
+};
+
+/* =======================
+   Component (init form)
+   ======================= */
 export default function NewAdForm({ categories }: { categories: Category[] }) {
-  const methods = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      title: '',
-      description: '',
-      price: undefined as unknown as number,
-      images: [] as string[],
-      location: '',
-      lat: null as number | null,
-      lng: null as number | null,
-      isDon: false,
-      type: 'FOR_SALE' as AdType,
-      durationValue: undefined as unknown as number | undefined,
-      durationUnit: undefined as unknown as DurationUnit | undefined,
-      categoryId: '',
-      dynamicFields: {} as Record<string, unknown>,
-    },
+  const defaultValues: DefaultValues<FormValues> = {
+    title: '',
+    description: '',
+    price: 0,
+    images: [],
+    location: '',
+    lat: null,
+    lng: null,
+    isDon: false,
+    type: 'FOR_SALE',
+    durationValue: undefined,
+    durationUnit: undefined,
+    categoryId: '',
+    dynamicFields: {},
+  };
+
+  // Cast du resolver pour éviter les mismatches de types inter-version RHF/resolvers
+  const resolver = zodResolver(schema) as unknown as Resolver<FormValues, any>;
+
+  const methods = useForm<FormValues>({
+    resolver,
+    mode: 'onChange',
+    defaultValues,
   });
 
-  const { watch, setValue, handleSubmit } = methods;
+  const { watch, setValue, handleSubmit, trigger } = methods;
+
   const [step, setStep] = useState(1);
   const topRef = useRef<HTMLDivElement | null>(null);
 
@@ -154,33 +207,124 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   // don => price = 0
   useEffect(() => {
     if (isDon) {
-      methods.setValue('price', 0, { shouldValidate: true });
+      methods.setValue('price', 0, { shouldValidate: true, shouldDirty: true });
     }
   }, [isDon, methods]);
 
-  // Validation globale avant submit
-  const selectedCatId = subCategoryId ?? categoryId ?? watched.categoryId ?? '';
+  // selected cat id (sub prioritaire)
+  const selectedCatId =
+    (subCategoryId ?? categoryId ?? watched.categoryId ?? '') || '';
 
-  const isFormValid =
-    watched.title.trim().length > 0 &&
-    !!selectedCatId &&
-    images.length > 0 &&
-    location.trim().length > 0 &&
-    (isDon
-      ? watched.price === 0
-      : typeof watched.price === 'number' && watched.price > 0) &&
-    (watched.type === 'FOR_RENT'
-      ? !!watched.durationValue && !!watched.durationUnit
-      : true);
+  const dynamicFieldNames = useMemo(
+    () => (dynamicFields ?? []).map((f) => f.name).filter(Boolean) as string[],
+    [dynamicFields]
+  );
 
-  // SUBMIT
-  const onSubmit = async (data: z.infer<typeof schema>) => {
+  /* =======================
+     Validations par étape
+     ======================= */
+  const validateStep1 = async () => {
+    if (!selectedCatId) {
+      toast.warning('Veuillez choisir une catégorie.');
+      return false;
+    }
+    setValue('categoryId', selectedCatId, { shouldValidate: true });
+    const ok = await trigger(['title', 'type', 'categoryId']);
+    if (!ok) {
+      if (watched.type === 'FOR_RENT') {
+        const okRent = await trigger(['durationValue', 'durationUnit']);
+        if (!okRent) {
+          toast.warning('Veuillez renseigner la durée de location.');
+          return false;
+        }
+      } else {
+        toast.warning('Veuillez remplir tous les champs requis.');
+        return false;
+      }
+    } else if (watched.type === 'FOR_RENT') {
+      const okRent = await trigger(['durationValue', 'durationUnit']);
+      if (!okRent) {
+        toast.warning('Veuillez renseigner la durée de location.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const validateStep2 = async () => {
+    const baseOk = await trigger(['description', 'price']);
+    if (!baseOk) {
+      toast.warning('Description et prix sont requis.');
+      return false;
+    }
+    // Vérifier dyn fields requis
+    const missing = dynamicFields
+      .filter((f) => f.required)
+      .filter((f) => {
+        const v = (
+          watched.dynamicFields as Record<string, unknown> | undefined
+        )?.[f.name];
+        return v === '' || v === null || v === undefined;
+      })
+      .map((f) => f.name);
+
+    if (missing.length > 0) {
+      toast.warning(`Complétez les champs spécifiques: ${missing.join(', ')}.`);
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep3 = async () => {
+    if (isUploading) {
+      toast.info("Patientez, l'upload d'images est en cours…");
+      return false;
+    }
+    if (images.length === 0) {
+      toast.warning('Ajoutez au moins une image.');
+      return false;
+    }
+    setValue('images', images, { shouldValidate: true });
+    const ok = await trigger(['images']);
+    if (!ok) {
+      toast.warning('Image(s) requise(s).');
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep4 = async () => {
+    if (!location.trim()) {
+      toast.warning('Indiquez une localisation.');
+      return false;
+    }
+    setValue('location', location, { shouldValidate: true });
+    setValue('lat', lat, { shouldValidate: false });
+    setValue('lng', lng, { shouldValidate: false });
+    const ok = await trigger(['location']);
+    if (!ok) {
+      toast.warning('Localisation requise.');
+      return false;
+    }
+    return true;
+  };
+
+  /* =======================
+     Submit (typé simple)
+     ======================= */
+  const onSubmit = async (data: FormValues) => {
+    // garde-fous finaux
+    if (!(await validateStep1())) return setStep(1);
+    if (!(await validateStep2())) return setStep(2);
+    if (!(await validateStep3())) return setStep(3);
+    if (!(await validateStep4())) return setStep(4);
+
     // récupère la catégorie sélectionnée (sub prioritaire)
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
       .find((cat) => cat.id === selectedCatId);
 
-    // map des noms exacts des champs dynamiques (pour coller à CategoryField.name)
+    // map des noms exacts des champs dynamiques
     const nameMap = new Map(
       (selectedCat?.fields || []).map((f) => [normalize(f.name), f.name])
     );
@@ -194,9 +338,14 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     );
 
     const finalDurationValue =
-      data.durationValue ?? watched.durationValue ?? undefined;
+      data.type === 'FOR_RENT'
+        ? (data.durationValue ?? watched.durationValue)
+        : undefined;
     const finalDurationUnit =
-      data.durationUnit ?? watched.durationUnit ?? undefined;
+      data.type === 'FOR_RENT'
+        ? (data.durationUnit ?? watched.durationUnit)
+        : undefined;
+
     const dynamicFieldsClean = Object.fromEntries(
       Object.entries(remappedDynamicFields).filter(
         ([, v]) => v !== '' && v !== undefined && v !== null
@@ -209,7 +358,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
-          // override avec les states fiables
           images,
           location,
           lat,
@@ -236,19 +384,26 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     }
   };
 
+  // valid global (disable submit)
+  const isFormValid =
+    watched.title.trim().length > 0 &&
+    !!selectedCatId &&
+    images.length > 0 &&
+    location.trim().length > 0 &&
+    (isDon
+      ? watched.price === 0
+      : typeof watched.price === 'number' && watched.price > 0) &&
+    (watched.type === 'FOR_RENT'
+      ? !!watched.durationValue && !!watched.durationUnit
+      : true);
+
   const durationUnit = watch('durationUnit');
-  const durationLabels: Record<DurationUnit, string> = {
-    HOUR: 'Heure(s)',
-    DAY: 'Jour(s)',
-    WEEK: 'Semaine(s)',
-    MONTH: 'Mois',
-    YEAR: 'An(s)',
-  };
 
   return (
-    <FormProvider {...methods}>
+    // cast léger pour éviter les conflits de versions RHF (aucune erreur)
+    <FormProvider {...(methods as unknown as any)}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={(methods.handleSubmit as any)(onSubmit)}
         className="w-full max-w-4xl mx-auto space-y-8"
       >
         <div ref={topRef} />
@@ -294,8 +449,8 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
               <Label>Type *</Label>
               <RadioGroup
                 defaultValue="FOR_SALE"
-                onValueChange={(val: AdType) =>
-                  setValue('type', val, { shouldValidate: true })
+                onValueChange={(val) =>
+                  setValue('type', val as AdType, { shouldValidate: true })
                 }
                 className="flex gap-4"
               >
@@ -313,11 +468,18 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 <div className="flex items-center gap-3">
                   <Input
                     type="number"
+                    inputMode="numeric"
+                    step={1}
+                    min={1}
                     placeholder="Durée"
                     {...methods.register('durationValue', {
                       valueAsNumber: true,
                     })}
                     className="w-24"
+                    onKeyDown={(e) => {
+                      if (['e', 'E', '+', '-', '.'].includes(e.key))
+                        e.preventDefault();
+                    }}
                   />
                   <Select
                     onValueChange={(val) =>
@@ -346,17 +508,9 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                     background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
                   }}
                   className="text-white"
-                  onClick={() => {
-                    if (
-                      !selectedCatId ||
-                      watched.title.trim().length === 0 ||
-                      (watched.type === 'FOR_RENT' &&
-                        (!watched.durationValue || !watched.durationUnit))
-                    ) {
-                      toast.warning('Veuillez remplir tous les champs requis');
-                      return;
-                    }
-                    setStep(2);
+                  onClick={async () => {
+                    const ok = await validateStep1();
+                    if (ok) setStep(2);
                   }}
                   type="button"
                 >
@@ -388,11 +542,17 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                 <Input
                   id="price"
                   type="number"
-                  // important: pas de NaN, on laisse RHF parser
+                  inputMode="numeric"
+                  step={1}
+                  min={0}
                   {...methods.register('price', { valueAsNumber: true })}
                   disabled={isDon}
                   className="w-40"
-                  placeholder={'USD'}
+                  placeholder="FCFA"
+                  onKeyDown={(e) => {
+                    if (['e', 'E', '+', '-', '.'].includes(e.key))
+                      e.preventDefault();
+                  }}
                 />
               </div>
 
@@ -414,7 +574,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   }}
                   className="text-white"
                   type="button"
-                  onClick={() => setStep(3)}
+                  onClick={async () => {
+                    const ok = await validateStep2();
+                    if (ok) setStep(3);
+                  }}
                 >
                   Suivant
                 </Button>
@@ -455,9 +618,9 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   className="text-white"
                   type="button"
                   disabled={isUploading}
-                  onClick={() => {
-                    if (isUploading) return;
-                    setStep(4);
+                  onClick={async () => {
+                    const ok = await validateStep3();
+                    if (ok) setStep(4);
                   }}
                 >
                   Suivant
@@ -497,7 +660,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                   }}
                   className="text-white"
                   type="button"
-                  onClick={() => setStep(5)}
+                  onClick={async () => {
+                    const ok = await validateStep4();
+                    if (ok) setStep(5);
+                  }}
                 >
                   Suivant
                 </Button>

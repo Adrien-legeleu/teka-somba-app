@@ -2105,13 +2105,40 @@ async function main() {
     },
   ];
 
-  for (const field of fields) {
-    const exists = await prisma.categoryField.findFirst({
-      where: { categoryId: field.categoryId, name: field.name },
+  const allowedByCat = new Map();
+
+  // 1) UPSERT tous les fields du seed
+  for (const f of fields) {
+    await prisma.categoryField.upsert({
+      where: { categoryId_name: { categoryId: f.categoryId, name: f.name } },
+      update: {
+        type: f.type,
+        required: f.required,
+        options: f.options ?? null,
+      },
+      create: {
+        categoryId: f.categoryId,
+        name: f.name,
+        type: f.type,
+        required: f.required,
+        options: f.options ?? null,
+      },
     });
-    if (!exists) {
-      await prisma.categoryField.create({ data: field });
-    }
+
+    if (!allowedByCat.has(f.categoryId))
+      allowedByCat.set(f.categoryId, new Set());
+    allowedByCat.get(f.categoryId).add(f.name);
+  }
+
+  // 2) PRUNE: supprime les fields non présents dans le seed
+  for (const [catId, namesSet] of allowedByCat.entries()) {
+    const names = Array.from(namesSet);
+    await prisma.categoryField.deleteMany({
+      where: {
+        categoryId: catId,
+        name: { notIn: names },
+      },
+    });
   }
 }
 
