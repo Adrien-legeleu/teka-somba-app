@@ -3,12 +3,13 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
+// imports: enlève Resolver du import type
 import type {
   DefaultValues,
-  Resolver,
   UseFormReturn,
   SubmitHandler,
 } from 'react-hook-form';
+
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -103,6 +104,9 @@ const schema = z
   });
 
 type FormValues = z.infer<typeof schema>;
+// juste après le schema
+type FormValuesIn = z.input<typeof schema>; // avant parse  (dynamicFields peut être undefined)
+type FormValuesOut = z.output<typeof schema>; // après parse (dynamicFields est {} garanti)
 
 /* =======================
    Helpers
@@ -143,16 +147,9 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     dynamicFields: {},
   };
 
-  // Resolver strict sans `any`
-  const resolver: Resolver<FormValues, Record<string, unknown>> = zodResolver(
-    schema
-  );
-
-  const methods: UseFormReturn<FormValues, Record<string, unknown>> = useForm<
-    FormValues,
-    Record<string, unknown>
-  >({
-    resolver,
+  // useForm — 3 génériques: <TFieldValues, TContext, TTransformedValues>
+  const methods = useForm<FormValuesIn, undefined, FormValuesOut>({
+    resolver: zodResolver<FormValuesIn, undefined, FormValuesOut>(schema),
     mode: 'onChange',
     defaultValues,
   });
@@ -402,7 +399,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   const durationUnit = watch('durationUnit');
 
   return (
-    <FormProvider<FormValues, Record<string, unknown>> {...methods}>
+    <FormProvider<FormValuesIn, undefined> {...methods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-4xl mx-auto space-y-8"
