@@ -3,7 +3,12 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import type { DefaultValues, Resolver } from 'react-hook-form';
+import type {
+  DefaultValues,
+  Resolver,
+  UseFormReturn,
+  SubmitHandler,
+} from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -59,11 +64,10 @@ const schema = z
     type: z.enum(['FOR_SALE', 'FOR_RENT']),
     durationValue: z.number().int().positive().optional(),
     durationUnit: z.enum(['HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
-    // préciser keyType + valueType pour compat Zod
+    // compat Zod: keyType + valueType
     dynamicFields: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((data, ctx) => {
-    // Prix: 0 si don, >0 sinon
     if (data.isDon) {
       if (data.price !== 0) {
         ctx.addIssue({
@@ -80,7 +84,6 @@ const schema = z
       });
     }
 
-    // Durée obligatoire si location
     if (data.type === 'FOR_RENT') {
       if (!data.durationValue) {
         ctx.addIssue({
@@ -140,10 +143,15 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     dynamicFields: {},
   };
 
-  // Cast du resolver pour éviter les mismatches de types inter-version RHF/resolvers
-  const resolver = zodResolver(schema) as unknown as Resolver<FormValues, any>;
+  // Resolver strict sans `any`
+  const resolver: Resolver<FormValues, Record<string, unknown>> = zodResolver(
+    schema
+  );
 
-  const methods = useForm<FormValues>({
+  const methods: UseFormReturn<FormValues, Record<string, unknown>> = useForm<
+    FormValues,
+    Record<string, unknown>
+  >({
     resolver,
     mode: 'onChange',
     defaultValues,
@@ -181,7 +189,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     });
   }, [step]);
 
-  // compute dynamic fields from selected category (sub first, else parent)
+  // compute dynamic fields
   useEffect(() => {
     const targetId = subCategoryId || categoryId;
     if (!targetId) return;
@@ -211,7 +219,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     }
   }, [isDon, methods]);
 
-  // selected cat id (sub prioritaire)
+  // selected cat id
   const selectedCatId =
     (subCategoryId ?? categoryId ?? watched.categoryId ?? '') || '';
 
@@ -257,7 +265,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       toast.warning('Description et prix sont requis.');
       return false;
     }
-    // Vérifier dyn fields requis
     const missing = dynamicFields
       .filter((f) => f.required)
       .filter((f) => {
@@ -310,26 +317,22 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   };
 
   /* =======================
-     Submit (typé simple)
+     Submit
      ======================= */
-  const onSubmit = async (data: FormValues) => {
-    // garde-fous finaux
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
     if (!(await validateStep1())) return setStep(1);
     if (!(await validateStep2())) return setStep(2);
     if (!(await validateStep3())) return setStep(3);
     if (!(await validateStep4())) return setStep(4);
 
-    // récupère la catégorie sélectionnée (sub prioritaire)
     const selectedCat = categories
       .flatMap((cat) => [cat, ...(cat.children || [])])
       .find((cat) => cat.id === selectedCatId);
 
-    // map des noms exacts des champs dynamiques
     const nameMap = new Map(
       (selectedCat?.fields || []).map((f) => [normalize(f.name), f.name])
     );
 
-    // remap keys dynamiques -> noms originaux (accents/espaces)
     const remappedDynamicFields = Object.fromEntries(
       Object.entries(data.dynamicFields || {}).flatMap(([key, val]) => {
         const original = nameMap.get(normalize(key));
@@ -384,7 +387,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     }
   };
 
-  // valid global (disable submit)
   const isFormValid =
     watched.title.trim().length > 0 &&
     !!selectedCatId &&
@@ -400,14 +402,15 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   const durationUnit = watch('durationUnit');
 
   return (
-    // cast léger pour éviter les conflits de versions RHF (aucune erreur)
-    <FormProvider {...(methods as unknown as any)}>
+    <FormProvider<FormValues, Record<string, unknown>> {...methods}>
       <form
-        onSubmit={(methods.handleSubmit as any)(onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-4xl mx-auto space-y-8"
       >
         <div ref={topRef} />
         <StepProgressBar step={step} />
+
+        {/* ...le reste du composant (étapes 1 à 5) inchangé... */}
 
         <AnimatePresence mode="wait">
           {step === 1 && (
