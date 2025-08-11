@@ -60,6 +60,10 @@ export default function ConversationPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { me } = useMe();
 
+  const conversationId = me?.id
+    ? `${adId}::${[me.id, otherUserId].sort().join('|')}`
+    : undefined;
+
   // Charger les messages initiaux
   useEffect(() => {
     if (!adId || !otherUserId) return;
@@ -95,26 +99,22 @@ export default function ConversationPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Connexion socket + écoute des messages entrants
   useEffect(() => {
-    if (!adId || !otherUserId) return;
+    if (!adId || !otherUserId || !me?.id || !conversationId) return;
 
-    joinConversation(`${adId}_${otherUserId}`);
+    // Rejoindre la room de cette conversation
+    joinConversation(conversationId);
 
-    socket.on('receive_message', (newMsg: Message) => {
-      // Ajoute le message si c'est bien la bonne conversation
-      if (
-        (newMsg.senderId === otherUserId && newMsg.receiverId === me?.id) ||
-        (newMsg.senderId === me?.id && newMsg.receiverId === otherUserId)
-      ) {
-        setMessages((prev) => [...prev, newMsg]);
-      }
-    });
+    // Écoute des messages reçus en temps réel
+    const handler = (newMsg: Message) => {
+      setMessages((prev) => [...prev, newMsg]);
+    };
+    socket.on('receive_message', handler);
 
     return () => {
-      socket.off('receive_message');
+      socket.off('receive_message', handler);
     };
-  }, [adId, otherUserId, me?.id]);
+  }, [adId, otherUserId, me?.id, conversationId]);
 
   async function sendMessage() {
     if (!message.trim()) return;
@@ -140,11 +140,10 @@ export default function ConversationPage() {
         sender: me || undefined,
       };
 
-      // Envoi en temps réel au serveur
       socket.emit('send_message', {
         ...newMessage,
         receiverId: otherUserId,
-        conversationId: `${adId}_${otherUserId}`,
+        conversationId, // <<<<<< ICI
       });
 
       // Ajout local direct

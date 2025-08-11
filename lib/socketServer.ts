@@ -1,26 +1,20 @@
-// lib/socketServer.ts
-import { Server } from 'socket.io';
-import type { Server as HTTPServer } from 'http';
+// lib/socket.ts
+import { io } from 'socket.io-client';
 
-let io: Server | null = null;
+const SOCKET_URL =
+  typeof window !== 'undefined'
+    ? process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001'
+    : undefined;
 
-export function initSocket(server: HTTPServer) {
-  if (!io) {
-    io = new Server(server, {
-      cors: {
-        origin: '*', // adapte si besoin
-      },
-    });
+export const socket = io(SOCKET_URL!, {
+  autoConnect: true,
+  transports: ['websocket'],
+});
 
-    io.on('connection', (socket) => {
-      socket.on('join', (userId: string) => {
-        socket.join(userId); // Le user "rejoint sa room"
-      });
-
-      socket.on('disconnect', () => {});
-    });
-  }
-  return io;
+export function joinUserRoom(userId: string | null | undefined) {
+  if (userId) socket.emit('join_user', { userId });
 }
 
-export { io };
+export function joinConversation(conversationId: string | null | undefined) {
+  if (conversationId) socket.emit('join_conversation', { conversationId });
+}

@@ -8,13 +8,15 @@ const SOCKET_URL =
 
 export const socket = io(SOCKET_URL!, {
   autoConnect: true,
-  transports: ['websocket'], // garde simple; si souci, enlève pour laisser 'polling' fallback
+  transports: ['websocket'],
 });
 
+// envoie une string, pas un objet
 export function joinUserRoom(userId: string | null | undefined) {
   if (userId) socket.emit('join_user', userId);
 }
 
-export function joinConversation(adId: string | null | undefined) {
-  if (adId) socket.emit('join_conversation', { adId });
+// envoie { conversationId }
+export function joinConversation(conversationId: string | null | undefined) {
+  if (conversationId) socket.emit('join_conversation', { conversationId });
 }

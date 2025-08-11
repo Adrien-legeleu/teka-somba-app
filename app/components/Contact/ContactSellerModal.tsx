@@ -16,7 +16,7 @@ import { Ad } from '@/types/ad';
 import Image from 'next/image';
 import { socket } from '@/lib/socket';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ContactSellerModalProps {
   ad: Ad;
@@ -35,7 +35,29 @@ export default function ContactSellerModal({
   );
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // en haut du composant
+  const [meId, setMeId] = useState<string | null>(null);
 
+  // quand le modal s’ouvre, on récupère mon id
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    (async () => {
+      try {
+        const r = await fetch('/api/me', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        const d = r.ok ? await r.json() : null;
+        if (active) setMeId(d?.id ?? null);
+      } catch {
+        if (active) setMeId(null);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [open]);
   async function handleSend() {
     setSending(true);
     setError(null);
@@ -48,9 +70,12 @@ export default function ContactSellerModal({
         setSending(false);
         return;
       }
+
+      // 1) API pour persister le message
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           adId: ad.id,
           receiverId: ad.user.id,
@@ -58,22 +83,25 @@ export default function ContactSellerModal({
         }),
       });
       if (!res.ok) throw new Error('Erreur lors de l’envoi du message.');
+
+      // 2) Emission temps réel (badge + conv live)
+      const conversationId = meId
+        ? `${ad.id}::${[meId, ad.user.id].sort().join('|')}`
+        : undefined;
+
       socket.emit('send_message', {
         adId: ad.id,
         receiverId: ad.user.id,
-        senderName: 'Un utilisateur',
+        senderId: meId ?? undefined, // ← important si dispo
         content: message,
         createdAt: new Date().toISOString(),
+        conversationId, // ← important
       });
 
       setOpen(false);
       onSent?.();
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Erreur inconnue');
-      }
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setSending(false);
     }
