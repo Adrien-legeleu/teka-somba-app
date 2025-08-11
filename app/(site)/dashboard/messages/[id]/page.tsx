@@ -33,7 +33,7 @@ interface Message {
   senderId: string;
   content: string;
   createdAt: string;
-  receiverId?: string; // ← ajouté (optionnel pour compat)
+  receiverId?: string;
   receiver?: User;
   sender?: User;
   ad?: Ad;
@@ -59,10 +59,6 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { me } = useMe();
-
-  const conversationId = me?.id
-    ? `${adId}::${[me.id, otherUserId].sort().join('|')}`
-    : undefined;
 
   // Charger les messages initiaux
   useEffect(() => {
@@ -91,7 +87,7 @@ export default function ConversationPage() {
       }
     };
     fetchMessages();
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adId, otherUserId, me?.id]);
 
   // Scroll auto vers le bas
@@ -99,22 +95,25 @@ export default function ConversationPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // ✅ Temps réel : rejoindre la room de l'annonce & écouter les nouveaux messages
   useEffect(() => {
-    if (!adId || !otherUserId || !me?.id || !conversationId) return;
+    if (!adId || !otherUserId || !me?.id) return;
 
-    // Rejoindre la room de cette conversation
-    joinConversation(conversationId);
+    joinConversation(adId);
 
-    // Écoute des messages reçus en temps réel
     const handler = (newMsg: Message) => {
+      // sécurité: bon ad
+      if (newMsg.adId !== adId) return;
+      // IMPORTANT: si c’est moi qui l’ai envoyé, je l’ai déjà ajouté localement
+      if (newMsg.senderId === me.id) return;
       setMessages((prev) => [...prev, newMsg]);
     };
-    socket.on('receive_message', handler);
 
+    socket.on('new_message', handler);
     return () => {
-      socket.off('receive_message', handler);
+      socket.off('new_message', handler);
     };
-  }, [adId, otherUserId, me?.id, conversationId]);
+  }, [adId, otherUserId, me?.id]);
 
   async function sendMessage() {
     if (!message.trim()) return;
@@ -131,24 +130,18 @@ export default function ConversationPage() {
       });
       if (!res.ok) throw new Error("Erreur lors de l'envoi");
 
-      const newMessage: Message = {
-        id: crypto.randomUUID(),
-        adId,
-        senderId: me?.id || '',
-        content: message,
-        createdAt: new Date().toISOString(),
-        sender: me || undefined,
-      };
+      // ← on récupère le message créé par la DB (id/createdAt vrais)
+      const saved: Message = await res.json();
 
-      socket.emit('send_message', {
-        ...newMessage,
-        receiverId: otherUserId,
-        conversationId, // <<<<<< ICI
-      });
-
-      // Ajout local direct
-      setMessages((prev) => [...prev, newMessage]);
+      // ajout local immédiat (optimiste)
+      setMessages((prev) => [...prev, saved]);
       setMessage('');
+
+      // broadcast temps réel aux autres (le serveur n’écho PAS au sender)
+      socket.emit('send_message', {
+        ...saved,
+        receiverId: otherUserId, // pour la notif user-<id>
+      });
     } finally {
       setSending(false);
     }

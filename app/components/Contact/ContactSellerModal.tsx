@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { socket } from '@/lib/socket';
 
 import { useEffect, useState } from 'react';
+import { useMe } from '@/hooks/useMe';
 
 interface ContactSellerModalProps {
   ad: Ad;
@@ -29,6 +30,7 @@ export default function ContactSellerModal({
   disabled,
   onSent,
 }: ContactSellerModalProps) {
+  const { me } = useMe(); //
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(
     `Bonjour, je suis intéressé(e) par "${ad.title}" à ${formatPrice(ad.price)} USD sur TekaSomba. Est-il toujours disponible ?`
@@ -70,12 +72,9 @@ export default function ContactSellerModal({
         setSending(false);
         return;
       }
-
-      // 1) API pour persister le message
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           adId: ad.id,
           receiverId: ad.user.id,
@@ -84,18 +83,13 @@ export default function ContactSellerModal({
       });
       if (!res.ok) throw new Error('Erreur lors de l’envoi du message.');
 
-      // 2) Emission temps réel (badge + conv live)
-      const conversationId = meId
-        ? `${ad.id}::${[meId, ad.user.id].sort().join('|')}`
-        : undefined;
-
+      // ✅ émettre temps réel
       socket.emit('send_message', {
         adId: ad.id,
+        senderId: me?.id || '',
         receiverId: ad.user.id,
-        senderId: meId ?? undefined, // ← important si dispo
         content: message,
         createdAt: new Date().toISOString(),
-        conversationId, // ← important
       });
 
       setOpen(false);
@@ -106,7 +100,6 @@ export default function ContactSellerModal({
       setSending(false);
     }
   }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

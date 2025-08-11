@@ -28,7 +28,6 @@ type Category = {
 };
 
 type Me = { id: string } | null;
-
 type MessagePayload = {
   id: string;
   content?: string;
@@ -58,6 +57,48 @@ export default function Header() {
 
   const [hasUnread, setHasUnread] = useState<boolean>(false);
 
+  useEffect(() => {
+    let cleanup: () => void = () => {};
+
+    (async () => {
+      const me: Me = await fetch('/api/me')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+
+      if (!me?.id) {
+        setHasUnread(false);
+        localStorage.setItem('messagesSeen', 'true');
+        return;
+      }
+
+      // ✅ rejoindre la room perso user-<id>
+      joinUserRoom(me.id);
+
+      const syncBadge = () => {
+        setHasUnread(localStorage.getItem('messagesSeen') !== 'true');
+      };
+      syncBadge();
+
+      // ✅ écouter le bon event émis par le serveur
+      const onNewMsg = (message: MessagePayload) => {
+        if (message.senderId === me.id) return; // ignore si c'est moi l'émetteur
+        setHasUnread(true);
+        localStorage.setItem('messagesSeen', 'false');
+        // toast optionnel
+        // if (message.content) toast(`💬 Nouveau message : ${message.content}`);
+      };
+
+      socket.on('new_message', onNewMsg as (payload: unknown) => void);
+      window.addEventListener('storage', syncBadge);
+
+      cleanup = () => {
+        socket.off('new_message', onNewMsg as (payload: unknown) => void);
+        window.removeEventListener('storage', syncBadge);
+      };
+    })();
+
+    return () => cleanup();
+  }, []);
   useEffect(() => {
     (async () => {
       try {
@@ -109,46 +150,6 @@ export default function Header() {
   function closeDropdown() {
     setActiveCat(null);
   }
-
-  useEffect(() => {
-    let cleanup: () => void = () => {};
-
-    (async () => {
-      const me: Me = await fetch('/api/me')
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null);
-      if (!me?.id) {
-        setHasUnread(false);
-        localStorage.setItem('messagesSeen', 'true');
-        return;
-      }
-
-      joinUserRoom(me.id);
-
-      const syncBadge = () => {
-        setHasUnread(localStorage.getItem('messagesSeen') !== 'true');
-      };
-      syncBadge();
-
-      const onNewMsg = (message: MessagePayload) => {
-        if (message.senderId === me.id) return;
-        setHasUnread(true);
-        localStorage.setItem('messagesSeen', 'false');
-        if (message.content) toast(`💬 Nouveau message : ${message.content}`);
-        else toast('💬 Nouveau message reçu');
-      };
-
-      socket.on('new_message', onNewMsg as (payload: unknown) => void);
-      window.addEventListener('storage', syncBadge);
-
-      cleanup = () => {
-        socket.off('new_message', onNewMsg as (payload: unknown) => void);
-        window.removeEventListener('storage', syncBadge);
-      };
-    })();
-
-    return () => cleanup();
-  }, []);
 
   useEffect(() => {
     if (pathname.startsWith('/dashboard/messages')) {

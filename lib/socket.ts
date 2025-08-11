@@ -6,17 +6,16 @@ const SOCKET_URL =
     ? process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001'
     : undefined;
 
+// instance unique
 export const socket = io(SOCKET_URL!, {
   autoConnect: true,
   transports: ['websocket'],
 });
 
-// envoie une string, pas un objet
 export function joinUserRoom(userId: string | null | undefined) {
-  if (userId) socket.emit('join_user', userId);
+  if (userId) socket.emit('join_user', userId); // ← on envoie UNE string
 }
 
-// envoie { conversationId }
-export function joinConversation(conversationId: string | null | undefined) {
-  if (conversationId) socket.emit('join_conversation', { conversationId });
+export function joinConversation(adId: string | null | undefined) {
+  if (adId) socket.emit('join_conversation', { adId }); // ← { adId }
 }
