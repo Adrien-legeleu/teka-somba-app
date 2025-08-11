@@ -3,13 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-// imports: enlève Resolver du import type
-import type {
-  DefaultValues,
-  UseFormReturn,
-  SubmitHandler,
-} from 'react-hook-form';
-
+import type { DefaultValues, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,7 +59,6 @@ const schema = z
     type: z.enum(['FOR_SALE', 'FOR_RENT']),
     durationValue: z.number().int().positive().optional(),
     durationUnit: z.enum(['HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR']).optional(),
-    // compat Zod: keyType + valueType
     dynamicFields: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((data, ctx) => {
@@ -103,14 +96,10 @@ const schema = z
     }
   });
 
-type FormValues = z.infer<typeof schema>;
-// juste après le schema
-type FormValuesIn = z.input<typeof schema>; // avant parse  (dynamicFields peut être undefined)
-type FormValuesOut = z.output<typeof schema>; // après parse (dynamicFields est {} garanti)
+// Types d’input/output pour lever le conflit .default({})
+type FormValuesIn = z.input<typeof schema>; // input avant parse (dynamicFields peut être undefined)
+type FormValuesOut = z.output<typeof schema>; // output après parse (dynamicFields est {})
 
-/* =======================
-   Helpers
-   ======================= */
 function normalize(str: string) {
   return str
     .normalize('NFD')
@@ -127,11 +116,42 @@ const durationLabels: Record<DurationUnit, string> = {
   YEAR: 'An(s)',
 };
 
+// ---- Auth helpers (sans any)
+async function checkAuth(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/auth/status', {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (res.status === 401) return false;
+    if (!res.ok) return false;
+    const data = (await res.json()) as { authenticated?: boolean };
+    return !!data.authenticated;
+  } catch {
+    return false;
+  }
+}
+
+function redirectToLogin(): void {
+  const next = typeof window !== 'undefined' ? window.location.pathname : '/';
+  window.location.replace(`/login?next=${encodeURIComponent(next)}`);
+}
+
+async function ensureAuth(showToast = false): Promise<boolean> {
+  const ok = await checkAuth();
+  if (!ok) {
+    if (showToast)
+      toast.error('Votre session a expiré. Connectez-vous pour continuer.');
+    redirectToLogin();
+  }
+  return ok;
+}
+
 /* =======================
-   Component (init form)
+   Component
    ======================= */
 export default function NewAdForm({ categories }: { categories: Category[] }) {
-  const defaultValues: DefaultValues<FormValues> = {
+  const defaultValues: DefaultValues<FormValuesIn> = {
     title: '',
     description: '',
     price: 0,
@@ -176,10 +196,8 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     const reduce =
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined')
       window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
-    }
     topRef.current?.scrollIntoView({
       behavior: reduce ? 'auto' : 'smooth',
       block: 'start',
@@ -211,12 +229,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
 
   // don => price = 0
   useEffect(() => {
-    if (isDon) {
+    if (isDon)
       methods.setValue('price', 0, { shouldValidate: true, shouldDirty: true });
-    }
   }, [isDon, methods]);
 
-  // selected cat id
   const selectedCatId =
     (subCategoryId ?? categoryId ?? watched.categoryId ?? '') || '';
 
@@ -225,9 +241,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     [dynamicFields]
   );
 
-  /* =======================
-     Validations par étape
-     ======================= */
+  // Validations
   const validateStep1 = async () => {
     if (!selectedCatId) {
       toast.warning('Veuillez choisir une catégorie.');
@@ -313,10 +327,11 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     return true;
   };
 
-  /* =======================
-     Submit
-     ======================= */
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+  // Submit
+  const onSubmit: SubmitHandler<FormValuesOut> = async (data) => {
+    // ✅ Vérif session avant d’appeler l’API
+    if (!(await ensureAuth(true))) return;
+
     if (!(await validateStep1())) return setStep(1);
     if (!(await validateStep2())) return setStep(2);
     if (!(await validateStep3())) return setStep(3);
@@ -356,6 +371,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
       const res = await fetch('/api/ad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           ...data,
           images,
@@ -369,12 +385,18 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         }),
       });
 
+      if (res.status === 401) {
+        toast.error('Session expirée. Connectez-vous pour continuer.');
+        redirectToLogin();
+        return;
+      }
+
       if (res.ok) {
-        const { adId } = await res.json();
+        const { adId } = (await res.json()) as { adId: string };
         toast.success('Annonce créée !');
         window.location.href = `/annonce/${adId}`;
       } else {
-        const error = await res.json().catch(() => ({}));
+        const error = await res.json().catch(() => ({}) as { error?: string });
         console.error(error);
         toast.error(error.error || 'Erreur de création');
       }
@@ -407,311 +429,289 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         <div ref={topRef} />
         <StepProgressBar step={step} />
 
-        {/* ...le reste du composant (étapes 1 à 5) inchangé... */}
-
         <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <Label>Catégorie *</Label>
-              <CategoryPicker
-                categoryId={categoryId}
-                setCategoryId={setCategoryId}
-                subCategoryId={subCategoryId}
-                setSubCategoryId={setSubCategoryId}
-              />
-
-              <Label htmlFor="title">Titre *</Label>
-              <Input
-                id="title"
-                {...methods.register('title')}
-                placeholder="Ex : iPhone 14 Pro, Maison à louer, etc."
-              />
-
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="don"
-                  checked={isDon}
-                  onCheckedChange={(val) => {
-                    setValue('isDon', val, { shouldValidate: true });
-                    if (val) setValue('price', 0, { shouldValidate: true });
-                  }}
+          {/* Étape 1 */}
+          <motion.div
+            key={`step-${step}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {step === 1 && (
+              <>
+                <Label>Catégorie *</Label>
+                <CategoryPicker
+                  categoryId={categoryId}
+                  setCategoryId={setCategoryId}
+                  subCategoryId={subCategoryId}
+                  setSubCategoryId={setSubCategoryId}
                 />
-                <Label htmlFor="don">Mettre en don (gratuit)</Label>
-              </div>
 
-              <Label>Type *</Label>
-              <RadioGroup
-                defaultValue="FOR_SALE"
-                onValueChange={(val) =>
-                  setValue('type', val as AdType, { shouldValidate: true })
-                }
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="FOR_SALE" id="for_sale" />
-                  <Label htmlFor="for_sale">À vendre</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="FOR_RENT" id="for_rent" />
-                  <Label htmlFor="for_rent">À louer</Label>
-                </div>
-              </RadioGroup>
+                <Label htmlFor="title">Titre *</Label>
+                <Input
+                  id="title"
+                  {...methods.register('title')}
+                  placeholder="Ex : iPhone 14 Pro, Maison à louer, etc."
+                />
 
-              {watch('type') === 'FOR_RENT' && (
                 <div className="flex items-center gap-3">
+                  <Switch
+                    id="don"
+                    checked={isDon}
+                    onCheckedChange={(val) => {
+                      setValue('isDon', val, { shouldValidate: true });
+                      if (val) setValue('price', 0, { shouldValidate: true });
+                    }}
+                  />
+                  <Label htmlFor="don">Mettre en don (gratuit)</Label>
+                </div>
+
+                <Label>Type *</Label>
+                <RadioGroup
+                  defaultValue="FOR_SALE"
+                  onValueChange={(val) =>
+                    setValue('type', val as AdType, { shouldValidate: true })
+                  }
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="FOR_SALE" id="for_sale" />
+                    <Label htmlFor="for_sale">À vendre</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="FOR_RENT" id="for_rent" />
+                    <Label htmlFor="for_rent">À louer</Label>
+                  </div>
+                </RadioGroup>
+
+                {watch('type') === 'FOR_RENT' && (
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      step={1}
+                      min={1}
+                      placeholder="Durée"
+                      {...methods.register('durationValue', {
+                        valueAsNumber: true,
+                      })}
+                      className="w-24"
+                      onKeyDown={(e) => {
+                        if (['e', 'E', '+', '-', '.'].includes(e.key))
+                          e.preventDefault();
+                      }}
+                    />
+                    <Select
+                      onValueChange={(val) =>
+                        setValue('durationUnit', val as DurationUnit, {
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-32">
+                        {durationUnit ? durationLabels[durationUnit] : 'Unité'}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="HOUR">Heure(s)</SelectItem>
+                        <SelectItem value="DAY">Jour(s)</SelectItem>
+                        <SelectItem value="WEEK">Semaine(s)</SelectItem>
+                        <SelectItem value="MONTH">Mois</SelectItem>
+                        <SelectItem value="YEAR">An(s)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="flex justify-end">
+                  <Button
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                    className="text-white"
+                    type="button"
+                    onClick={async () => {
+                      // petite vérif session aussi au passage quand on avance
+                      if (!(await ensureAuth())) return;
+                      const ok = await validateStep1();
+                      if (ok) setStep(2);
+                    }}
+                  >
+                    Suivant
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  {...methods.register('description')}
+                  placeholder="Décrivez votre produit..."
+                  rows={4}
+                />
+
+                <Label htmlFor="price">Prix *</Label>
+                <div className="flex items-center gap-2">
                   <Input
+                    id="price"
                     type="number"
                     inputMode="numeric"
                     step={1}
-                    min={1}
-                    placeholder="Durée"
-                    {...methods.register('durationValue', {
-                      valueAsNumber: true,
-                    })}
-                    className="w-24"
+                    min={0}
+                    {...methods.register('price', { valueAsNumber: true })}
+                    disabled={isDon}
+                    className="w-40"
+                    placeholder="FCFA"
                     onKeyDown={(e) => {
                       if (['e', 'E', '+', '-', '.'].includes(e.key))
                         e.preventDefault();
                     }}
                   />
-                  <Select
-                    onValueChange={(val) =>
-                      setValue('durationUnit', val as DurationUnit, {
-                        shouldValidate: true,
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-32">
-                      {durationUnit ? durationLabels[durationUnit] : 'Unité'}
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="HOUR">Heure(s)</SelectItem>
-                      <SelectItem value="DAY">Jour(s)</SelectItem>
-                      <SelectItem value="WEEK">Semaine(s)</SelectItem>
-                      <SelectItem value="MONTH">Mois</SelectItem>
-                      <SelectItem value="YEAR">An(s)</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
-              )}
 
-              <div className="flex justify-end">
-                <Button
-                  style={{
-                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
-                  }}
-                  className="text-white"
-                  onClick={async () => {
-                    const ok = await validateStep1();
-                    if (ok) setStep(2);
-                  }}
-                  type="button"
-                >
-                  Suivant
-                </Button>
-              </div>
-            </motion.div>
-          )}
+                {dynamicFields.length > 0 && (
+                  <DynamicFieldsSection fields={dynamicFields} />
+                )}
 
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                {...methods.register('description')}
-                placeholder="Décrivez votre produit ou service en détail..."
-                rows={4}
-              />
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setStep(1)}
+                  >
+                    Retour
+                  </Button>
+                  <Button
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                    className="text-white"
+                    type="button"
+                    onClick={async () => {
+                      if (!(await ensureAuth())) return;
+                      const ok = await validateStep2();
+                      if (ok) setStep(3);
+                    }}
+                  >
+                    Suivant
+                  </Button>
+                </div>
+              </>
+            )}
 
-              <Label htmlFor="price">Prix *</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="price"
-                  type="number"
-                  inputMode="numeric"
-                  step={1}
-                  min={0}
-                  {...methods.register('price', { valueAsNumber: true })}
-                  disabled={isDon}
-                  className="w-40"
-                  placeholder="FCFA"
-                  onKeyDown={(e) => {
-                    if (['e', 'E', '+', '-', '.'].includes(e.key))
-                      e.preventDefault();
+            {step === 3 && (
+              <>
+                <ImageUploader
+                  defaultImages={images}
+                  onChange={(urls) => {
+                    setImages(urls);
+                    setValue('images', urls, { shouldValidate: true });
                   }}
+                  onUploadingChange={(uploading) => setIsUploading(uploading)}
                 />
-              </div>
 
-              {dynamicFields.length > 0 && (
-                <DynamicFieldsSection fields={dynamicFields} />
-              )}
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setStep(2)}
+                  >
+                    Retour
+                  </Button>
+                  <Button
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                    className="text-white"
+                    type="button"
+                    disabled={isUploading}
+                    onClick={async () => {
+                      if (!(await ensureAuth())) return;
+                      const ok = await validateStep3();
+                      if (ok) setStep(4);
+                    }}
+                  >
+                    Suivant
+                  </Button>
+                </div>
+              </>
+            )}
 
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setStep(1)}
-                >
-                  Retour
-                </Button>
-                <Button
-                  style={{
-                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
-                  }}
-                  className="text-white"
-                  type="button"
-                  onClick={async () => {
-                    const ok = await validateStep2();
-                    if (ok) setStep(3);
-                  }}
-                >
-                  Suivant
-                </Button>
-              </div>
-            </motion.div>
-          )}
+            {step === 4 && (
+              <>
+                <LocationPicker
+                  location={location}
+                  setLocation={setLocation}
+                  lat={lat}
+                  setLat={setLat}
+                  lng={lng}
+                  setLng={setLng}
+                />
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setStep(3)}
+                  >
+                    Retour
+                  </Button>
+                  <Button
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                    className="text-white"
+                    type="button"
+                    onClick={async () => {
+                      if (!(await ensureAuth())) return;
+                      const ok = await validateStep4();
+                      if (ok) setStep(5);
+                    }}
+                  >
+                    Suivant
+                  </Button>
+                </div>
+              </>
+            )}
 
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <ImageUploader
-                defaultImages={images}
-                onChange={(urls) => {
-                  setImages(urls);
-                  setValue('images', urls, { shouldValidate: true });
-                }}
-                onUploadingChange={(uploading) => setIsUploading(uploading)}
-              />
-
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setStep(2)}
-                >
-                  Retour
-                </Button>
-                <Button
-                  style={{
-                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+            {step === 5 && (
+              <>
+                <AdPreview
+                  ad={{
+                    ...watched,
+                    images,
+                    location,
+                    lat,
+                    lng,
+                    categoryId: selectedCatId,
+                    type: watched.type,
+                    durationUnit: watched.durationUnit,
+                    durationValue: watched.durationValue,
+                    dynamicFields: watched.dynamicFields as DynamicFieldValues,
                   }}
-                  className="text-white"
-                  type="button"
-                  disabled={isUploading}
-                  onClick={async () => {
-                    const ok = await validateStep3();
-                    if (ok) setStep(4);
-                  }}
-                >
-                  Suivant
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 4 && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <LocationPicker
-                location={location}
-                setLocation={setLocation}
-                lat={lat}
-                setLat={setLat}
-                lng={lng}
-                setLng={setLng}
-              />
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setStep(3)}
-                >
-                  Retour
-                </Button>
-                <Button
-                  style={{
-                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
-                  }}
-                  className="text-white"
-                  type="button"
-                  onClick={async () => {
-                    const ok = await validateStep4();
-                    if (ok) setStep(5);
-                  }}
-                >
-                  Suivant
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 5 && (
-            <motion.div
-              key="step5"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <AdPreview
-                ad={{
-                  ...watched,
-                  images,
-                  location,
-                  lat,
-                  lng,
-                  categoryId: selectedCatId,
-                  type: watched.type,
-                  durationUnit: watched.durationUnit,
-                  durationValue: watched.durationValue,
-                  dynamicFields: watched.dynamicFields as DynamicFieldValues,
-                }}
-                dynamicFields={dynamicFields}
-              />
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(4)}>
-                  Retour
-                </Button>
-                <Button
-                  style={{
-                    background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
-                  }}
-                  className="text-white"
-                  type="submit"
-                  disabled={!isFormValid}
-                >
-                  Créer l’annonce
-                </Button>
-              </div>
-            </motion.div>
-          )}
+                  dynamicFields={dynamicFields}
+                />
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={() => setStep(4)}>
+                    Retour
+                  </Button>
+                  <Button
+                    style={{
+                      background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+                    }}
+                    className="text-white"
+                    type="submit"
+                    disabled={!isFormValid}
+                  >
+                    Créer l’annonce
+                  </Button>
+                </div>
+              </>
+            )}
+          </motion.div>
         </AnimatePresence>
       </form>
     </FormProvider>

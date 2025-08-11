@@ -16,9 +16,9 @@ import {
 } from '@tabler/icons-react';
 import DashboardNav from './DashboardNav';
 import CategoryIcon from '../Fonctionnalities/CategoryIcon';
-import { joinUserRoom, socket } from '@/lib/socket';
 import { toast } from 'sonner';
 import MobileNavLink from '../Home/MobileNavLink';
+import { joinUserRoom, socket } from '@/lib/socket';
 
 type Category = {
   id: string;

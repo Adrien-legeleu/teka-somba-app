@@ -145,7 +145,10 @@ export default function ContactSellerModal({
           <Button
             onClick={handleSend}
             disabled={sending || !message.trim()}
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-6"
+            style={{
+              background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
+            }}
+            className="rounded-3xl px-6 shadow-xl  text-white transition"
           >
             {sending ? 'Envoi...' : 'Envoyer'}
           </Button>
