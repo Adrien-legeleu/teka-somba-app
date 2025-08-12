@@ -27,6 +27,12 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
         purpose: 'any',
       },
+      {
+        src: '/icons/icon-monochrome-512.png', // ton fichier noir et blanc
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'monochrome',
+      },
     ],
   };
 }

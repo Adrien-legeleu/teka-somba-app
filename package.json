@@ -67,6 +67,7 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@bubblewrap/cli": "^1.23.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
