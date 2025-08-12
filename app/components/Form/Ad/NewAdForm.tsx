@@ -565,7 +565,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                     {...methods.register('price', { valueAsNumber: true })}
                     disabled={isDon}
                     className="w-40"
-                    placeholder="FCFA"
+                    placeholder="USD"
                     onKeyDown={(e) => {
                       if (['e', 'E', '+', '-', '.'].includes(e.key))
                         e.preventDefault();

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Nunito_Sans, Nunito } from 'next/font/google';
 import Footer from './components/Footer/Footer';
+import RegisterSW from './_components/RegisterSX';
 
 const nunito_sans = Nunito_Sans({
   subsets: ['latin'],
@@ -26,6 +27,25 @@ export const metadata: Metadata = {
   keywords:
     'petites annonces Congo, annonces gratuites Congo, immobilier Congo, voitures Congo, emploi Congo, services Congo, Teka Somba',
   authors: [{ name: 'Teka Somba', url: siteUrl }],
+
+  // PWA
+  manifest: '/manifest.webmanifest',
+  themeColor: '#ff7a00',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Teka Somba',
+  },
+
+  // Icônes
+  icons: {
+    // favicon/onglet
+    icon: [{ url: '/logo-teka-somba.png' }],
+    // icône iOS (facultatif mais utile)
+    apple: [{ url: '/icons/icon-192.png' }],
+  },
+
+  // Partage
   openGraph: {
     title: 'Teka Somba – Petites annonces gratuites au Congo',
     description:
@@ -43,9 +63,6 @@ export const metadata: Metadata = {
       },
     ],
   },
-  icons: {
-    icon: '/logo-teka-somba.png', // pour la favicon onglet navigateur
-  },
 };
 
 export default function RootLayout({
@@ -55,9 +72,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
+      <head>
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#ff7a00" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
       <body
         className={`${nunito_sans.variable} ${nunito.variable} antialiased`}
       >
+        <RegisterSW />
         {children}
         <Footer />
       </body>
