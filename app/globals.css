@@ -129,7 +129,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 :root {
-  --bottom-bar-h: 70px; /* navigateur (Chrome/Safari) */
+  --bottom-bar-h: 65px; /* navigateur (Chrome/Safari) */
 }
 
 /* Quand l'app est lancée en PWA (installée, plein écran) */

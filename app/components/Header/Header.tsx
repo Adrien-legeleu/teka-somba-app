@@ -337,7 +337,6 @@ export default function Header() {
         style={{
           height: 'calc(var(--bottom-bar-h) + env(safe-area-inset-bottom))',
           paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
-          // Anti “lag” iOS : force un calque GPU pour la barre fixe
           transform: 'translateZ(0)',
           willChange: 'transform',
         }}

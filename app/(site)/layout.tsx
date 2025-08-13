@@ -32,7 +32,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       {isHome ? (
         <Suspense>
           <FilterProvider>
-            <main className="max-w-7xl mx-auto">
+            <main className="max-w-7xl mx-auto md:pb-0 pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
               {showMobileHomeLayout ? (
                 <LayoutHomeMobile>{children}</LayoutHomeMobile>
               ) : (
@@ -42,7 +42,9 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
           </FilterProvider>
         </Suspense>
       ) : (
-        <main>{children}</main>
+        <main className="md:pb-0 pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
+          {children}
+        </main>
       )}
 
       <Toaster />
