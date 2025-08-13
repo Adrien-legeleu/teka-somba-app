@@ -132,7 +132,7 @@ export default function Footer() {
       </div>
 
       {/* Bas de page */}
-      <div className="border-t border-gray-200 py-4">
+      <div className="border-t border-gray-200 py-4 pb-24">
         <p className="text-center text-xs text-gray-500">
           © {new Date().getFullYear()} Teka Somba. Tous droits réservés.
         </p>
