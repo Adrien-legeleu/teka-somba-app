@@ -89,10 +89,8 @@ export default function RootLayout({
         {children}
         <Footer />
         <div
+          className="md:pb-0 max-md:pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]"
           aria-hidden
-          style={{
-            height: 'calc(var(--bottom-bar-h) + env(safe-area-inset-bottom))',
-          }}
         />
       </body>
     </html>

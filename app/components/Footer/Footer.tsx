@@ -13,7 +13,7 @@ import MobileNavLink from '../Home/MobileNavLink';
 
 export default function Footer() {
   return (
-    <footer className="bg-neutral-50 border-t border-gray-200 md:pb-0 pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
+    <footer className="bg-gradient-to-t from-white from-10% to-90% to-neutral-50 border-t border-gray-200 md:pb-0 max-md:pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
       <div className="max-w-7xl mx-auto px-6 py-10 md:py-14 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Logo et description */}
         <div>
