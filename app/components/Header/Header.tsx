@@ -323,11 +323,23 @@ export default function Header() {
             document.body
           )}
       </nav>
-
-      {/* Mobile bottom bar */}
       <div
-        className=" fixed left-0 right-0 xs:left-1/2 xs:-translate-x-1/2 sm:w-[70%] xs:w-5/6 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 grid grid-cols-5 items-center md:hidden shadow-lg z-[999] h-[calc(64px+env(safe-area-inset-bottom))]    /* hauteur = 64 + safe area */ bottom-[env(safe-area-inset-bottom)]          /* remonte au-dessus de la zone geste */ px-3 "
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+        className="
+    fixed left-0 right-0 bottom-0
+    xs:left-1/2 xs:-translate-x-1/2
+    sm:w-[70%] xs:w-5/6 w-full
+    xs:rounded-full rounded-t-3xl
+    bg-white border-t border-gray-200
+    grid grid-cols-5 items-center md:hidden
+    shadow-lg z-[999]
+    px-3
+  "
+        style={{
+          // barre de 64px + zone de geste
+          height: 'calc(64px + env(safe-area-inset-bottom))',
+          // ajoute du rembourrage pour que le contenu ne colle pas au bord
+          paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+        }}
       >
         <MobileNavLink
           href="/"
@@ -338,7 +350,6 @@ export default function Header() {
             Annonces
           </span>
         </MobileNavLink>
-
         <Link
           href="/dashboard/favoris"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
@@ -348,7 +359,6 @@ export default function Header() {
             Favoris
           </span>
         </Link>
-
         <Link
           href="/dashboard/annonces/new"
           className="flex flex-col justify-center gap-1 items-center -mt-6"
@@ -363,7 +373,6 @@ export default function Header() {
             Publier
           </span>
         </Link>
-
         <Link
           href="/dashboard/messages"
           className="relative flex flex-col items-center text-gray-600 hover:text-orange-500"
@@ -381,7 +390,6 @@ export default function Header() {
             Messages
           </span>
         </Link>
-
         <Link
           href="/dashboard"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
