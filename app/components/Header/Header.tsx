@@ -335,10 +335,11 @@ export default function Header() {
     px-3
   "
         style={{
-          // barre de 64px + zone de geste
-          height: 'calc(80px + env(safe-area-inset-bottom))',
-          // ajoute du rembourrage pour que le contenu ne colle pas au bord
-          paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
+          height: 'calc(var(--bottom-bar-h) + env(safe-area-inset-bottom))',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+          // Anti “lag” iOS : force un calque GPU pour la barre fixe
+          transform: 'translateZ(0)',
+          willChange: 'transform',
         }}
       >
         <MobileNavLink
