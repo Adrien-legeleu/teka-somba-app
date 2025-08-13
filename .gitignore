@@ -41,3 +41,18 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+# Android/TWA hors repo web
+*.apk
+*.aab
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+settings.gradle
+build.gradle
+gradle.properties
+app/build/
+app/src/
+app/build.gradle
+manifest-checksum.txt
+twa-manifest.json
