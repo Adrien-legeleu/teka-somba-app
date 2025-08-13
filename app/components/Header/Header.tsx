@@ -336,7 +336,7 @@ export default function Header() {
   "
         style={{
           // barre de 64px + zone de geste
-          height: 'calc(64px + env(safe-area-inset-bottom))',
+          height: 'calc(80px + env(safe-area-inset-bottom))',
           // ajoute du rembourrage pour que le contenu ne colle pas au bord
           paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
         }}

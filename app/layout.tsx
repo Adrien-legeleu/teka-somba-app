@@ -83,7 +83,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body
-        className={`${nunito_sans.variable} ${nunito.variable} antialiased`}
+        className={`${nunito_sans.variable} ${nunito.variable} antialiased pb-24`}
       >
         <RegisterSW />
         {children}
