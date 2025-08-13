@@ -325,7 +325,10 @@ export default function Header() {
       </nav>
 
       {/* Mobile bottom bar */}
-      <div className="fixed xs:bottom-1 bottom-0 pb-1 xs:left-1/2 left-0 xs:-translate-x-1/2 sm:w-[70%] xs:w-5/6 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 grid grid-cols-5 items-center md:hidden h-16 shadow-lg z-[999]">
+      <div
+        className=" fixed left-0 right-0 xs:left-1/2 xs:-translate-x-1/2 sm:w-[70%] xs:w-5/6 w-full xs:rounded-full rounded-t-3xl bg-white border-t border-gray-200 grid grid-cols-5 items-center md:hidden shadow-lg z-[999] h-[calc(64px+env(safe-area-inset-bottom))]    /* hauteur = 64 + safe area */ bottom-[env(safe-area-inset-bottom)]          /* remonte au-dessus de la zone geste */ px-3 "
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+      >
         <MobileNavLink
           href="/"
           className="flex flex-col items-center text-gray-600 hover:text-orange-500"
