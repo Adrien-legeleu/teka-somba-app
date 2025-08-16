@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Home from '../components/Home/Home';
 import { AdWithMeta } from '@/types/ad';
+import { Suspense } from 'react';
 
 export const runtime = 'nodejs';
 
@@ -60,12 +61,14 @@ export default async function Page() {
 
   return (
     <div className="w-full flex justify-start">
-      <Home
-        userId={userId}
-        initialAds={initial.data}
-        initialTotal={initial.total}
-        initialPage={1}
-      />
+      <Suspense fallback={null}>
+        <Home
+          userId={userId}
+          initialAds={initial.data}
+          initialTotal={initial.total}
+          initialPage={1}
+        />
+      </Suspense>
     </div>
   );
 }
