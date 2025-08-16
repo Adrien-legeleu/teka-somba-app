@@ -24,16 +24,25 @@ interface AdWithRelations {
   lng?: number | null;
 }
 
+interface AdListItem {
+  id: string;
+  title: string;
+  price: number;
+  location: string | null;
+  images: string[] | null;
+  isFavorite: boolean;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // --- Pagination / bornes sûres
+    // Pagination bornée
     const page = clampInt(searchParams.get('page'), 1, 1_000_000, 1);
     const limit = clampInt(searchParams.get('limit'), 1, 50, 20);
     const skip = (page - 1) * limit;
 
-    // --- Filtres / tri
+    // Filtres
     const categoryId = strOrNull(searchParams.get('categoryId'));
     const city = strOrNull(searchParams.get('city'));
     const q = (searchParams.get('q') || '').trim();
@@ -49,7 +58,7 @@ export async function GET(req: NextRequest) {
     const lng = numOrNull(searchParams.get('lng'));
     const radiusKm = numOrNull(searchParams.get('radius'));
 
-    // --- userId pour favoris : token (prioritaire), sinon query param (compat)
+    // userId pour favoris
     let favoritesUserId: string | null = null;
     try {
       const token = req.cookies.get('token')?.value;
@@ -60,12 +69,14 @@ export async function GET(req: NextRequest) {
         ) as AuthPayload;
         favoritesUserId = payload.userId ?? null;
       }
-    } catch {}
+    } catch {
+      // Token invalide => pas de favoris
+    }
     if (!favoritesUserId) {
       favoritesUserId = strOrNull(searchParams.get('userId'));
     }
 
-    // --- Catégorie + enfants
+    // Catégorie + enfants
     let categoryIds: string[] | undefined;
     if (categoryId) {
       const cat = await prisma.category.findUnique({
@@ -75,12 +86,9 @@ export async function GET(req: NextRequest) {
       if (cat) categoryIds = [cat.id, ...cat.children.map((c) => c.id)];
     }
 
-    // ======================================================================
-    // BRANCHE GÉOLOC (SQL brut : bbox + Haversine + LIMIT/OFFSET + COUNT)
-    // ======================================================================
+    // ==================== BRANCHE GÉOLOC ====================
     if (lat != null && lng != null && radiusKm != null) {
-      // BBox indexable (réduit drastiquement les lignes avant Haversine)
-      const R = 6371; // km
+      const R = 6371;
       const dLat = (radiusKm / R) * (180 / Math.PI);
       const dLng = dLat / Math.cos((lat * Math.PI) / 180);
       const minLat = lat - dLat;
@@ -116,7 +124,6 @@ export async function GET(req: NextRequest) {
       const WHERE = clauses.length
         ? Prisma.sql`WHERE ${Prisma.join(clauses, ' AND ')}`
         : Prisma.empty;
-
       const distanceSQL = Prisma.sql`(
         6371 * ACOS(
           COS(RADIANS(${lat})) * COS(RADIANS("Ad"."lat")) *
@@ -128,32 +135,14 @@ export async function GET(req: NextRequest) {
       const ORDER =
         sortBy === 'price'
           ? Prisma.sql`ORDER BY "Ad"."price" ${Prisma.raw(sortOrder.toUpperCase())}`
-          : Prisma.sql`ORDER BY "Ad"."createdAt" ${Prisma.raw(
-              sortOrder.toUpperCase()
-            )}`;
+          : Prisma.sql`ORDER BY "Ad"."createdAt" ${Prisma.raw(sortOrder.toUpperCase())}`;
 
-      // total
       const countRows = await prisma.$queryRaw<{ count: bigint }[]>(
-        Prisma.sql`
-          SELECT COUNT(*)::bigint AS count
-          FROM "Ad"
-          ${WHERE}
-          AND ${distanceSQL} <= ${radiusKm}
-        `
+        Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "Ad" ${WHERE} AND ${distanceSQL} <= ${radiusKm}`
       );
       const total = Number(countRows[0]?.count ?? 0);
 
-      // page
-      const rows = await prisma.$queryRaw<
-        Array<{
-          id: string;
-          title: string;
-          price: number;
-          location: string | null;
-          images: any;
-          isFavorite: boolean;
-        }>
-      >(
+      const rows = await prisma.$queryRaw<AdListItem[]>(
         Prisma.sql`
           SELECT
             "Ad"."id",
@@ -163,10 +152,7 @@ export async function GET(req: NextRequest) {
             "Ad"."images",
             ${
               favoritesUserId
-                ? Prisma.sql`EXISTS(
-                    SELECT 1 FROM "Favorite" f
-                    WHERE f."adId" = "Ad"."id" AND f."userId" = ${favoritesUserId}
-                  )`
+                ? Prisma.sql`EXISTS(SELECT 1 FROM "Favorite" f WHERE f."adId" = "Ad"."id" AND f."userId" = ${favoritesUserId})`
                 : Prisma.sql`false`
             } AS "isFavorite"
           FROM "Ad"
@@ -181,9 +167,11 @@ export async function GET(req: NextRequest) {
         id: r.id,
         title: r.title,
         price: Number(r.price),
-        location: r.location ?? null,
-        images: Array.isArray(r.images) ? r.images.slice(0, 1) : [],
-        isFavorite: !!r.isFavorite,
+        location: r.location,
+        images: Array.isArray(r.images)
+          ? (r.images as string[]).slice(0, 1)
+          : [],
+        isFavorite: r.isFavorite,
       }));
 
       return NextResponse.json(
@@ -196,9 +184,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // ======================================================================
-    // BRANCHE PRISMA (sans géoloc)
-    // ======================================================================
+    // ==================== BRANCHE PRISMA (sans géoloc) ====================
     const where: Prisma.AdWhereInput = {};
     if (categoryIds?.length) where.categoryId = { in: categoryIds };
     if (isDon) where.isDon = true;
@@ -212,8 +198,8 @@ export async function GET(req: NextRequest) {
     }
     if (priceMin != null || priceMax != null) {
       where.price = {};
-      if (priceMin != null) (where.price as Prisma.IntFilter).gte = priceMin;
-      if (priceMax != null) (where.price as Prisma.IntFilter).lte = priceMax;
+      if (priceMin != null) where.price.gte = priceMin;
+      if (priceMax != null) where.price.lte = priceMax;
     }
 
     const [total, list] = await Promise.all([
@@ -234,20 +220,24 @@ export async function GET(req: NextRequest) {
           sortBy === 'price' ? { price: sortOrder } : { createdAt: sortOrder },
         skip,
         take: limit,
-      }) as any,
+      }),
     ]);
 
-    const data = (list as any[]).map((ad) => ({
+    const data = list.map((ad) => ({
       id: ad.id,
       title: ad.title,
       price: ad.price,
       location: ad.location ?? null,
-      images: Array.isArray(ad.images) ? ad.images.slice(0, 1) : [],
-      isFavorite: favoritesUserId ? (ad.favorites?.length ?? 0) > 0 : false,
+      images: Array.isArray(ad.images)
+        ? (ad.images as string[]).slice(0, 1)
+        : [],
+      isFavorite: favoritesUserId
+        ? (ad.favorites as { id: string }[]).length > 0
+        : false,
     }));
 
     const cacheHeaders = favoritesUserId
-      ? { 'Cache-Control': 'private, no-store' } // réponse personnalisée -> pas de cache edge
+      ? { 'Cache-Control': 'private, no-store' }
       : { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' };
 
     return NextResponse.json({ data, total }, { headers: cacheHeaders });
@@ -260,7 +250,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/* -------------------------- helpers utils -------------------------- */
+/* Helpers */
 function clampInt(
   raw: string | null,
   min: number,
@@ -278,7 +268,7 @@ function numOrNull(raw: string | null): number | null {
 }
 function strOrNull(raw: string | null): string | null {
   const v = raw?.trim();
-  return v ? v : null;
+  return v || null;
 }
 
 export async function POST(req: NextRequest) {

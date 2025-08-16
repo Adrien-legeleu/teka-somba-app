@@ -82,7 +82,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#ff7a00" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
-        {/* ── Preconnect/DNS Prefetch : Supabase (API + Storage public) ── */}
+        {/* Preconnect/DNS */}
         <link
           rel="preconnect"
           href="https://brzyczbssnohcpflfycr.supabase.co"
@@ -92,8 +92,6 @@ export default function RootLayout({
           rel="dns-prefetch"
           href="https://brzyczbssnohcpflfycr.supabase.co"
         />
-
-        {/* ── Fonts ── */}
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
@@ -105,11 +103,24 @@ export default function RootLayout({
       </head>
 
       <body
-        className={`${nunito_sans.variable} ${nunito.variable} antialiased `}
+        className={`${nunito_sans.variable} ${nunito.variable} antialiased`}
       >
         <RegisterSW />
-        {children}
-        <Footer />
+
+        {/* --- SHELL IMMEDIAT : structure de page --- */}
+        <div className="min-h-screen flex flex-col">
+          {/* Barre header skeleton (très légère SSR) : elle s’affiche instantanément */}
+          <div className="sticky top-0 z-50 h-14 md:h-16 bg-white/80 backdrop-blur border-b border-black/5">
+            {/* L’en-tête “réel” arrivera via SiteLayout, cette barre évite l’écran “footer seul” */}
+          </div>
+
+          {/* Zone de contenu qui prend l’espace : empêche le footer de remonter au 1er rendu */}
+          <main className="flex-1 min-h-[40vh]">{children}</main>
+
+          {/* Footer rendu APRÈS le main pour éviter qu’il s’affiche en premier */}
+          <Footer />
+        </div>
+
         <div
           className="md:pb-0 max-md:pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]"
           aria-hidden

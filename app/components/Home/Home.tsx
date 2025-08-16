@@ -7,6 +7,7 @@ import {
   useState,
   useDeferredValue,
   startTransition,
+  CSSProperties,
 } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -43,11 +44,13 @@ function AdCardSkeleton({ isCompact }: { isCompact: boolean }) {
   return (
     <div
       className="overflow-hidden relative"
-      style={{
-        contentVisibility: 'auto' as any,
-        containIntrinsicSize: isCompact ? '300px 330px' : '300px 380px',
-        minHeight: isCompact ? 330 : 380, // fallback iOS
-      }}
+      style={
+        {
+          contentVisibility: 'auto',
+          containIntrinsicSize: isCompact ? '300px 330px' : '300px 380px',
+          minHeight: isCompact ? 330 : 380,
+        } as CSSProperties
+      }
     >
       {/* image */}
       <div className="w-full aspect-square rounded-3xl bg-gray-200/70 animate-pulse" />
@@ -63,6 +66,15 @@ function AdCardSkeleton({ isCompact }: { isCompact: boolean }) {
         <div className="h-4 w-4 rounded bg-gray-200/80 animate-pulse" />
       </div>
     </div>
+  );
+}
+function isAbortError(e: unknown): boolean {
+  return (
+    (e instanceof DOMException && e.name === 'AbortError') ||
+    (typeof e === 'object' &&
+      e !== null &&
+      'name' in e &&
+      (e as Record<string, unknown>).name === 'AbortError')
   );
 }
 
@@ -255,13 +267,15 @@ export default function Home({
       }
 
       return payload;
-    } catch (err) {
-      if ((err as any)?.name !== 'AbortError') {
-        console.error('Failed to fetch ads', err);
-        if (p === 1) {
-          setAds([]);
-          setTotal(0);
-        }
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
+        // requête annulée : on ne log pas d’erreur
+        return null;
+      }
+      console.error('Failed to fetch ads', err);
+      if (p === 1) {
+        setAds([]);
+        setTotal(0);
       }
       return null;
     } finally {
@@ -354,7 +368,7 @@ export default function Home({
       {ads.length === 0 && loadingInitial ? (
         <div
           className={cn(
-            'grid w-full gap-6 mt-6 px-4 md:px-10 transition-all duration-300',
+            'grid w-full gap-6 mt-6 px-4 md:px-10 transition-all duration-300 min-h-[50vh]', // 👈 ajouté
             isCompact
               ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
               : 'grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
@@ -404,7 +418,8 @@ export default function Home({
                   className="overflow-hidden relative"
                   // Rend les cartes offscreen quasi gratuites
                   style={{
-                    contentVisibility: 'auto' as any,
+                    contentVisibility:
+                      'auto' as React.CSSProperties['contentVisibility'],
                     containIntrinsicSize: isCompact
                       ? '300px 330px'
                       : '300px 380px',
