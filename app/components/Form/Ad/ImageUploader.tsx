@@ -267,21 +267,22 @@ export default function ImageUploader({
                   }
                 >
                   {index === 0 ? (
-                    <IconPennantFilled className="w-4 h-4" />
+                    <IconPennantFilled className="sm:w-4 sm:h-4 h-2 w-2" />
                   ) : (
-                    <IconPennant className="w-4 h-4" />
+                    <IconPennant className="sm:w-4 sm:h-4 h-2 w-2" />
                   )}
                 </Button>
 
                 <div className="flex gap-2">
                   <Button
                     type="button"
+                    variant="outline"
                     onClick={() => {
                       setCropIdx(index);
                       setCropOpen(true);
                     }}
                   >
-                    <Crop className="w-4 h-4" />
+                    <Crop className="sm:w-4 sm:h-4 h-2 w-2" />
                   </Button>
 
                   <Button
@@ -291,7 +292,7 @@ export default function ImageUploader({
                     title="Supprimer"
                     onClick={() => removeImage(index)}
                   >
-                    <X className="w-4 h-4" />
+                    <X className="sm:w-4 sm:h-4 h-2 w-2" />
                   </Button>
                 </div>
               </div>
