@@ -256,43 +256,42 @@ export default function ImageUploader({
 
             {/* barre d’actions (mobile : visible, desktop : au survol) */}
             {!img.isUploading && (
-              <div className="absolute inset-x-2 bottom-2 z-10 rounded-3xl bg-white/95 backdrop-blur-sm border shadow-sm p-2 flex items-center justify-between sm:opacity-0 sm:group-hover:opacity-100 transition">
+              <div className="absolute sm:inset-x-2  left-1/2 -translate-x-1/2  bottom-2 z-10 rounded-3xl bg-white/85 backdrop-blur-sm border shadow-sm sm:p-2 p-1 flex max-sm:gap-2 xs:gap-4 sm:gap-0 items-center justify-between sm:opacity-0 sm:group-hover:opacity-100 transition">
                 <Button
-                  size="sm"
                   variant="outline"
                   onClick={() => setAsCover(index)}
-                  className="rounded-2xl max-sm:p-1"
+                  className="rounded-2xl aspect-square max-sm:!px-2 max-sm:!p-2 "
                   title={
                     index === 0 ? 'Déjà en couverture' : 'Mettre en couverture'
                   }
                 >
                   {index === 0 ? (
-                    <IconPennantFilled className="sm:w-4 sm:h-4 h-2 w-2" />
+                    <IconPennantFilled className="sm:w-4 sm:h-4 !h-3 !w-3" />
                   ) : (
-                    <IconPennant className="sm:w-4 sm:h-4 h-2 w-2" />
+                    <IconPennant className="sm:w-4 sm:h-4 !h-3 !w-3" />
                   )}
                 </Button>
 
-                <div className="flex gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-2xl max-sm:p-1"
+                    className="rounded-2xl aspect-square max-sm:!px-2 max-sm:!p-2 "
                     onClick={() => {
                       setCropIdx(index);
                       setCropOpen(true);
                     }}
                   >
-                    <Crop className="sm:w-4 sm:h-4 h-2 w-2" />
+                    <Crop className="sm:w-4 sm:h-4 !h-3 !w-3" />
                   </Button>
 
                   <Button
                     variant="destructive"
-                    className="rounded-2xl max-sm:p-1"
+                    className="rounded-2xl aspect-square max-sm:!px-2 max-sm:!p-2 "
                     title="Supprimer"
                     onClick={() => removeImage(index)}
                   >
-                    <X className="sm:w-4 sm:h-4 h-2 w-2" />
+                    <X className="sm:w-4 sm:h-4 !h-3 !w-3" />
                   </Button>
                 </div>
               </div>
