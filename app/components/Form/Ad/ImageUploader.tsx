@@ -261,7 +261,7 @@ export default function ImageUploader({
                   size="sm"
                   variant="outline"
                   onClick={() => setAsCover(index)}
-                  className="rounded-2xl"
+                  className="rounded-2xl max-sm:p-1"
                   title={
                     index === 0 ? 'Déjà en couverture' : 'Mettre en couverture'
                   }
@@ -277,6 +277,7 @@ export default function ImageUploader({
                   <Button
                     type="button"
                     variant="outline"
+                    className="rounded-2xl max-sm:p-1"
                     onClick={() => {
                       setCropIdx(index);
                       setCropOpen(true);
@@ -286,9 +287,8 @@ export default function ImageUploader({
                   </Button>
 
                   <Button
-                    size="icon"
                     variant="destructive"
-                    className="rounded-2xl"
+                    className="rounded-2xl max-sm:p-1"
                     title="Supprimer"
                     onClick={() => removeImage(index)}
                   >
