@@ -4,7 +4,6 @@ import { buildDynamicSchema } from '@/lib/zodDynamic';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import Fuse from 'fuse.js';
 
 type AuthPayload = JwtPayload & { userId?: string };
 
@@ -25,198 +24,261 @@ interface AdWithRelations {
   lng?: number | null;
 }
 
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
+    const { searchParams } = new URL(req.url);
+
+    // --- Pagination / bornes sûres
+    const page = clampInt(searchParams.get('page'), 1, 1_000_000, 1);
+    const limit = clampInt(searchParams.get('limit'), 1, 50, 20);
     const skip = (page - 1) * limit;
 
-    // Filtres principaux
-    const categoryId = searchParams.get('categoryId');
-    const city = searchParams.get('city');
-    const userId = searchParams.get('userId');
-    const query = searchParams.get('q')?.trim().toLowerCase() || '';
+    // --- Filtres / tri
+    const categoryId = strOrNull(searchParams.get('categoryId'));
+    const city = strOrNull(searchParams.get('city'));
+    const q = (searchParams.get('q') || '').trim();
     const isDon = searchParams.get('isDon') === 'true';
+    const sortBy: 'price' | 'createdAt' =
+      searchParams.get('sortBy') === 'price' ? 'price' : 'createdAt';
+    const sortOrder: 'asc' | 'desc' =
+      searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc';
 
-    // Filtres prix / tri
-    const priceMinRaw = searchParams.get('priceMin');
-    const priceMaxRaw = searchParams.get('priceMax');
-    const sortByRaw = searchParams.get('sortBy');
-    const sortByParam: 'price' | 'createdAt' =
-      sortByRaw === 'price' ? 'price' : 'createdAt';
-    const sortOrderRaw = searchParams.get('sortOrder');
-    const sortOrderParam: 'asc' | 'desc' =
-      sortOrderRaw === 'asc' ? 'asc' : 'desc';
+    const priceMin = numOrNull(searchParams.get('priceMin'));
+    const priceMax = numOrNull(searchParams.get('priceMax'));
+    const lat = numOrNull(searchParams.get('lat'));
+    const lng = numOrNull(searchParams.get('lng'));
+    const radiusKm = numOrNull(searchParams.get('radius'));
 
-    // Filtre géolocalisation
-    const lat = searchParams.get('lat');
-    const lng = searchParams.get('lng');
-    const radius = searchParams.get('radius');
-    const userLat = lat ? parseFloat(lat) : null;
-    const userLng = lng ? parseFloat(lng) : null;
-    const radiusKm = radius ? parseFloat(radius) : null;
-
-    // Calcul bornes prix
-    const priceMin =
-      priceMinRaw !== null && !Number.isNaN(Number(priceMinRaw))
-        ? Number(priceMinRaw)
-        : undefined;
-    const priceMax =
-      priceMaxRaw !== null && !Number.isNaN(Number(priceMaxRaw))
-        ? Number(priceMaxRaw)
-        : undefined;
-
-    // Catégorie + sous-catégories
-    let categoryIds: string[] = [];
-    if (categoryId) {
-      const category = await prisma.category.findUnique({
-        where: { id: categoryId },
-        include: { children: true },
-      });
-      categoryIds = [
-        categoryId,
-        ...(category?.children.map((c) => c.id) || []),
-      ];
+    // --- userId pour favoris : token (prioritaire), sinon query param (compat)
+    let favoritesUserId: string | null = null;
+    try {
+      const token = req.cookies.get('token')?.value;
+      if (token) {
+        const payload = jwt.verify(
+          token,
+          process.env.JWT_SECRET as string
+        ) as AuthPayload;
+        favoritesUserId = payload.userId ?? null;
+      }
+    } catch {}
+    if (!favoritesUserId) {
+      favoritesUserId = strOrNull(searchParams.get('userId'));
     }
 
-    let ads: AdWithRelations[] = [];
-    let total = 0;
+    // --- Catégorie + enfants
+    let categoryIds: string[] | undefined;
+    if (categoryId) {
+      const cat = await prisma.category.findUnique({
+        where: { id: categoryId },
+        include: { children: { select: { id: true } } },
+      });
+      if (cat) categoryIds = [cat.id, ...cat.children.map((c) => c.id)];
+    }
 
-    // --- 1/ SQL RAW (géoloc, sans vrai total paginé)
-    if (userLat !== null && userLng !== null && radiusKm !== null) {
-      // Ta logique actuelle pour filtrer par géoloc
-      let sqlWhere = `
-        WHERE "Ad".lat IS NOT NULL
-          AND "Ad".lng IS NOT NULL
-          AND (
-            6371 * acos(
-              cos(radians($1)) * cos(radians("Ad".lat)) *
-              cos(radians("Ad".lng) - radians($2)) +
-              sin(radians($1)) * sin(radians("Ad".lat))
-            )
-          ) <= $3
-      `;
-      const sqlParams: (number | string)[] = [userLat, userLng, radiusKm];
+    // ======================================================================
+    // BRANCHE GÉOLOC (SQL brut : bbox + Haversine + LIMIT/OFFSET + COUNT)
+    // ======================================================================
+    if (lat != null && lng != null && radiusKm != null) {
+      // BBox indexable (réduit drastiquement les lignes avant Haversine)
+      const R = 6371; // km
+      const dLat = (radiusKm / R) * (180 / Math.PI);
+      const dLng = dLat / Math.cos((lat * Math.PI) / 180);
+      const minLat = lat - dLat;
+      const maxLat = lat + dLat;
+      const minLng = lng - dLng;
+      const maxLng = lng + dLng;
 
-      let paramIndex = 4;
-      if (categoryIds.length > 0) {
-        sqlWhere += ` AND "Ad"."categoryId" IN (${categoryIds
-          .map((_, i) => `$${paramIndex++}`)
-          .join(',')})`;
-        sqlParams.push(...categoryIds);
-      }
-      if (isDon) sqlWhere += ` AND "Ad"."isDon" = true`;
-      if (city) {
-        sqlWhere += ` AND LOWER("Ad"."location") LIKE $${paramIndex}`;
-        sqlParams.push(`%${city.toLowerCase()}%`);
-        paramIndex++;
-      }
-      if (priceMin !== undefined) {
-        sqlWhere += ` AND "Ad"."price" >= $${paramIndex}`;
-        sqlParams.push(priceMin);
-        paramIndex++;
-      }
-      if (priceMax !== undefined) {
-        sqlWhere += ` AND "Ad"."price" <= $${paramIndex}`;
-        sqlParams.push(priceMax);
-        paramIndex++;
+      const clauses: Prisma.Sql[] = [
+        Prisma.sql`"Ad"."lat" IS NOT NULL AND "Ad"."lng" IS NOT NULL`,
+        Prisma.sql`"Ad"."lat" BETWEEN ${minLat} AND ${maxLat}`,
+        Prisma.sql`"Ad"."lng" BETWEEN ${minLng} AND ${maxLng}`,
+      ];
+      if (categoryIds?.length)
+        clauses.push(
+          Prisma.sql`"Ad"."categoryId" IN (${Prisma.join(categoryIds)})`
+        );
+      if (isDon) clauses.push(Prisma.sql`"Ad"."isDon" = true`);
+      if (city)
+        clauses.push(
+          Prisma.sql`LOWER("Ad"."location") LIKE ${'%' + city.toLowerCase() + '%'}`
+        );
+      if (priceMin != null)
+        clauses.push(Prisma.sql`"Ad"."price" >= ${priceMin}`);
+      if (priceMax != null)
+        clauses.push(Prisma.sql`"Ad"."price" <= ${priceMax}`);
+      if (q) {
+        const like = '%' + q.toLowerCase() + '%';
+        clauses.push(
+          Prisma.sql`(LOWER("Ad"."title") LIKE ${like} OR LOWER("Ad"."description") LIKE ${like} OR LOWER("Ad"."location") LIKE ${like})`
+        );
       }
 
-      // Tri
-      const sqlOrder = `ORDER BY "Ad"."${sortByParam}" ${sortOrderParam.toUpperCase()}`;
+      const WHERE = clauses.length
+        ? Prisma.sql`WHERE ${Prisma.join(clauses, ' AND ')}`
+        : Prisma.empty;
 
-      // -- Query sans pagination SQL (car $queryRawUnsafe pagine mal, à améliorer si besoin)
-      ads = await prisma.$queryRawUnsafe<AdWithRelations[]>(
+      const distanceSQL = Prisma.sql`(
+        6371 * ACOS(
+          COS(RADIANS(${lat})) * COS(RADIANS("Ad"."lat")) *
+          COS(RADIANS("Ad"."lng") - RADIANS(${lng})) +
+          SIN(RADIANS(${lat})) * SIN(RADIANS("Ad"."lat"))
+        )
+      )`;
+
+      const ORDER =
+        sortBy === 'price'
+          ? Prisma.sql`ORDER BY "Ad"."price" ${Prisma.raw(sortOrder.toUpperCase())}`
+          : Prisma.sql`ORDER BY "Ad"."createdAt" ${Prisma.raw(
+              sortOrder.toUpperCase()
+            )}`;
+
+      // total
+      const countRows = await prisma.$queryRaw<{ count: bigint }[]>(
+        Prisma.sql`
+          SELECT COUNT(*)::bigint AS count
+          FROM "Ad"
+          ${WHERE}
+          AND ${distanceSQL} <= ${radiusKm}
         `
-        SELECT
-          "Ad".*,
-          "User".name as "userName",
-          "User".avatar as "userAvatar",
-          "Category".name as "categoryName"
-        FROM "Ad"
-        LEFT JOIN "User" ON "Ad"."userId" = "User".id
-        LEFT JOIN "Category" ON "Ad"."categoryId" = "Category".id
-        ${sqlWhere}
-        ${sqlOrder}
-        `,
-        ...sqlParams
+      );
+      const total = Number(countRows[0]?.count ?? 0);
+
+      // page
+      const rows = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          title: string;
+          price: number;
+          location: string | null;
+          images: any;
+          isFavorite: boolean;
+        }>
+      >(
+        Prisma.sql`
+          SELECT
+            "Ad"."id",
+            "Ad"."title",
+            "Ad"."price",
+            "Ad"."location",
+            "Ad"."images",
+            ${
+              favoritesUserId
+                ? Prisma.sql`EXISTS(
+                    SELECT 1 FROM "Favorite" f
+                    WHERE f."adId" = "Ad"."id" AND f."userId" = ${favoritesUserId}
+                  )`
+                : Prisma.sql`false`
+            } AS "isFavorite"
+          FROM "Ad"
+          ${WHERE}
+          AND ${distanceSQL} <= ${radiusKm}
+          ${ORDER}
+          LIMIT ${limit} OFFSET ${skip}
+        `
       );
 
-      total = ads.length;
-      // Si tu veux paginer côté JS ici :
-      ads = ads.slice(skip, skip + limit);
-    } else {
-      // --- 2/ PRISMA NORMAL
-      const where: Prisma.AdWhereInput = {};
-      if (categoryIds.length > 0) where.categoryId = { in: categoryIds };
-      if (isDon) where.isDon = true;
-      if (city) where.location = { contains: city, mode: 'insensitive' };
-      if (priceMin !== undefined || priceMax !== undefined) {
-        where.price = {};
-        if (priceMin !== undefined)
-          (where.price as Prisma.IntFilter).gte = priceMin;
-        if (priceMax !== undefined)
-          (where.price as Prisma.IntFilter).lte = priceMax;
-      }
+      const data = rows.map((r) => ({
+        id: r.id,
+        title: r.title,
+        price: Number(r.price),
+        location: r.location ?? null,
+        images: Array.isArray(r.images) ? r.images.slice(0, 1) : [],
+        isFavorite: !!r.isFavorite,
+      }));
 
-      // 1️⃣ Compte total SANS pagination
-      total = await prisma.ad.count({ where });
+      return NextResponse.json(
+        { data, total },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          },
+        }
+      );
+    }
 
-      // 2️⃣ Récupère la page courante
-      ads = (await prisma.ad.findMany({
+    // ======================================================================
+    // BRANCHE PRISMA (sans géoloc)
+    // ======================================================================
+    const where: Prisma.AdWhereInput = {};
+    if (categoryIds?.length) where.categoryId = { in: categoryIds };
+    if (isDon) where.isDon = true;
+    if (city) where.location = { contains: city, mode: 'insensitive' };
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+        { location: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+    if (priceMin != null || priceMax != null) {
+      where.price = {};
+      if (priceMin != null) (where.price as Prisma.IntFilter).gte = priceMin;
+      if (priceMax != null) (where.price as Prisma.IntFilter).lte = priceMax;
+    }
+
+    const [total, list] = await Promise.all([
+      prisma.ad.count({ where }),
+      prisma.ad.findMany({
         where,
-        include: {
-          user: { select: { id: true, name: true, avatar: true } },
-          category: { select: { id: true, name: true } },
-          favorites: userId ? { where: { userId } } : false,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          location: true,
+          images: true,
+          favorites: favoritesUserId
+            ? { where: { userId: favoritesUserId }, select: { id: true } }
+            : false,
         },
         orderBy:
-          sortByParam === 'price'
-            ? { price: sortOrderParam }
-            : { createdAt: sortOrderParam },
-        skip, // <= Ici la pagination
+          sortBy === 'price' ? { price: sortOrder } : { createdAt: sortOrder },
+        skip,
         take: limit,
-      })) as AdWithRelations[];
-    }
+      }) as any,
+    ]);
 
-    // ---- Mapping et favoris
-    const adsWithFavorite = ads.map((ad: AdWithRelations) => ({
-      ...ad,
-      isFavorite: userId
-        ? !!(ad.favorites ? (ad.favorites?.length ?? 0) > 0 : ad.isFavorite)
-        : false,
+    const data = (list as any[]).map((ad) => ({
+      id: ad.id,
+      title: ad.title,
+      price: ad.price,
+      location: ad.location ?? null,
+      images: Array.isArray(ad.images) ? ad.images.slice(0, 1) : [],
+      isFavorite: favoritesUserId ? (ad.favorites?.length ?? 0) > 0 : false,
     }));
 
-    // ---- Fuzzy search (facultatif : si tu veux paginer le résultat fuzzy, applique slice ici !)
-    let result = adsWithFavorite;
-    if (query) {
-      const fuse = new Fuse(adsWithFavorite, {
-        keys: ['title', 'description', 'location', 'categoryName', 'userName'],
-        threshold: 0.4,
-      });
-      result = fuse.search(query).map((r) => r.item);
-      // Trie le résultat même après fuzzy
-      result.sort((a, b) => {
-        const dir = sortOrderParam === 'asc' ? 1 : -1;
-        if (sortByParam === 'price') return (a.price - b.price) * dir;
-        return (
-          (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
-          dir
-        );
-      });
-      // ➡️ Optionnel : pagine aussi ici si query
-      result = result.slice(0, limit);
-    }
+    const cacheHeaders = favoritesUserId
+      ? { 'Cache-Control': 'private, no-store' } // réponse personnalisée -> pas de cache edge
+      : { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' };
 
-    return NextResponse.json({ data: result, total });
+    return NextResponse.json({ data, total }, { headers: cacheHeaders });
   } catch (e) {
-    console.error(e);
+    console.error('GET /api/ad error', e);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des annonces' },
       { status: 500 }
     );
   }
+}
+
+/* -------------------------- helpers utils -------------------------- */
+function clampInt(
+  raw: string | null,
+  min: number,
+  max: number,
+  fallback: number
+) {
+  const n = raw ? parseInt(raw, 10) : NaN;
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+function numOrNull(raw: string | null): number | null {
+  if (raw == null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+function strOrNull(raw: string | null): string | null {
+  const v = raw?.trim();
+  return v ? v : null;
 }
 
 export async function POST(req: NextRequest) {

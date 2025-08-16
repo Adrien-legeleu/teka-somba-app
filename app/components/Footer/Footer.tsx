@@ -2,13 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  IconBrandFacebook,
-  IconBrandInstagram,
-  IconBrandTwitter,
-  IconBrandLinkedin,
-  IconBrandTiktok,
-} from '@tabler/icons-react';
+import { IconBrandInstagram, IconBrandTiktok } from '@tabler/icons-react';
 import MobileNavLink from '../Home/MobileNavLink';
 
 export default function Footer() {

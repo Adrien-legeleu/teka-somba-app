@@ -5,16 +5,40 @@ import { Suspense } from 'react';
 import Loader from '../components/Fonctionnalities/Loader';
 export const runtime = 'nodejs';
 
-type AuthPayload = JwtPayload & {
-  userId: string;
-};
+type AuthPayload = JwtPayload & { userId: string };
+
+const ADS_PER_PAGE = 20;
+
+async function fetchInitialAds(userId: string | null) {
+  // Essaie d’utiliser ton URL publique si dispo, sinon localhost en dev
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000');
+
+  const params = new URLSearchParams();
+  params.set('page', '1');
+  params.set('limit', String(ADS_PER_PAGE));
+  if (userId) params.set('userId', userId);
+
+  try {
+    const res = await fetch(`${base}/api/ad?${params.toString()}`, {
+      // On veut du frais. Si ton API gère SWR tu peux l’enlever.
+      cache: 'no-store',
+    });
+    if (!res.ok) return { data: [], total: 0 };
+    return (await res.json()) as { data: any[]; total: number };
+  } catch {
+    return { data: [], total: 0 };
+  }
+}
 
 export default async function Page() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
   let userId: string | null = null;
-
   if (token) {
     try {
       const payload = jwt.verify(
@@ -23,21 +47,20 @@ export default async function Page() {
       ) as AuthPayload;
       userId = payload.userId || null;
     } catch {
-      userId = null; // Si le token est invalide
+      userId = null;
     }
   }
 
+  const initial = await fetchInitialAds(userId);
+
   return (
-    <div className=" w-full flex justify-start">
-      <Suspense
-        fallback={
-          <div className="p-6">
-            <Loader />
-          </div>
-        }
-      >
-        <Home userId={userId} />
-      </Suspense>
+    <div className="w-full flex justify-start">
+      <Home
+        userId={userId}
+        initialAds={initial.data}
+        initialTotal={initial.total}
+        initialPage={1}
+      />
     </div>
   );
 }

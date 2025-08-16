@@ -25,22 +25,20 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
   return (
     <div>
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={null}>
         <Header />
       </Suspense>
 
       {isHome ? (
-        <Suspense>
-          <FilterProvider>
-            <main className="max-w-7xl mx-auto md:pb-0 max-md:pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
-              {showMobileHomeLayout ? (
-                <LayoutHomeMobile>{children}</LayoutHomeMobile>
-              ) : (
-                children
-              )}
-            </main>
-          </FilterProvider>
-        </Suspense>
+        <FilterProvider>
+          <main className="max-w-7xl mx-auto md:pb-0 max-md:pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
+            {showMobileHomeLayout ? (
+              <LayoutHomeMobile>{children}</LayoutHomeMobile>
+            ) : (
+              children
+            )}
+          </main>
+        </FilterProvider>
       ) : (
         <main className="md:pb-0 max-md:pb-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
           {children}

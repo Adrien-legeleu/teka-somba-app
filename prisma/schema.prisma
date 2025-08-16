@@ -86,16 +86,15 @@ model Ad {
   messages    Message[]
   adAnalytics AdAnalytics?
 
-  // Indexes pour rapidité sur les filtres courants
-  @@index([userId])
-  @@index([categoryId])
-  @@index([price])
-  @@index([createdAt])
-  @@index([isDon])
-  @@index([isVip])
-  @@index([boostUntil])
-  @@index([location])
-  @@index([lat, lng]) // Pour la recherche géolocalisée rapide
+ @@index([userId],      name: "idx_ad_user")
+  @@index([categoryId],  name: "idx_ad_category")
+  @@index([price],       name: "idx_ad_price")
+  @@index([createdAt],   name: "idx_ad_createdAt")
+  @@index([isDon],       name: "idx_ad_isDon")
+  @@index([isVip],       name: "idx_ad_isVip")
+  @@index([boostUntil],  name: "idx_ad_boostUntil")
+  @@index([lat, lng],    name: "idx_ad_lat_lng")
+
 }
 
 enum AdType {

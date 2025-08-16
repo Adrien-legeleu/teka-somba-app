@@ -81,7 +81,29 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="theme-color" content="#ff7a00" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+        {/* ── Preconnect/DNS Prefetch : Supabase (API + Storage public) ── */}
+        <link
+          rel="preconnect"
+          href="https://brzyczbssnohcpflfycr.supabase.co"
+          crossOrigin=""
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://brzyczbssnohcpflfycr.supabase.co"
+        />
+
+        {/* ── Fonts ── */}
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
       </head>
+
       <body
         className={`${nunito_sans.variable} ${nunito.variable} antialiased `}
       >
