@@ -19,16 +19,14 @@ export interface AdAnalytics {
 }
 
 export interface Ad {
-  id: string; // 👈 manquait dans ton type global
   title: string;
   description: string;
   price: number;
   images: string[];
-  location?: string | null; // 👈 maintenant optionnel et nullable
+  location: string;
   lat: number | null;
   lng: number | null;
 
-  isFavorite?: boolean; // 👈 ajouté car utilisé dans Home
   isDon?: boolean;
   category?: { id: string; name?: string; parentId: string };
   subCategoryId?: string;
@@ -38,8 +36,14 @@ export interface Ad {
   adAnalytics?: AdAnalytics;
   user?: User;
 
-  fields?: AdField[];
+  fields?: AdField[]; // Si tu utilises toujours ce champ
 }
+// types/ad.ts
+export type AdWithMeta = Ad & {
+  id: string;
+  location?: string | null;
+  isFavorite?: boolean;
+};
 
 export type Category = {
   id: string;

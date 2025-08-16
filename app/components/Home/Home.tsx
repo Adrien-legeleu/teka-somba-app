@@ -27,9 +27,9 @@ import {
 import { useMediaQuery } from 'usehooks-ts';
 import { LayoutGrid, Rows } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Ad } from '@/types/ad';
+import { AdWithMeta } from '@/types/ad';
 
-type FetchResponse = { data: Ad[]; total: number };
+type FetchResponse = { data: AdWithMeta[]; total: number };
 
 const ADS_PER_PAGE = 20;
 function AdCardSkeleton({ isCompact }: { isCompact: boolean }) {
@@ -132,7 +132,7 @@ export default function Home({
   initialPage = 1,
 }: {
   userId?: string | null;
-  initialAds?: Ad[];
+  initialAds?: AdWithMeta[];
   initialTotal?: number;
   initialPage?: number;
 }) {
@@ -155,7 +155,7 @@ export default function Home({
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const [ads, setAds] = useState<Ad[]>(() => initialAds ?? []);
+  const [ads, setAds] = useState<AdWithMeta[]>(() => initialAds ?? []);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(
     () => !initialAds || initialAds.length === 0
   );

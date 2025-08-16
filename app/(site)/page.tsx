@@ -1,14 +1,14 @@
 import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Home from '../components/Home/Home';
-import { Ad } from '@/types/ad';
+import { AdWithMeta } from '@/types/ad';
 
 export const runtime = 'nodejs';
 
 type AuthPayload = JwtPayload & { userId: string };
 
 interface FetchAdsResponse {
-  data: Ad[];
+  data: AdWithMeta[];
   total: number;
 }
 
