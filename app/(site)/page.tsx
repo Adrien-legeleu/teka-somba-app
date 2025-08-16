@@ -1,16 +1,22 @@
 import { cookies } from 'next/headers';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Home from '../components/Home/Home';
-import { Suspense } from 'react';
-import Loader from '../components/Fonctionnalities/Loader';
+import { Ad } from '@/types/ad';
+
 export const runtime = 'nodejs';
 
 type AuthPayload = JwtPayload & { userId: string };
 
+interface FetchAdsResponse {
+  data: Ad[];
+  total: number;
+}
+
 const ADS_PER_PAGE = 20;
 
-async function fetchInitialAds(userId: string | null) {
-  // Essaie d’utiliser ton URL publique si dispo, sinon localhost en dev
+async function fetchInitialAds(
+  userId: string | null
+): Promise<FetchAdsResponse> {
   const base =
     process.env.NEXT_PUBLIC_SITE_URL ??
     (process.env.VERCEL_URL
@@ -24,11 +30,10 @@ async function fetchInitialAds(userId: string | null) {
 
   try {
     const res = await fetch(`${base}/api/ad?${params.toString()}`, {
-      // On veut du frais. Si ton API gère SWR tu peux l’enlever.
       cache: 'no-store',
     });
     if (!res.ok) return { data: [], total: 0 };
-    return (await res.json()) as { data: any[]; total: number };
+    return (await res.json()) as FetchAdsResponse;
   } catch {
     return { data: [], total: 0 };
   }

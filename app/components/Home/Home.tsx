@@ -27,15 +27,7 @@ import {
 import { useMediaQuery } from 'usehooks-ts';
 import { LayoutGrid, Rows } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type Ad = {
-  id: string;
-  title: string;
-  price: number;
-  location?: string;
-  images?: string[];
-  isFavorite?: boolean;
-};
+import { Ad } from '@/types/ad';
 
 type FetchResponse = { data: Ad[]; total: number };
 
