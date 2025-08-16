@@ -31,6 +31,7 @@ import {
 
 import { DynamicField, DynamicFieldValues } from '@/types/ad';
 import type { DurationUnit } from '@prisma/client';
+import { IconLoader2 } from '@tabler/icons-react';
 
 type Category = {
   id: string;
@@ -327,47 +328,69 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     return true;
   };
 
-  // Submit
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const onSubmit: SubmitHandler<FormValuesOut> = async (data) => {
-    // ✅ Vérif session avant d’appeler l’API
-    if (!(await ensureAuth(true))) return;
-
-    if (!(await validateStep1())) return setStep(1);
-    if (!(await validateStep2())) return setStep(2);
-    if (!(await validateStep3())) return setStep(3);
-    if (!(await validateStep4())) return setStep(4);
-
-    const selectedCat = categories
-      .flatMap((cat) => [cat, ...(cat.children || [])])
-      .find((cat) => cat.id === selectedCatId);
-
-    const nameMap = new Map(
-      (selectedCat?.fields || []).map((f) => [normalize(f.name), f.name])
-    );
-
-    const remappedDynamicFields = Object.fromEntries(
-      Object.entries(data.dynamicFields || {}).flatMap(([key, val]) => {
-        const original = nameMap.get(normalize(key));
-        return original ? [[original, val]] : [];
-      })
-    );
-
-    const finalDurationValue =
-      data.type === 'FOR_RENT'
-        ? (data.durationValue ?? watched.durationValue)
-        : undefined;
-    const finalDurationUnit =
-      data.type === 'FOR_RENT'
-        ? (data.durationUnit ?? watched.durationUnit)
-        : undefined;
-
-    const dynamicFieldsClean = Object.fromEntries(
-      Object.entries(remappedDynamicFields).filter(
-        ([, v]) => v !== '' && v !== undefined && v !== null
-      )
-    );
+    if (isSubmitting) return; // empêche double clic
+    setIsSubmitting(true);
 
     try {
+      if (!(await ensureAuth(true))) {
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!(await validateStep1())) {
+        setStep(1);
+        setIsSubmitting(false);
+        return;
+      }
+      if (!(await validateStep2())) {
+        setStep(2);
+        setIsSubmitting(false);
+        return;
+      }
+      if (!(await validateStep3())) {
+        setStep(3);
+        setIsSubmitting(false);
+        return;
+      }
+      if (!(await validateStep4())) {
+        setStep(4);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const selectedCat = categories
+        .flatMap((cat) => [cat, ...(cat.children || [])])
+        .find((cat) => cat.id === selectedCatId);
+
+      const nameMap = new Map(
+        (selectedCat?.fields || []).map((f) => [normalize(f.name), f.name])
+      );
+
+      const remappedDynamicFields = Object.fromEntries(
+        Object.entries(data.dynamicFields || {}).flatMap(([key, val]) => {
+          const original = nameMap.get(normalize(key));
+          return original ? [[original, val]] : [];
+        })
+      );
+
+      const finalDurationValue =
+        data.type === 'FOR_RENT'
+          ? (data.durationValue ?? watched.durationValue)
+          : undefined;
+      const finalDurationUnit =
+        data.type === 'FOR_RENT'
+          ? (data.durationUnit ?? watched.durationUnit)
+          : undefined;
+
+      const dynamicFieldsClean = Object.fromEntries(
+        Object.entries(remappedDynamicFields).filter(
+          ([, v]) => v !== '' && v !== undefined && v !== null
+        )
+      );
+
       const res = await fetch('/api/ad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -403,8 +426,10 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
     } catch (err) {
       console.error(err);
       toast.error('Erreur inconnue');
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }; // ← fermeture correcte de la fonction
 
   const isFormValid =
     watched.title.trim().length > 0 &&
@@ -702,11 +727,14 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
                     style={{
                       background: 'linear-gradient(90deg, #ff7a00, #ff3c00)',
                     }}
-                    className="text-white"
+                    className="text-white flex items-center justify-center gap-2"
                     type="submit"
-                    disabled={!isFormValid}
+                    disabled={!isFormValid || isSubmitting}
                   >
-                    Créer l’annonce
+                    {isSubmitting && (
+                      <IconLoader2 className="animate-spin w-4 h-4" />
+                    )}
+                    {isSubmitting ? 'Chargement...' : 'Créer l’annonce'}
                   </Button>
                 </div>
               </>
