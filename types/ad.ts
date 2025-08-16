@@ -19,6 +19,7 @@ export interface AdAnalytics {
 }
 
 export interface Ad {
+  id: string;
   title: string;
   description: string;
   price: number;
@@ -38,6 +39,7 @@ export interface Ad {
 
   fields?: AdField[]; // Si tu utilises toujours ce champ
 }
+
 // types/ad.ts
 export type AdWithMeta = Ad & {
   id: string;
