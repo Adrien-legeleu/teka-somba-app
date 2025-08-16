@@ -25,11 +25,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
   return (
     <div>
-      <Suspense
-        fallback={
-          <div className="sticky top-0 z-50 h-14 md:h-16 bg-white/80 backdrop-blur border-b border-black/5" />
-        }
-      >
+      <Suspense fallback={null}>
         <Header />
       </Suspense>
 

@@ -110,9 +110,9 @@ export default function RootLayout({
         {/* --- SHELL IMMEDIAT : structure de page --- */}
         <div className="min-h-screen flex flex-col">
           {/* Barre header skeleton (très légère SSR) : elle s’affiche instantanément */}
-          <div className="sticky top-0 z-50 h-14 md:h-16 bg-white/80 backdrop-blur border-b border-black/5">
-            {/* L’en-tête “réel” arrivera via SiteLayout, cette barre évite l’écran “footer seul” */}
-          </div>
+          {/* <div className="sticky top-0 z-50 h-14 md:h-16 bg-white/80 backdrop-blur border-b border-black/5">
+
+          </div> */}
 
           {/* Zone de contenu qui prend l’espace : empêche le footer de remonter au 1er rendu */}
           <main className="flex-1 min-h-[40vh]">{children}</main>
